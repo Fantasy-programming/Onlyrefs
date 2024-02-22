@@ -15,12 +15,38 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "dialog": {
+        "open": true
+      },
+      "fs": {
+        "scope": [
+          "$HOME/**",
+          "**",
+          "$APP",
+          "$APP/**",
+          "$APPDATA/**",
+          "$CACHE",
+          "$CACHE/**",
+          "$CONFIG",
+          "$CONFIG/**",
+          "$LOG",
+          "$LOG/**"
+        ],
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": ["$APPDATA/**"]
       }
     },
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "com.onlyref",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
