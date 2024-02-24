@@ -1,3 +1,26 @@
+html {
+  scrollbar-width: thin;
+  -ms-overflow-style: thin;
+}
+
+body::-webkit-scrollbar {
+  width: 12px;
+}
+/**/
+/* body::-webkit-scrollbar-track { */
+/*   background: white; */
+/* } */
+/**/
+/* body::-webkit-scrollbar-thumb { */
+/*   background-color: blue; */
+/*   border-radius: 20px; */
+/*   border: 3px solid orange; */
+/* } */
+
 body {
   user-select: none;
+  overflow: hidden;
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
 }

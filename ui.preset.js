@@ -97,8 +97,10 @@ module.exports = {
         "content-show": "content-show 0.2s ease-out",
         "content-hide": "content-hide 0.2s ease-out",
       },
+      gridTemplateColumns: {
+        fluid: "repeat(auto-fit, minmax(15rem, 1fr))",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
 };
-
