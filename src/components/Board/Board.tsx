@@ -51,7 +51,7 @@ const Board = ({ collection, home }: BoardProps) => {
   });
 
   return (
-    <main class="w-full pt-20 h-screen">
+    <main class="w-full pt-20 h-screen ">
       <div class="mb-8 flex justify-between">
         <Show when={home}>
           <h1 class="text-4xl text-primary-foreground uppercase italic">
@@ -67,7 +67,7 @@ const Board = ({ collection, home }: BoardProps) => {
       </div>
       <Mason
         as="section"
-        class="w-full h-full bg-primary  "
+        class="w-full h-full   "
         items={images()}
         columns={breakpoints()}
       >
