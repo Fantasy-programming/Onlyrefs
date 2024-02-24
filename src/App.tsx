@@ -4,7 +4,7 @@ import "./App.css";
 
 const App = (props: RouteSectionProps) => {
   return (
-    <div class="h-screen w-full overflow-scroll">
+    <div class="h-screen w-full overflow-y-scroll">
       <LeftNav />
       <div class="mx-24 pt-8 h-full ">
         <Navigation />

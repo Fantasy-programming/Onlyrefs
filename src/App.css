@@ -24,3 +24,8 @@ body {
   width: 100vw;
   height: 100vh;
 }
+
+.onlyrefNoise {
+  background-image: url("/noise.png");
+  background-size: 20px 20px;
+}
