@@ -1,16 +1,12 @@
 import { Navigation, LeftNav } from "./components/Navigation";
-import { Component, JSXElement } from "solid-js";
+import { RouteSectionProps } from "@solidjs/router";
 import "./App.css";
 
-type MyComponentProps = {
-  children: JSXElement | JSXElement[];
-};
-
-const App: Component<MyComponentProps> = (props) => {
+const App = (props: RouteSectionProps) => {
   return (
-    <div class="h-screen w-full">
+    <div class="h-screen w-full overflow-scroll">
       <LeftNav />
-      <div class="mx-24 pt-8 h-full">
+      <div class="mx-24 pt-8 h-full ">
         <Navigation />
         {props.children}
       </div>
