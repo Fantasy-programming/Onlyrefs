@@ -7,7 +7,10 @@ const Skeleton: Component<ComponentProps<"div">> = (props) => {
   const [, rest] = splitProps(props, ["class"]);
   return (
     <div
-      class={cn("animate-pulse rounded-md bg-primary/10", props.class)}
+      class={cn(
+        "animate-pulse rounded-md bg-primary-foreground/10",
+        props.class,
+      )}
       {...rest}
     />
   );
