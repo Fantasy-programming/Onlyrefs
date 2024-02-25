@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import BoardItem from "../BoardItem";
 import { BoardItemSkeleton } from "../BoardItemSkelettong";
 import { Progress, ProgressValueLabel } from "../ui/progress";
@@ -17,7 +18,7 @@ import { BoardProps } from "./Board.types";
 
 const Board = ({ collection, home }: BoardProps) => {
   const [images, setImages] = createSignal<string[]>([]);
-  const [selectFiles, progress] = useFileSelector();
+  const [selectFiles, dropFiles, progress] = useFileSelector();
 
   const breakpoints = createMasonryBreakpoints(() => [
     { query: "(min-width: 1536px)", columns: 4 },
@@ -40,6 +41,13 @@ const Board = ({ collection, home }: BoardProps) => {
     setImages(images);
   };
 
+  const imageDrop = () => {
+    listen("tauri://file-drop", async (event) => {
+      const files = event.payload as string[];
+      await dropFiles(collection, files);
+    });
+  };
+
   createEffect(
     on(progress, () => {
       getImages();
@@ -51,7 +59,7 @@ const Board = ({ collection, home }: BoardProps) => {
   });
 
   return (
-    <main class="w-full pt-20 h-screen ">
+    <main class="w-full pt-20 h-screen">
       <div class="mb-8 flex justify-between">
         <Show when={home}>
           <h1 class="text-4xl text-primary-foreground uppercase italic">
@@ -67,9 +75,10 @@ const Board = ({ collection, home }: BoardProps) => {
       </div>
       <Mason
         as="section"
-        class="w-full h-full   "
+        class="w-full h-full relative"
         items={images()}
         columns={breakpoints()}
+        onMouseEnter={imageDrop}
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
@@ -77,7 +86,6 @@ const Board = ({ collection, home }: BoardProps) => {
           </Suspense>
         )}
       </Mason>
-
       <Show when={progress().total !== progress().completed}>
         <Portal>
           <div class="fixed h-20 bg-white text-black shadow-md w-[300px] rounded-md right-5 bottom-5">

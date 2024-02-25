@@ -12,5 +12,6 @@ export interface ProgressionProps {
 
 export type useFileSelectorReturnType = [
   selectFrom: (collection: string) => Promise<void>,
+  selectDrop: (collection: string, files: string[]) => Promise<void>,
   progress: Accessor<ProgressionProps>,
 ];

@@ -11,6 +11,31 @@ export const useFileSelector = (): useFileSelectorReturnType => {
     completed: 0,
   });
 
+  const dropFiles = async (collection: string, files: string[]) => {
+    const exist = await collectionExist(collection);
+
+    if (!exist) {
+      await createCollection(collection);
+    }
+
+    const destDir = await join(await appDataDir(), "collections");
+
+    setProgress({ total: files.length, completed: 0 });
+
+    for (const image of files) {
+      const segments = image.split(sep);
+      const filename = segments[segments.length - 1];
+      const newPath = await join(destDir, collection, filename);
+
+      await copyFile(image, newPath);
+
+      setProgress({
+        total: progress().total,
+        completed: progress().completed + 1,
+      });
+    }
+  };
+
   const selectFiles = async (collection: string) => {
     const result = await open({
       multiple: true,
@@ -49,5 +74,5 @@ export const useFileSelector = (): useFileSelectorReturnType => {
     setProgress({ total: 0, completed: 0 });
   });
 
-  return [selectFiles, progress];
+  return [selectFiles, dropFiles, progress];
 };
