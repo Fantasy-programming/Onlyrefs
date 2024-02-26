@@ -1,6 +1,9 @@
 /* @refresh reload */
 import { Router, Route } from "@solidjs/router";
 import { render } from "solid-js/web";
+
+import "@fontsource-variable/nunito";
+import "@fontsource-variable/hahmlet";
 import "./index.css";
 
 import App from "./App";
