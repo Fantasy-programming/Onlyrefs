@@ -51,6 +51,7 @@ const Board = ({ collection, home }: BoardProps) => {
 
   onMount(() => {
     getImages();
+    dropFiles(collection);
   });
 
   return (
@@ -73,7 +74,6 @@ const Board = ({ collection, home }: BoardProps) => {
         class="w-full h-full relative"
         items={images()}
         columns={breakpoints()}
-        onMouseEnter={() => dropFiles(collection)}
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
