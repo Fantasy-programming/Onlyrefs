@@ -100,6 +100,10 @@ module.exports = {
       gridTemplateColumns: {
         fluid: "repeat(auto-fit, minmax(15rem, 1fr))",
       },
+      fontFamily: {
+        serif: "var(--font-serif)",
+        sans: "var(--font-sans)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

@@ -1,6 +1,8 @@
 html {
   scrollbar-width: thin;
   -ms-overflow-style: thin;
+  font-family: system-ui, sans-serif;
+  font-weight: normal;
 }
 
 body {
