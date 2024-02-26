@@ -1,11 +1,12 @@
+import { Skeleton } from "../ui/skeleton";
 import { Show } from "solid-js";
 
-interface BoardItemProps {
+export interface BoardItemProps {
   image: string;
   index: number;
 }
 
-const BoardItem = ({ image, index }: BoardItemProps) => {
+export const BoardItem = ({ image, index }: BoardItemProps) => {
   const getFileExtension = (filename: string): string => {
     const lastDotIndex = filename.lastIndexOf(".");
     return lastDotIndex !== -1 ? filename.slice(lastDotIndex + 1) : "";
@@ -50,4 +51,13 @@ const BoardItem = ({ image, index }: BoardItemProps) => {
   );
 };
 
-export default BoardItem;
+export const BoardItemSkeleton = ({ index }: { index: number }) => {
+  return (
+    <Skeleton
+      class={`rounded-xl m-3 cursor-pointer shadow-md`}
+      style={{
+        height: index % 2 ? "300px" : "440px",
+      }}
+    />
+  );
+};
