@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { copyFile } from "@tauri-apps/api/fs";
 import { appDataDir, join, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
@@ -11,29 +12,37 @@ export const useFileSelector = (): useFileSelectorReturnType => {
     completed: 0,
   });
 
-  const dropFiles = async (collection: string, files: string[]) => {
-    const exist = await collectionExist(collection);
+  const dropFiles = async (collection: string) => {
+    const waitForFiles = listen("tauri://file-drop", async (event) => {
+      const files = event.payload as string[];
 
-    if (!exist) {
-      await createCollection(collection);
-    }
+      const exist = await collectionExist(collection);
 
-    const destDir = await join(await appDataDir(), "collections");
+      if (!exist) {
+        await createCollection(collection);
+      }
 
-    setProgress({ total: files.length, completed: 0 });
+      const destDir = await join(await appDataDir(), "collections");
 
-    for (const image of files) {
-      const segments = image.split(sep);
-      const filename = segments[segments.length - 1];
-      const newPath = await join(destDir, collection, filename);
+      setProgress({ total: files.length, completed: 0 });
 
-      await copyFile(image, newPath);
+      for (const image of files) {
+        const segments = image.split(sep);
+        const filename = segments[segments.length - 1];
+        const newPath = await join(destDir, collection, filename);
 
-      setProgress({
-        total: progress().total,
-        completed: progress().completed + 1,
-      });
-    }
+        await copyFile(image, newPath);
+
+        setProgress({
+          total: progress().total,
+          completed: progress().completed + 1,
+        });
+      }
+    });
+
+    onCleanup(() => {
+      waitForFiles.then((f) => f());
+    });
   };
 
   const selectFiles = async (collection: string) => {

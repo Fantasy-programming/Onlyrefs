@@ -1,6 +1,4 @@
-import { listen } from "@tauri-apps/api/event";
-import BoardItem from "../BoardItem";
-import { BoardItemSkeleton } from "../BoardItemSkelettong";
+import { BoardItem, BoardItemSkeleton } from "../BoardItem/BoardItem";
 import { Progress, ProgressValueLabel } from "../ui/progress";
 import {
   onMount,
@@ -31,6 +29,10 @@ const Board = ({ collection, home }: BoardProps) => {
   const getImages = async () => {
     const entries = await getCollection(collection);
 
+    if (!entries) {
+      return;
+    }
+
     const images: string[] = [];
 
     for (const entry of entries) {
@@ -39,13 +41,6 @@ const Board = ({ collection, home }: BoardProps) => {
     }
 
     setImages(images);
-  };
-
-  const imageDrop = () => {
-    listen("tauri://file-drop", async (event) => {
-      const files = event.payload as string[];
-      await dropFiles(collection, files);
-    });
   };
 
   createEffect(
@@ -59,7 +54,7 @@ const Board = ({ collection, home }: BoardProps) => {
   });
 
   return (
-    <main class="w-full pt-20 h-screen">
+    <main class="w-full pt-16 h-screen">
       <div class="mb-8 flex justify-between">
         <Show when={home}>
           <h1 class="text-4xl text-primary-foreground uppercase italic">
@@ -78,7 +73,7 @@ const Board = ({ collection, home }: BoardProps) => {
         class="w-full h-full relative"
         items={images()}
         columns={breakpoints()}
-        onMouseEnter={imageDrop}
+        onMouseEnter={() => dropFiles(collection)}
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
