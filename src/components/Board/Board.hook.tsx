@@ -13,6 +13,15 @@ export const useFileSelector = (): useFileSelectorReturnType => {
   });
 
   const dropFiles = async (collection: string) => {
+    const removeFileDropListener = () => {
+      if (waitForFiles) {
+        waitForFiles.then((f) => f());
+        document.removeEventListener("mouseleave", removeFileDropListener);
+      }
+    };
+
+    document.addEventListener("mouseleave", removeFileDropListener);
+
     const waitForFiles = listen("tauri://file-drop", async (event) => {
       const files = event.payload as string[];
 
@@ -42,6 +51,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
 
     onCleanup(() => {
       waitForFiles.then((f) => f());
+      document.removeEventListener("mouseleave", removeFileDropListener);
     });
   };
 
