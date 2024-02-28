@@ -29,6 +29,7 @@ export interface BoardItemProps {
   image: SourceRef;
   collection: string;
   collections: Accessor<FileEntry[]>;
+  refresh: () => void;
   index: number;
 }
 
@@ -41,6 +42,7 @@ export const BoardItem = ({
   image,
   collection,
   collections,
+  refresh,
   index,
 }: BoardItemProps) => {
   const getFileExtension = (filename: string): string => {
@@ -60,6 +62,7 @@ export const BoardItem = ({
           collectionName={collection}
           collections={collections}
           refID={image.fileName}
+          refresh={refresh}
         >
           <VideoItem image={image} index={index} />
         </RefContextMenu>
@@ -69,6 +72,7 @@ export const BoardItem = ({
         collectionName={collection}
         collections={collections}
         refID={image.fileName}
+        refresh={refresh}
       >
         <ImageItem image={image} index={index} />
       </RefContextMenu>
@@ -76,6 +80,7 @@ export const BoardItem = ({
   );
 };
 
+// Show an image or gif
 const ImageItem = ({ image, index }: BoardItem) => {
   return (
     <div
@@ -90,6 +95,7 @@ const ImageItem = ({ image, index }: BoardItem) => {
   );
 };
 
+// Render a video into the board
 const VideoItem = ({ image, index }: BoardItem) => {
   return (
     <div
@@ -115,6 +121,7 @@ const VideoItem = ({ image, index }: BoardItem) => {
 interface RefContextMenuProps {
   collectionName: string;
   collections: Accessor<FileEntry[]>;
+  refresh: () => void;
   refID: string | undefined;
 }
 
@@ -130,6 +137,7 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
     }
     await moveRef(props.collectionName, collection, props.refID);
     setBoard(collection);
+    props.refresh();
   };
 
   return (
@@ -157,11 +165,12 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
             </ContextMenuPortal>
           </ContextMenuSub>
           <ContextMenuItem
-            onSelect={() => {
+            onSelect={async () => {
               if (props.refID === undefined) {
                 return;
               }
-              deleteRef(props.collectionName, props.refID);
+              await deleteRef(props.collectionName, props.refID);
+              props.refresh();
             }}
           >
             <span>Delete Ref</span>

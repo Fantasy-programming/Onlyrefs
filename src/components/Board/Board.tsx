@@ -93,6 +93,7 @@ const Board = ({ collection, home }: BoardProps) => {
               image={item}
               collection={collection}
               collections={collections}
+              refresh={getImages}
               index={index()}
             />
           </Suspense>
