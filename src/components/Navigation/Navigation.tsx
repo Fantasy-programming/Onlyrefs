@@ -1,6 +1,6 @@
 import { useColorMode } from "@kobalte/core";
 import { FiSettings, FiSun, FiMoon, FiGrid } from "solid-icons/fi";
-import { Toggle } from "./ui/toggle";
+import { Toggle } from "../ui/toggle";
 import { Show } from "solid-js";
 
 export const Navigation = () => {

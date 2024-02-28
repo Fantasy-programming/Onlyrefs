@@ -1,4 +1,4 @@
-import { Navigation, LeftNav } from "./components/Navigation";
+import { Navigation, LeftNav } from "./components/Navigation/Navigation";
 import { RouteSectionProps } from "@solidjs/router";
 import "./App.css";
 
