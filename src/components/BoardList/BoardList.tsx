@@ -13,6 +13,7 @@ const BoardList = () => {
       dir: BaseDirectory.AppData,
     });
     const boards: string[] = [];
+
     for (const entry of entries) {
       if (entry?.name) {
         boards.push(entry?.name);
@@ -26,12 +27,12 @@ const BoardList = () => {
   });
 
   return (
-    <main class="grid grid-cols-fluid gap-10 ">
+    <main class="grid grid-cols-fluid gap-10 mx-2">
       <For each={boards()}>
         {(board) => (
           <>
             <a
-              class="h-[300px] max-w-xs rounded-md relative bg-primary-foreground/10 bg-clip-padding backdrop-filter backdrop-blur-3xl bg-opacity-70 shadow-lg hover:shadow-xl hover:shadow-primary-foreground/20 transition-all duration-300"
+              class="h-[300px] max-w-xs onlyrefNoise rounded-md relative bg-primary-foreground/10 bg-clip-padding backdrop-filter backdrop-blur-3xl bg-opacity-70 shadow-subtleBtn  hover:shadow-sm hover:shadow-accent dark:hover:shadow-primary-foreground/20 transition-all duration-300"
               href={`/boards/${board}`}
             >
               <span class="text-2xl text-primary-foreground uppercase italic absolute bottom-4 left-1/2  -translate-x-1/2 -translate-y-1/2">

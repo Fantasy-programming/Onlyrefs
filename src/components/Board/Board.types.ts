@@ -15,3 +15,8 @@ export type useFileSelectorReturnType = [
   selectDrop: (collection: string) => Promise<void>,
   progress: Accessor<ProgressionProps>,
 ];
+
+export interface SourceRef {
+  source: string;
+  fileName: string | undefined;
+}

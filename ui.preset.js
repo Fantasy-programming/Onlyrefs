@@ -104,6 +104,10 @@ module.exports = {
         serif: "var(--font-serif)",
         sans: "var(--font-sans)",
       },
+      boxShadow: {
+        subtleBtn:
+          "0 2px 2px rgba(0, 0, 0, 0.19), 0 2px 2px rgba(0, 0, 0, 0.23), inset 2px 2px 2px 0 rgba(255, 255, 255, 0.05)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

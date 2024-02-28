@@ -10,12 +10,15 @@ import {
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import { Mason, createMasonryBreakpoints } from "solid-mason";
-import { getCollection, convertSrc } from "../../lib/helper";
+import { getCollection, convertSrc, getCollections } from "../../lib/helper";
 import { useFileSelector } from "./Board.hook";
-import { BoardProps } from "./Board.types";
+import { BoardProps, SourceRef } from "./Board.types";
+import { Button } from "../ui/button";
+import { FileEntry } from "@tauri-apps/api/fs";
 
 const Board = ({ collection, home }: BoardProps) => {
-  const [images, setImages] = createSignal<string[]>([]);
+  const [images, setImages] = createSignal<SourceRef[]>([]);
+  const [collections, setCollections] = createSignal<FileEntry[]>([]);
   const [selectFiles, dropFiles, progress] = useFileSelector();
 
   const breakpoints = createMasonryBreakpoints(() => [
@@ -26,6 +29,13 @@ const Board = ({ collection, home }: BoardProps) => {
     { query: "(max-width: 768px)", columns: 2 },
   ]);
 
+  const fetchCollections = async () => {
+    const collections = await getCollections();
+    if (collections) {
+      setCollections(collections);
+    }
+  };
+
   const getImages = async () => {
     const entries = await getCollection(collection);
 
@@ -33,11 +43,11 @@ const Board = ({ collection, home }: BoardProps) => {
       return;
     }
 
-    const images: string[] = [];
+    const images: SourceRef[] = [];
 
     for (const entry of entries) {
       const src = convertSrc(entry.path);
-      images.push(src);
+      images.push({ source: src, fileName: entry.name });
     }
 
     setImages(images);
@@ -51,6 +61,7 @@ const Board = ({ collection, home }: BoardProps) => {
 
   onMount(() => {
     getImages();
+    fetchCollections();
     dropFiles(collection);
   });
 
@@ -62,12 +73,13 @@ const Board = ({ collection, home }: BoardProps) => {
             {collection}
           </h1>
         </Show>
-        <button
-          class="bg-slate-100 cursor-pointer  rounded-lg p-5 text-slate-800"
+        <Button
+          variant="default"
+          size="lg"
           onclick={() => selectFiles(collection)}
         >
           Save
-        </button>
+        </Button>
       </div>
       <Mason
         as="section"
@@ -77,7 +89,12 @@ const Board = ({ collection, home }: BoardProps) => {
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
-            <BoardItem image={item} index={index()} />
+            <BoardItem
+              image={item}
+              collection={collection}
+              collections={collections}
+              index={index()}
+            />
           </Suspense>
         )}
       </Mason>
