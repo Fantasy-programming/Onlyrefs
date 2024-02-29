@@ -1,6 +1,4 @@
-import { FileEntry } from "@tauri-apps/api/fs";
 import { deleteRef, moveRef } from "../../lib/helper.ts";
-import { SourceRef } from "../Board/Board.types.ts";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -21,22 +19,20 @@ import {
   Component,
   ParentProps,
   For,
-  Accessor,
   createSignal,
 } from "solid-js";
 
-export interface BoardItemProps {
-  image: SourceRef;
-  collection: string;
-  collections: Accessor<FileEntry[]>;
-  refresh: () => void;
-  index: number;
-}
+import {
+  BoardItemProps,
+  BoardItemType,
+  RefContextMenuProps,
+} from "./BoardItem.types.ts";
 
-interface BoardItem {
-  image: SourceRef;
-  index: number;
-}
+const refHeigts = ["440px", "300px", "400px", "500px", "350px"];
+
+const getRandomHeight = (array: string[]) => {
+  return array[Math.floor(Math.random() * array.length)];
+};
 
 export const BoardItem = ({
   image,
@@ -81,12 +77,12 @@ export const BoardItem = ({
 };
 
 // Show an image or gif
-const ImageItem = ({ image, index }: BoardItem) => {
+const ImageItem = ({ image }: BoardItemType) => {
   return (
     <div
       class={`rounded-xl m-3 cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
       style={{
-        height: index % 2 ? "300px" : "440px",
+        height: getRandomHeight(refHeigts),
         "background-image": `url(${image.source})`,
       }}
       tabindex="0"
@@ -96,12 +92,12 @@ const ImageItem = ({ image, index }: BoardItem) => {
 };
 
 // Render a video into the board
-const VideoItem = ({ image, index }: BoardItem) => {
+const VideoItem = ({ image }: BoardItemType) => {
   return (
     <div
       class="rounded-xl m-3 relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
       style={{
-        height: index % 2 ? "300px" : "440px",
+        height: getRandomHeight(refHeigts),
       }}
       tabindex="0"
       aria-label="video ref"
@@ -117,13 +113,6 @@ const VideoItem = ({ image, index }: BoardItem) => {
     </div>
   );
 };
-
-interface RefContextMenuProps {
-  collectionName: string;
-  collections: Accessor<FileEntry[]>;
-  refresh: () => void;
-  refID: string | undefined;
-}
 
 const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
   props,
