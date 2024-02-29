@@ -18,7 +18,10 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
-  alias: {
-    "~/": `./src`,
+
+  resolve: {
+    alias: {
+      "~/": import.meta.url.slice(7, import.meta.url.lastIndexOf("/")),
+    },
   },
 }));

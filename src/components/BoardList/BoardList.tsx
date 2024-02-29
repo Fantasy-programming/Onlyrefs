@@ -7,7 +7,7 @@ import { For, Accessor } from "solid-js";
 
 const BoardList = (props: { boards: Accessor<string[]> }) => {
   return (
-    <main class="grid grid-cols-fluid gap-10 mx-2">
+    <main class="grid grid-cols-fluid gap-10 mx-2 pb-20">
       <For each={props.boards()}>
         {(board) => (
           <>
