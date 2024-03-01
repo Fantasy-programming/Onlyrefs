@@ -1,5 +1,7 @@
+import { Motion } from "solid-motionone";
+
 const Settings = () => {
-  return <div>Settings</div>;
+  return <Motion.div>Settings</Motion.div>;
 };
 
 export default Settings;

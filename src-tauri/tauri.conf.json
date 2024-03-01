@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "only-refs",
-    "version": "0.0.1"
+    "version": "0.0.2"
   },
   "tauri": {
     "allowlist": {
@@ -43,6 +43,7 @@
         "close": true,
         "hide": true,
         "show": true,
+        "setTitle": true,
         "maximize": true,
         "minimize": true,
         "unmaximize": true,

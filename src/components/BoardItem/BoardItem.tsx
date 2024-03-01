@@ -28,6 +28,8 @@ import {
   RefContextMenuProps,
 } from "./BoardItem.types.ts";
 
+import { ViewBox } from "../ViewBox/ViewBox.tsx";
+
 const refHeigts = ["440px", "300px", "400px", "500px", "350px"];
 
 const getRandomHeight = (array: string[]) => {
@@ -79,15 +81,17 @@ export const BoardItem = ({
 // Show an image or gif
 const ImageItem = ({ image }: BoardItemType) => {
   return (
-    <div
-      class={`rounded-xl m-3 cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
-      style={{
-        height: getRandomHeight(refHeigts),
-        "background-image": `url(${image.source})`,
-      }}
-      tabindex="0"
-      aria-label="image ref"
-    />
+    <ViewBox source={image.source}>
+      <div
+        class={`rounded-xl m-3 cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
+        style={{
+          height: getRandomHeight(refHeigts),
+          "background-image": `url(${image.source})`,
+        }}
+        tabindex="0"
+        aria-label="image ref"
+      />
+    </ViewBox>
   );
 };
 

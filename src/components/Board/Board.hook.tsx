@@ -5,6 +5,7 @@ import { open } from "@tauri-apps/api/dialog";
 import { onCleanup, createSignal } from "solid-js";
 import { collectionExist, createCollection } from "../../lib/helper";
 import { ProgressionProps, useFileSelectorReturnType } from "./Board.types";
+import { invoke } from "@tauri-apps/api";
 
 export const useFileSelector = (): useFileSelectorReturnType => {
   let waitForFiles: Promise<() => void>;
@@ -22,22 +23,44 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       return;
     }
 
-    const exist = await collectionExist(collection);
-
-    if (!exist) {
-      await createCollection(collection);
-    }
-
     const destDir = await join(await appDataDir(), "collections");
-
     setProgress({ total: result.length, completed: 0 });
 
     for (const image of result) {
+      let randomID: string = "";
+
+      while (true) {
+        // Generate the ID
+        randomID = await invoke("generate_id", { lenght: 13 });
+        console.log(randomID);
+
+        // Check if the collection exists
+        const exist = await collectionExist(randomID);
+
+        // if it doesn't then continue the loop
+        if (!exist) {
+          break;
+        }
+      }
+
+      // Create the folder
+      await createCollection(randomID);
+
+      // Move the file to the folder
       const segments = image.split(sep);
       const filename = segments[segments.length - 1];
-      const newPath = await join(destDir, collection, filename);
-
+      const destinationFolder = await join(destDir, randomID);
+      const newPath = await join(destDir, randomID, filename);
       await copyFile(image, newPath);
+
+      // Generate the metadata (rust)
+      await invoke("generate_metadata", {
+        destPath: destinationFolder,
+        destFile: newPath,
+        refId: randomID,
+        fileName: filename,
+        collection: collection,
+      });
 
       setProgress({
         total: progress().total,
@@ -50,22 +73,44 @@ export const useFileSelector = (): useFileSelectorReturnType => {
     waitForFiles = listen("tauri://file-drop", async (event) => {
       const files = event.payload as string[];
 
-      const exist = await collectionExist(collection);
-
-      if (!exist) {
-        await createCollection(collection);
-      }
-
       const destDir = await join(await appDataDir(), "collections");
-
       setProgress({ total: files.length, completed: 0 });
 
       for (const image of files) {
+        let randomID: string = "";
+
+        while (true) {
+          // Generate the ID
+          randomID = await invoke("generate_id", { lenght: 13 });
+          console.log(randomID);
+
+          // Check if the collection exists
+          const exist = await collectionExist(randomID);
+
+          // if it doesn't then continue the loop
+          if (!exist) {
+            break;
+          }
+        }
+
+        // Create the folder
+        await createCollection(randomID);
+
+        // Move the file to the folder
         const segments = image.split(sep);
         const filename = segments[segments.length - 1];
-        const newPath = await join(destDir, collection, filename);
-
+        const destinationFolder = await join(destDir, randomID);
+        const newPath = await join(destDir, randomID, filename);
         await copyFile(image, newPath);
+
+        // Generate the metadata (rust)
+        await invoke("generate_metadata", {
+          destPath: destinationFolder,
+          destFile: newPath,
+          refId: randomID,
+          fileName: filename,
+          collection: collection,
+        });
 
         setProgress({
           total: progress().total,
