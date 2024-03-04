@@ -17,14 +17,14 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
             "padding-right": "calc((0.5rem * 2) + 400px)",
           }}
         >
-          <div class="rounded-xl p-7 w-full h-full flex justify-center items-center ">
+          <div class="rounded-xl p-7 w-full h-full flex justify-center items-center overflow-clip ">
             <img
               src={source.imagepath}
               loading="lazy"
-              class="rounded-xl"
+              class="rounded-xl w-auto h-auto"
               style={{
-                width: `min(100%, ${source.metadata.dimensions[0]}px )`,
-                height: `min(100%, ${source.metadata.dimensions[1]}px )`,
+                "max-width": `min(100%, ${source.metadata.dimensions[0]}px )`,
+                "max-height": `min(100%, ${source.metadata.dimensions[1]}px )`,
               }}
             />
           </div>
