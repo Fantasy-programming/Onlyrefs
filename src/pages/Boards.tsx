@@ -1,8 +1,7 @@
 import { Motion } from "solid-motionone";
 import { useParams } from "@solidjs/router";
-import { createCollection } from "../lib/helper";
+import { createCollection, getAllRefs, parseRefs } from "../lib/helper";
 import { JSX, Setter, Show, createSignal, onMount } from "solid-js";
-import { getCollections } from "../lib/helper";
 
 import Board from "../components/Board/Board";
 
@@ -29,12 +28,21 @@ const BoardsPage = () => {
   const boardID = decodeURIComponent(id);
 
   const getBoards = async () => {
-    const entries = await getCollections();
+    const data = await getAllRefs();
+
+    const refs = await Promise.all(
+      data.map(async (ref) => {
+        return await parseRefs(ref);
+      }),
+    );
+
     const boards: string[] = [];
 
-    for (const entry of entries) {
-      if (entry?.name) {
-        boards.push(entry?.name);
+    for (const ref of refs) {
+      if (ref.metadata?.collection) {
+        if (!boards.includes(ref.metadata.collection)) {
+          boards.push(ref.metadata.collection);
+        }
       }
     }
     setBoards(boards);
