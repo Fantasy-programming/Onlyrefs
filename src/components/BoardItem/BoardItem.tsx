@@ -22,13 +22,10 @@ import {
   createSignal,
 } from "solid-js";
 
-import {
-  BoardItemProps,
-  BoardItemType,
-  RefContextMenuProps,
-} from "./BoardItem.types.ts";
+import { BoardItemProps, RefContextMenuProps } from "./BoardItem.types.ts";
 
 import { ViewBox } from "../ViewBox/ViewBox.tsx";
+import { MediaRef } from "../../lib/types.ts";
 
 const refHeigts = ["440px", "300px", "400px", "500px", "350px"];
 
@@ -36,57 +33,44 @@ const getRandomHeight = (array: string[]) => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
-export const BoardItem = ({
-  image,
-  collection,
-  collections,
-  refresh,
-  index,
-}: BoardItemProps) => {
-  const getFileExtension = (filename: string): string => {
-    const lastDotIndex = filename.lastIndexOf(".");
-    return lastDotIndex !== -1 ? filename.slice(lastDotIndex + 1) : "";
-  };
-
-  const extension = getFileExtension(image.source);
-
-  const isVideo = ["mp4", "webm", "ogg"].includes(extension);
+export const BoardItem = ({ image, refresh }: BoardItemProps) => {
+  console.log(image);
+  const type = image.metadata.media_type.split("/")[0];
+  const isVideo = type === "video";
 
   return (
     <Show
       when={!isVideo}
       fallback={
         <RefContextMenu
-          collectionName={collection}
-          collections={collections}
-          refID={image.fileName}
+          collectionName={image.metadata.collection}
+          refID={image.metadata.id}
           refresh={refresh}
         >
-          <VideoItem image={image} index={index} />
+          <VideoItem mediaInfo={image} />
         </RefContextMenu>
       }
     >
       <RefContextMenu
-        collectionName={collection}
-        collections={collections}
-        refID={image.fileName}
+        collectionName={image.metadata.collection}
+        refID={image.metadata.id}
         refresh={refresh}
       >
-        <ImageItem image={image} index={index} />
+        <ImageItem mediaInfo={image} />
       </RefContextMenu>
     </Show>
   );
 };
 
-// Show an image or gif
-const ImageItem = ({ image }: BoardItemType) => {
+// Render an image into the board
+const ImageItem = (props: { mediaInfo: MediaRef }) => {
   return (
-    <ViewBox source={image.source}>
+    <ViewBox source={props.mediaInfo}>
       <div
         class={`rounded-xl m-3 cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
         style={{
           height: getRandomHeight(refHeigts),
-          "background-image": `url(${image.source})`,
+          "background-image": `url(${props.mediaInfo.imagepath})`,
         }}
         tabindex="0"
         aria-label="image ref"
@@ -96,7 +80,7 @@ const ImageItem = ({ image }: BoardItemType) => {
 };
 
 // Render a video into the board
-const VideoItem = ({ image }: BoardItemType) => {
+const VideoItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <div
       class="rounded-xl m-3 relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
@@ -108,7 +92,7 @@ const VideoItem = ({ image }: BoardItemType) => {
     >
       <video
         class="object-cover h-full w-full rounded-xl absolute"
-        src={image.source}
+        src={props.mediaInfo.imagepath}
         preload="auto"
         autoplay
         loop
@@ -146,13 +130,13 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
                   value={board()}
                   onChange={moveToCollection}
                 >
-                  <For each={props.collections()}>
-                    {(collection) => (
-                      <ContextMenuRadioItem value={collection.name ?? "all"}>
-                        {collection.name}
-                      </ContextMenuRadioItem>
-                    )}
-                  </For>
+                  {/* <For each={props.collections()}> */}
+                  {/*   {(collection) => ( */}
+                  {/*     <ContextMenuRadioItem value={collection.name ?? "all"}> */}
+                  {/*       {collection.name} */}
+                  {/*     </ContextMenuRadioItem> */}
+                  {/*   )} */}
+                  {/* </For> */}
                 </ContextMenuRadioGroup>
               </ContextMenuSubContent>
             </ContextMenuPortal>
@@ -162,7 +146,7 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
               if (props.refID === undefined) {
                 return;
               }
-              await deleteRef(props.collectionName, props.refID);
+              await deleteRef(props.refID);
               props.refresh();
             }}
           >

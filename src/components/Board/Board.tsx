@@ -10,17 +10,17 @@ import {
 } from "solid-js";
 import { Portal } from "solid-js/web";
 import { Mason, createMasonryBreakpoints } from "solid-mason";
-import { getCollection, convertSrc, getCollections } from "../../lib/helper";
+import { getAllRefs, parseRefs } from "../../lib/helper";
 import { useFileSelector } from "./Board.hook";
-import { BoardProps, SourceRef } from "./Board.types";
+import { BoardProps } from "./Board.types";
 import { Button } from "../ui/button";
-import { FileEntry } from "@tauri-apps/api/fs";
+import { MediaRef } from "../../lib/types";
 
 const Board = ({ collection, home }: BoardProps) => {
-  const [images, setImages] = createSignal<SourceRef[]>([]);
-  const [collections, setCollections] = createSignal<FileEntry[]>([]);
+  const [images, setImages] = createSignal<MediaRef[]>([]);
   const [selectFiles, dropFiles, progress] = useFileSelector();
 
+  // Change - Get the number from the global state
   const breakpoints = createMasonryBreakpoints(() => [
     { query: "(min-width: 1536px)", columns: 4 },
     { query: "(min-width: 1280px) and (max-width: 1536px)", columns: 4 },
@@ -29,28 +29,21 @@ const Board = ({ collection, home }: BoardProps) => {
     { query: "(max-width: 768px)", columns: 2 },
   ]);
 
-  const fetchCollections = async () => {
-    const collections = await getCollections();
-    if (collections) {
-      setCollections(collections);
-    }
-  };
-
+  // TODO: Cache the 2 first operations
   const getImages = async () => {
-    const entries = await getCollection(collection);
+    const data = await getAllRefs();
 
-    if (!entries) {
-      return;
-    }
+    const refs = await Promise.all(
+      data.map(async (ref) => {
+        return await parseRefs(ref);
+      }),
+    );
 
-    const images: SourceRef[] = [];
+    const filteredRefs = refs.filter(
+      (ref) => ref.metadata?.collection === collection,
+    );
 
-    for (const entry of entries) {
-      const src = convertSrc(entry.path);
-      images.push({ source: src, fileName: entry.name });
-    }
-
-    setImages(images);
+    setImages(filteredRefs);
   };
 
   createEffect(
@@ -61,7 +54,6 @@ const Board = ({ collection, home }: BoardProps) => {
 
   onMount(() => {
     getImages();
-    fetchCollections();
     dropFiles(collection);
   });
 
@@ -89,13 +81,7 @@ const Board = ({ collection, home }: BoardProps) => {
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
-            <BoardItem
-              image={item}
-              collection={collection}
-              collections={collections}
-              refresh={getImages}
-              index={index()}
-            />
+            <BoardItem image={item} refresh={getImages} />
           </Suspense>
         )}
       </Mason>

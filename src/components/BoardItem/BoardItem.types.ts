@@ -1,23 +1,18 @@
 import { SourceRef } from "../Board/Board.types.ts";
-import { Accessor } from "solid-js";
-import { FileEntry } from "@tauri-apps/api/fs";
+import { MediaRef } from "../../lib/types.ts";
 
 export interface BoardItemProps {
-  image: SourceRef;
-  collection: string;
-  collections: Accessor<FileEntry[]>;
+  image: MediaRef;
   refresh: () => void;
-  index: number;
 }
 
 export interface BoardItemType {
   image: SourceRef;
-  index: number;
 }
 
 export interface RefContextMenuProps {
   collectionName: string;
-  collections: Accessor<FileEntry[]>;
+  // collections: Accessor<FileEntry[]>;
   refresh: () => void;
   refID: string | undefined;
 }

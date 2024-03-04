@@ -6,7 +6,7 @@ const WindowDecoration = () => {
   return (
     <div
       data-tauri-drag-region
-      class=" h-8 rounded-t-md bg-transparent shadow-subtleBtn flex justify-end top-0 left-0 right-0 fixed select-none"
+      class=" h-8 rounded-t-md bg-transparent shadow-subtleBtn flex justify-end top-0 left-0 right-0 fixed select-none z-50"
     >
       <div
         class="inline-flex justify-center items-center h-8 w-8 hover:bg-foreground/10"
