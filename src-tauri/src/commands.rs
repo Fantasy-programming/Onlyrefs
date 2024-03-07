@@ -14,6 +14,7 @@ struct Metadata {
     dimensions: Option<(u32, u32)>,
     file_size: u64,
     collection: String,
+    colors: Vec<String>,
     created_at: String,
     updated_at: String,
 }
@@ -34,6 +35,7 @@ fn generate_metadata(
         dimensions: utils::analyze_dimensions(dest_file),
         file_size: utils::analyze_file_size(dest_file),
         collection: collection.to_string(),
+        colors: utils::extract_colors(dest_file),
         created_at: Local::now().to_string(),
         updated_at: Local::now().to_string(),
     };

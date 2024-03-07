@@ -35,6 +35,8 @@ mime_guess = "2.0.4"
 image = "0.24.9"
 window-shadows = "0.2.2"
 chrono = "0.4.34"
+kmeans_colors = "0.5.0"
+palette = "0.6.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
