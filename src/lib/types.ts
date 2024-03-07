@@ -6,6 +6,7 @@ export interface Metadata {
   dimensions: [number, number];
   file_size: number;
   collection: string;
+  colors: string[];
   created_at: string;
   updated_at: string;
 }
