@@ -31,16 +31,30 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
           <div class="colors absolute"></div>
         </div>
         <div
-          class="infobox z-10  top-0 right-0 my-2 mr-2 w-[400px] absolute bg-foreground/50   h-[95%] rounded-xl"
+          class="infobox z-10  top-0 right-0 my-2 mr-2 w-[400px] absolute bg-blue-950   h-[95%] rounded-xl"
           style={{
             height: "calc(100% - (0.5rem * 2))",
           }}
         >
           <header class="flex flex-col gap-3 p-7">
-            <input type="text" value={source.metadata.file_name} />
+            <input
+              type="text"
+              class="outline-none border-none h-[50px] text-4xl bg-transparent"
+              value={source.metadata.file_name}
+            />
             <span class="text-sm">{source.metadata.collection}</span>
           </header>
-          <div class="info">tags & such</div>
+          <div class="info">
+            <div>
+              <h4>MIND TAGS</h4>
+              <div class="tags" />
+              <h4>INFO</h4>
+              <div>
+                <span>Dimension: </span>
+                <span>{source.metadata.dimensions.join(" x ")}</span>
+              </div>
+            </div>
+          </div>
           <div class="actions absolute bottom-0 px-4 pb-4 w-full z-30"></div>
         </div>
       </DialogContent>

@@ -1,7 +1,7 @@
 import { Motion } from "solid-motionone";
 import { useParams } from "@solidjs/router";
-import { createCollection, getAllRefs, parseRefs } from "../lib/helper";
 import { JSX, Setter, Show, createSignal, onMount } from "solid-js";
+import { useRefSelector } from "../state/store";
 
 import Board from "../components/Board/Board";
 
@@ -23,25 +23,20 @@ import { Button } from "../components/ui/button";
 
 const BoardsPage = () => {
   const [boards, setBoards] = createSignal<string[]>([]);
+  const {
+    refService: { ref },
+  } = useRefSelector();
 
   const { id } = useParams();
   const boardID = decodeURIComponent(id);
 
   const getBoards = async () => {
-    const data = await getAllRefs();
-
-    const refs = await Promise.all(
-      data.map(async (ref) => {
-        return await parseRefs(ref);
-      }),
-    );
-
     const boards: string[] = [];
 
-    for (const ref of refs) {
-      if (ref.metadata?.collection) {
-        if (!boards.includes(ref.metadata.collection)) {
-          boards.push(ref.metadata.collection);
+    for (const refs of ref) {
+      if (refs.metadata?.collection) {
+        if (!boards.includes(refs.metadata.collection)) {
+          boards.push(refs.metadata.collection);
         }
       }
     }
@@ -54,7 +49,10 @@ const BoardsPage = () => {
 
   return (
     <>
-      <Show when={!id} fallback={<Board collection={boardID} home={true} />}>
+      <Show
+        when={!id}
+        fallback={<Board collection={boardID} home={true} refs={ref} />}
+      >
         <Motion.div animate={{ opacity: [0, 1] }} class="mt-20">
           <header class="flex items-center justify-between">
             <h1 class="text-3xl text-primary-foreground">Boards</h1>
@@ -79,7 +77,7 @@ const NewCollectionDialog = (props: { setter: Setter<string[]> }) => {
     const formData = new FormData(e?.currentTarget);
     const name = formData.get("name");
     if (name) {
-      await createCollection(name.toString());
+      // await createCollection(name.toString());
 
       props.setter((prev) => {
         return [...prev, name.toString()];

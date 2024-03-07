@@ -1,4 +1,4 @@
-import { deleteRef, moveRef } from "../../lib/helper.ts";
+import { deleteRef } from "../../lib/helper.ts";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,7 +9,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-  ContextMenuRadioItem,
+  // ContextMenuRadioItem,
   ContextMenuRadioGroup,
 } from "../ui/context-menu.tsx";
 import { Skeleton } from "../ui/skeleton";
@@ -18,7 +18,7 @@ import {
   children,
   Component,
   ParentProps,
-  For,
+  // For,
   createSignal,
 } from "solid-js";
 
@@ -34,7 +34,6 @@ const getRandomHeight = (array: string[]) => {
 };
 
 export const BoardItem = ({ image, refresh }: BoardItemProps) => {
-  console.log(image);
   const type = image.metadata.media_type.split("/")[0];
   const isVideo = type === "video";
 
@@ -64,13 +63,17 @@ export const BoardItem = ({ image, refresh }: BoardItemProps) => {
 
 // Render an image into the board
 const ImageItem = (props: { mediaInfo: MediaRef }) => {
+  const lowResImagePath = props.mediaInfo.low_res_imagepath;
+  const imagePath =
+    lowResImagePath !== "" ? lowResImagePath : props.mediaInfo.imagepath;
+
   return (
     <ViewBox source={props.mediaInfo}>
       <div
         class={`rounded-xl m-3 cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
         style={{
           height: getRandomHeight(refHeigts),
-          "background-image": `url(${props.mediaInfo.imagepath})`,
+          "background-image": `url(${imagePath})`,
         }}
         tabindex="0"
         aria-label="image ref"
@@ -112,7 +115,7 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
     if (!props.refID) {
       return;
     }
-    await moveRef(props.collectionName, collection, props.refID);
+    // await moveRef(props.collectionName, collection, props.refID);
     setBoard(collection);
     props.refresh();
   };

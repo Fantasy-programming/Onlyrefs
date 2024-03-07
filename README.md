@@ -1,8 +1,8 @@
 # Onlyrefs
 
-All your referenes in a single place
+All your references in a single place
 
-# Tech Stack
+## Tech Stack
 
 - Solidjs
 - Tauri (Rust)
@@ -10,4 +10,4 @@ All your referenes in a single place
 - Tailwindcss
 - SolidUI
 
-And much more, take a look at the package.json file
+And much more, take a look at the `package.json` file
