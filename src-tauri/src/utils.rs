@@ -1,5 +1,8 @@
 use image::{imageops, DynamicImage, GenericImageView, RgbaImage};
+use kmeans_colors::Sort;
+use kmeans_colors::{get_kmeans, Kmeans};
 use mime_guess::from_path;
+use palette::{FromColor, IntoColor, Lab, Pixel, Srgb};
 use std::fs;
 use std::path::Path;
 
@@ -9,6 +12,71 @@ pub fn determine_media_type(file_name: &str) -> String {
     } else {
         "application/octet-stream".to_string()
     }
+}
+
+pub fn extract_colors(file_path: &str) -> Vec<String> {
+    let pixels = read_image(file_path).unwrap();
+    dominant_colors(&pixels)
+}
+
+fn dominant_colors(pixels: &[u8]) -> Vec<String> {
+    // Convert RGB [u8] buffer to Lab for k-means.
+    let lab: Vec<Lab> = Srgb::from_raw_slice(pixels)
+        .iter()
+        .map(|x| x.into_format().into_color())
+        .collect();
+
+    // Iterate over the runs, keep the best results.
+    let mut result = Kmeans::new();
+    for i in 0..3 {
+        let run_result = get_kmeans(10, 20, 0.0, false, &lab, 1000 + i as u64);
+        if run_result.score < result.score {
+            result = run_result;
+        }
+    }
+
+    // Process centroid data.
+    let mut res = Lab::sort_indexed_colors(&result.centroids, &result.indices);
+
+    // Sort indexed colors by percentage.
+    res.sort_unstable_by(|a, b| {
+        (b.percentage)
+            .partial_cmp(&a.percentage)
+            .expect("Failed to compare values while sorting.")
+    });
+
+    // Uncomment to print RGB values and percentage.
+    /*for r in res.iter() {
+        let c: Srgb<u8> = Srgb::from_color(r.centroid).into_format();
+        println!(
+            "{} {} {} : {:.2}%",
+            c.red,
+            c.green,
+            c.blue,
+            r.percentage * 100f32
+        );
+    }*/
+
+    // Format colors as RGB HEX string.
+    let mut hex_colors = Vec::new();
+    for r in res.iter() {
+        let c: Srgb<u8> = Srgb::from_color(r.centroid).into_format();
+        let hex_str = format!("#{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
+        hex_colors.push(hex_str);
+    }
+    hex_colors
+}
+
+fn read_image(path: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let img = image::open(path)?;
+    img.resize(150, 150, image::imageops::Nearest);
+
+    let pixels = img
+        .pixels()
+        .flat_map(|p| [p.2 .0[0], p.2 .0[1], p.2 .0[2]])
+        .collect();
+
+    Ok(pixels)
 }
 
 pub fn analyze_dimensions(file_path: &str) -> Option<(u32, u32)> {
