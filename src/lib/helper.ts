@@ -4,54 +4,38 @@ import {
   readDir,
   readTextFile,
   removeFile,
-  renameFile,
   BaseDirectory,
   FileEntry,
 } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { MediaRef, Metadata } from "./types";
-import { COLLECTIONS_DIR } from "./config";
+import {
+  COLLECTIONS_DIR,
+  breakpoints_4,
+  breakpoints_5,
+  breakpoints_6,
+} from "./config";
 
 /// Check if a ref with the given id exists
-export const collectionExist = async (collectionName: string) => {
+export const refExist = async (collectionName: string) => {
   return exists(`${COLLECTIONS_DIR}/${collectionName}`, {
     dir: BaseDirectory.AppData,
   });
 };
 
-/// Create a new ref directory
-export const createCollection = async (collectionName: string) => {
+// Create a new ref directory
+export const createRefDir = async (collectionName: string) => {
   await createDir(`${COLLECTIONS_DIR}/${collectionName}`, {
     dir: BaseDirectory.AppData,
     recursive: true,
   });
 };
 
-/// Delete a ref with its metadata
-export const deleteRef = async (collectionName: string) => {
-  await removeFile(`${COLLECTIONS_DIR}/${collectionName}`, {
+// Delete a ref with its metadata
+export const deleteRef = async (collectionID: string) => {
+  await removeFile(`${COLLECTIONS_DIR}/${collectionID}`, {
     dir: BaseDirectory.AppData,
   });
-};
-
-// DEPRECATED: Has to be changed to reflect the new file structure
-export const moveRef = async (
-  CurrentCollectionName: string,
-  TargetCollectionName: string,
-  ref: string,
-) => {
-  await renameFile(
-    `${COLLECTIONS_DIR}/${CurrentCollectionName}/${ref}`,
-    `${COLLECTIONS_DIR}/${TargetCollectionName}/${ref}`,
-    {
-      dir: BaseDirectory.AppData,
-    },
-  );
-};
-
-// DEPRECATED: Has to be removed
-export const convertSrc = (imagePath: string) => {
-  return convertFileSrc(imagePath);
 };
 
 export const getAllRefs = async () => {
@@ -74,6 +58,7 @@ export const getAllRefs = async () => {
 export const parseRefs = async (refs: FileEntry[]) => {
   let result: MediaRef = {
     imagepath: "",
+    low_res_imagepath: "",
     metapath: "",
     metadata: undefined!,
   };
@@ -81,7 +66,9 @@ export const parseRefs = async (refs: FileEntry[]) => {
   const promises = refs.map(async (ref) => {
     if (ref.name === "metadata.json") {
       result.metapath = ref.path;
-      result.metadata = await readMetadata(ref.path);
+      result.metadata = await parseMetadata(ref.path);
+    } else if (ref.name?.startsWith("lower_")) {
+      result.low_res_imagepath = convertFileSrc(ref.path);
     } else {
       result.imagepath = convertFileSrc(ref.path);
     }
@@ -92,31 +79,30 @@ export const parseRefs = async (refs: FileEntry[]) => {
   return result;
 };
 
-// Read the metadata of a ref
-export const readMetadata = async (path: string): Promise<Metadata> => {
+// Parse the metadata of a ref
+export const parseMetadata = async (path: string): Promise<Metadata> => {
   const content = await readTextFile(path);
   return JSON.parse(content);
 };
 
-// DEPRECATED: Has to be removed or changed to reflect the new file structure
-export const getCollection = async (collection: string) => {
-  const exist = await collectionExist(collection);
-
-  if (!exist) {
-    return null;
-  }
-
-  const entries = await readDir(`${COLLECTIONS_DIR}/${collection}`, {
-    dir: BaseDirectory.AppData,
-  });
-  return entries;
+export const fetchRefs = async () => {
+  const data = await getAllRefs();
+  return await Promise.all(
+    data.map(async (ref) => {
+      return await parseRefs(ref);
+    }),
+  );
 };
 
-// Deprecated: Has to be removed
-export const getCollections = async () => {
-  const entries = await readDir(COLLECTIONS_DIR, {
-    dir: BaseDirectory.AppData,
-  });
-
-  return entries;
+export const getBreakpoints = (columns: number) => {
+  switch (columns) {
+    case 4:
+      return breakpoints_4;
+    case 5:
+      return breakpoints_5;
+    case 6:
+      return breakpoints_6;
+    default:
+      return breakpoints_4;
+  }
 };

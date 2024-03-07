@@ -2,7 +2,7 @@ import { appWindow } from "@tauri-apps/api/window";
 import { RiSystemCloseLine } from "solid-icons/ri";
 import { VsChromeMinimize, VsChromeMaximize } from "solid-icons/vs";
 
-const WindowDecoration = () => {
+export const WindowDecoration = () => {
   return (
     <div
       data-tauri-drag-region
@@ -32,5 +32,3 @@ const WindowDecoration = () => {
     </div>
   );
 };
-
-export default WindowDecoration;

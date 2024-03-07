@@ -3,7 +3,7 @@ import { copyFile } from "@tauri-apps/api/fs";
 import { appDataDir, join, sep } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/api/dialog";
 import { onCleanup, createSignal } from "solid-js";
-import { collectionExist, createCollection } from "../../lib/helper";
+import { refExist, createRefDir } from "../../lib/helper";
 import { ProgressionProps, useFileSelectorReturnType } from "./Board.types";
 import { invoke } from "@tauri-apps/api";
 
@@ -35,7 +35,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
         console.log(randomID);
 
         // Check if the collection exists
-        const exist = await collectionExist(randomID);
+        const exist = await refExist(randomID);
 
         // if it doesn't then continue the loop
         if (!exist) {
@@ -44,7 +44,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       }
 
       // Create the folder
-      await createCollection(randomID);
+      await createRefDir(randomID);
 
       // Move the file to the folder
       const segments = image.split(sep);
@@ -85,7 +85,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
           console.log(randomID);
 
           // Check if the collection exists
-          const exist = await collectionExist(randomID);
+          const exist = await refExist(randomID);
 
           // if it doesn't then continue the loop
           if (!exist) {
@@ -94,7 +94,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
         }
 
         // Create the folder
-        await createCollection(randomID);
+        await createRefDir(randomID);
 
         // Move the file to the folder
         const segments = image.split(sep);

@@ -1,4 +1,4 @@
-import WindowDecoration from "./components/WindowDecoration";
+import { WindowDecoration } from "./components/WindowDecoration";
 import { Navigation, LeftNav } from "./components/Navigation/Navigation";
 import { RouteSectionProps } from "@solidjs/router";
 import "./App.css";

@@ -2,58 +2,43 @@ import { BoardItem, BoardItemSkeleton } from "../BoardItem/BoardItem";
 import { Progress, ProgressValueLabel } from "../ui/progress";
 import {
   onMount,
-  createSignal,
   Show,
   createEffect,
+  createSignal,
+  createMemo,
   on,
   Suspense,
 } from "solid-js";
 import { Portal } from "solid-js/web";
-import { Mason, createMasonryBreakpoints } from "solid-mason";
-import { getAllRefs, parseRefs } from "../../lib/helper";
+import { Mason } from "solid-mason";
 import { useFileSelector } from "./Board.hook";
 import { BoardProps } from "./Board.types";
 import { Button } from "../ui/button";
-import { MediaRef } from "../../lib/types";
+import { gridSizeHook } from "../../state/hook";
+import { getBreakpoints } from "../../lib/helper";
+import { useRefSelector } from "../../state/store";
 
-const Board = ({ collection, home }: BoardProps) => {
-  const [images, setImages] = createSignal<MediaRef[]>([]);
+const Board = ({ collection, home, refs }: BoardProps) => {
+  // TODO: Make this dude rerender
   const [selectFiles, dropFiles, progress] = useFileSelector();
+  const [gridSize] = gridSizeHook();
+  const [localGridSize, setLocalGridSize] = createSignal(gridSize());
+  const breakPoints = createMemo(() => getBreakpoints(localGridSize()));
+  const {
+    refService: { refetchRefs },
+  } = useRefSelector();
 
-  // Change - Get the number from the global state
-  const breakpoints = createMasonryBreakpoints(() => [
-    { query: "(min-width: 1536px)", columns: 4 },
-    { query: "(min-width: 1280px) and (max-width: 1536px)", columns: 4 },
-    { query: "(min-width: 1024px) and (max-width: 1280px)", columns: 3 },
-    { query: "(min-width: 768px) and (max-width: 1024px)", columns: 2 },
-    { query: "(max-width: 768px)", columns: 2 },
-  ]);
-
-  // TODO: Cache the 2 first operations
-  const getImages = async () => {
-    const data = await getAllRefs();
-
-    const refs = await Promise.all(
-      data.map(async (ref) => {
-        return await parseRefs(ref);
-      }),
-    );
-
-    const filteredRefs = refs.filter(
-      (ref) => ref.metadata?.collection === collection,
-    );
-
-    setImages(filteredRefs);
-  };
+  createEffect(() => {
+    setLocalGridSize(gridSize());
+  });
 
   createEffect(
     on(progress, () => {
-      getImages();
+      refetchRefs();
     }),
   );
 
   onMount(() => {
-    getImages();
     dropFiles(collection);
   });
 
@@ -76,12 +61,12 @@ const Board = ({ collection, home }: BoardProps) => {
       <Mason
         as="section"
         class="w-full h-full relative"
-        items={images()}
-        columns={breakpoints()}
+        items={refs}
+        columns={breakPoints()()}
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
-            <BoardItem image={item} refresh={getImages} />
+            <BoardItem image={item} refresh={() => {}} />
           </Suspense>
         )}
       </Mason>
