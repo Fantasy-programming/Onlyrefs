@@ -15,6 +15,10 @@ pub fn determine_media_type(file_name: &str) -> String {
 }
 
 pub fn extract_colors(file_path: &str) -> Vec<String> {
+    let media_type = determine_media_type(file_path);
+    if media_type.contains("video") {
+        return Vec::new();
+    }
     let pixels = read_image(file_path).unwrap();
     dominant_colors(&pixels)
 }
@@ -106,7 +110,7 @@ pub fn generate_image(
 
     // Open and resize the image
     let mut image = image::open(file_path).expect("Failed to open image");
-    image = image.resize_exact(height, width, image::imageops::FilterType::Lanczos3);
+    image = image.resize(height, width, image::imageops::FilterType::Lanczos3);
 
     // lower the quality
     let lower_quality_image = reduce_quality(image, target_size);
