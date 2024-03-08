@@ -128,7 +128,7 @@ function createMason(el: HTMLElement, state: MasonState): void {
   }
   const targetColumn = getLongestColumn(newColumns);
   const currentColumnHeight = newColumns[targetColumn];
-  el.style.height = `${currentColumnHeight}px`;
+  el.style.height = `${currentColumnHeight + (newColumns.length - 1) * state.gap}px`;
   state.width = containerWidth;
   state.columns = newColumns;
 }
@@ -200,6 +200,7 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
   props: MasonProps<Data, T>,
 ): JSX.Element {
   const [ref, setRef] = createSignal<HTMLElement>();
+  const [columns, setColumns] = createSignal(props.columns);
 
   createEffect(() => {
     const el = ref();
@@ -211,7 +212,7 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
 
       const state: MasonState = {
         width: 0,
-        columns: new Array<number>(props.columns).fill(0),
+        columns: new Array<number>(columns()).fill(0),
         elements: [],
         heights: [],
         gap: props.gap ?? 0,
@@ -224,6 +225,15 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
       createMemo(
         on(
           () => props.items,
+          () => {
+            recalculate();
+          },
+        ),
+      );
+
+      createMemo(
+        on(
+          () => columns,
           () => {
             recalculate();
           },
@@ -251,6 +261,10 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
         observer.disconnect();
       });
     }
+  });
+
+  createEffect(() => {
+    setColumns(props.columns);
   });
 
   return Dynamic<T>(

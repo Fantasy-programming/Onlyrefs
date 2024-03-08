@@ -74,11 +74,9 @@ const ImageItem = (props: { mediaInfo: MediaRef }) => {
       <div
         class={`rounded-xl  cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
         style={{
-          height: getRandomHeight(refHeigts),
+          "aspect-ratio": `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
           "background-image": `url(${imagePath})`,
         }}
-        tabindex="0"
-        aria-label="image ref"
       />
     </ViewBox>
   );
@@ -104,8 +102,6 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
       style={{
         height: getRandomHeight(refHeigts),
       }}
-      tabindex="0"
-      aria-label="video ref"
     >
       <video
         class="object-cover h-full w-full rounded-xl absolute"
