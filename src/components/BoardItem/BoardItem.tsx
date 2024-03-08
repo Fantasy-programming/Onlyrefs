@@ -1,4 +1,6 @@
 import { deleteRef } from "../../lib/helper.ts";
+import { createTiptapEditor } from "solid-tiptap";
+import StarterKit from "@tiptap/starter-kit";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -80,6 +82,18 @@ const ImageItem = (props: { mediaInfo: MediaRef }) => {
       />
     </ViewBox>
   );
+};
+
+export const NewNote = () => {
+  let ref!: HTMLDivElement;
+
+  const editor = createTiptapEditor(() => ({
+    element: ref!,
+    extensions: [StarterKit],
+    content: `<p>Example Text</p>`,
+  }));
+
+  return <div id="editor" ref={ref} />;
 };
 
 // Render a video into the board

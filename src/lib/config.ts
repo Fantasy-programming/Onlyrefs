@@ -1,4 +1,4 @@
-import { createMasonryBreakpoints } from "solid-mason";
+import { createMasonryBreakpoints } from "../components/Mason";
 export const COLLECTIONS_DIR = "collections";
 
 export const breakpoints_4 = createMasonryBreakpoints(() => [
