@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { MediaRef } from "../../lib/types";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
+// TODO: Make it work for videos
+
 export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
   children,
   source,
@@ -39,7 +41,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
             <For each={source.metadata.colors}>
               {(color, index) => (
                 <>
-                  <Tooltip flip={true} placement="top" openDelay={150}>
+                  <Tooltip placement="top" openDelay={150}>
                     <TooltipTrigger
                       class="transition-all delay-200"
                       onClick={async () => await writeText(color)}
@@ -60,31 +62,40 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
           </div>
         </div>
         <div
-          class="infobox z-10  top-0 right-0 my-2 mr-2 w-[400px] absolute bg-background   h-[95%] rounded-xl"
+          class=" z-10  top-0 right-0 my-2 mr-2 w-[400px] absolute bg-background    h-[95%] rounded-xl"
           style={{
             height: "calc(100% - (0.5rem * 2))",
           }}
         >
-          <header class="flex flex-col gap-3 p-7">
+          <header class="flex flex-col gap-3 p-7 bg-gradient-to-tr from-primary/20 to-background/80  rounded-t-xl ">
             <input
               type="text"
-              class="outline-none border-none h-[50px] text-4xl bg-transparent"
-              value={source.metadata.file_name}
+              class="outline-none border-none h-[50px] text-3xl bg-transparent "
+              value={source.metadata.name}
+              autofocus
             />
-            <span class="text-sm">{source.metadata.collection}</span>
+            <span class="text-sm">{source.metadata.created_at}</span>
           </header>
-          <div class="info">
+          <div class=" p-4">
             <div>
-              <h4>MIND TAGS</h4>
-              <div class="tags" />
-              <h4>INFO</h4>
-              <div>
-                <span>Dimension: </span>
-                <span>{source.metadata.dimensions.join(" x ")}</span>
+              <h4 class="uppercase">Tags</h4>
+              <div class="tags mb-3" />
+              <h4 class="uppercase">Info</h4>
+              <div class="mb-3">
+                <div class="text-lg">
+                  <span>Dimension: </span>
+                  <span>{source.metadata.dimensions.join(" x ")}</span>
+                </div>
+                <div class="text-lg">
+                  <span>File Size: </span>
+                  <span>{source.metadata.file_size}</span>
+                </div>
+                <div class="text-lg">
+                  <span>File type: </span>
+                  <span>{source.metadata.media_type}</span>
+                </div>
               </div>
-              <div>
-                <span>Date_added:</span>
-              </div>
+              <h4 class="uppercase">Notes</h4>
             </div>
           </div>
           <div class="actions absolute bottom-0 px-4 pb-4 w-full z-30"></div>

@@ -14,5 +14,5 @@ export interface RefContextMenuProps {
   collectionName: string;
   // collections: Accessor<FileEntry[]>;
   refresh: () => void;
-  refID: string | undefined;
+  refID: string;
 }
