@@ -10,7 +10,7 @@ import {
   Suspense,
 } from "solid-js";
 import { Portal } from "solid-js/web";
-import { Mason } from "solid-mason";
+import { Mason } from "../Mason";
 import { useFileSelector } from "./Board.hook";
 import { BoardProps } from "./Board.types";
 import { Button } from "../ui/button";
@@ -62,6 +62,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
         as="section"
         class="w-full h-full relative"
         items={refs}
+        gap={20}
         columns={breakPoints()()}
       >
         {(item, index) => (

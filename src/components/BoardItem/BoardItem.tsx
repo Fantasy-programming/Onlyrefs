@@ -70,7 +70,7 @@ const ImageItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <ViewBox source={props.mediaInfo}>
       <div
-        class={`rounded-xl m-3 cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
+        class={`rounded-xl  cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
         style={{
           height: getRandomHeight(refHeigts),
           "background-image": `url(${imagePath})`,
@@ -86,7 +86,7 @@ const ImageItem = (props: { mediaInfo: MediaRef }) => {
 const VideoItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <div
-      class="rounded-xl m-3 relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
+      class="rounded-xl p-3 relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
       style={{
         height: getRandomHeight(refHeigts),
       }}
