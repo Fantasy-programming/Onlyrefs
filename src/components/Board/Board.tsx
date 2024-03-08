@@ -4,7 +4,6 @@ import {
   onMount,
   Show,
   createEffect,
-  createSignal,
   createMemo,
   on,
   Suspense,
@@ -22,15 +21,10 @@ const Board = ({ collection, home, refs }: BoardProps) => {
   // TODO: Make this dude rerender
   const [selectFiles, dropFiles, progress] = useFileSelector();
   const [gridSize] = gridSizeHook();
-  const [localGridSize, setLocalGridSize] = createSignal(gridSize());
-  const breakPoints = createMemo(() => getBreakpoints(localGridSize()));
+  const breakPoints = createMemo(() => getBreakpoints(gridSize()));
   const {
     refService: { refetchRefs },
   } = useRefSelector();
-
-  createEffect(() => {
-    setLocalGridSize(gridSize());
-  });
 
   createEffect(
     on(progress, () => {
