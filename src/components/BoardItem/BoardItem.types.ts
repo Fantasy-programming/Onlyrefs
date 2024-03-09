@@ -3,7 +3,6 @@ import { MediaRef } from "../../lib/types.ts";
 
 export interface BoardItemProps {
   image: MediaRef;
-  refresh: () => void;
 }
 
 export interface BoardItemType {
@@ -12,7 +11,6 @@ export interface BoardItemType {
 
 export interface RefContextMenuProps {
   collectionName: string;
-  // collections: Accessor<FileEntry[]>;
-  refresh: () => void;
   refID: string;
+  // collections: Accessor<FileEntry[]>;
 }

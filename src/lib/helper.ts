@@ -3,7 +3,7 @@ import {
   createDir,
   readDir,
   readTextFile,
-  removeFile,
+  removeDir,
   BaseDirectory,
   FileEntry,
 } from "@tauri-apps/api/fs";
@@ -33,8 +33,9 @@ export const createRefDir = async (collectionName: string) => {
 
 // Delete a ref with its metadata
 export const deleteRef = async (collectionID: string) => {
-  await removeFile(`${COLLECTIONS_DIR}/${collectionID}`, {
+  await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
     dir: BaseDirectory.AppData,
+    recursive: true,
   });
 };
 

@@ -45,6 +45,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
                     <TooltipTrigger
                       class="transition-all delay-200"
                       onClick={async () => await writeText(color)}
+                      as="div"
                     >
                       <div
                         class="w-10 h-10 rounded-full"

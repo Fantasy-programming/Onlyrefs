@@ -1,6 +1,12 @@
+import { Show, children, Component, ParentProps, createSignal } from "solid-js";
 import { deleteRef } from "../../lib/helper.ts";
-import { createTiptapEditor } from "solid-tiptap";
-import StarterKit from "@tiptap/starter-kit";
+import { useRefSelector } from "../../state/store";
+// import { createTiptapEditor } from "solid-tiptap";
+// import StarterKit from "@tiptap/starter-kit";
+
+import { BoardItemProps, RefContextMenuProps } from "./BoardItem.types.ts";
+import { MediaRef } from "../../lib/types.ts";
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -11,23 +17,10 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-  // ContextMenuRadioItem,
   ContextMenuRadioGroup,
 } from "../ui/context-menu.tsx";
 import { Skeleton } from "../ui/skeleton";
-import {
-  Show,
-  children,
-  Component,
-  ParentProps,
-  // For,
-  createSignal,
-} from "solid-js";
-
-import { BoardItemProps, RefContextMenuProps } from "./BoardItem.types.ts";
-
 import { ViewBox } from "../ViewBox/ViewBox.tsx";
-import { MediaRef } from "../../lib/types.ts";
 
 const refHeigts = ["440px", "300px", "400px", "500px", "350px"];
 
@@ -35,7 +28,7 @@ const getRandomHeight = (array: string[]) => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
-export const BoardItem = ({ image, refresh }: BoardItemProps) => {
+export const BoardItem = ({ image }: BoardItemProps) => {
   const type = image.metadata.media_type.split("/")[0];
   const isVideo = type === "video";
 
@@ -46,7 +39,6 @@ export const BoardItem = ({ image, refresh }: BoardItemProps) => {
         <RefContextMenu
           collectionName={image.metadata.collection}
           refID={image.metadata.id}
-          refresh={refresh}
         >
           <VideoItem mediaInfo={image} />
         </RefContextMenu>
@@ -55,7 +47,6 @@ export const BoardItem = ({ image, refresh }: BoardItemProps) => {
       <RefContextMenu
         collectionName={image.metadata.collection}
         refID={image.metadata.id}
-        refresh={refresh}
       >
         <ImageItem mediaInfo={image} />
       </RefContextMenu>
@@ -85,11 +76,11 @@ const ImageItem = (props: { mediaInfo: MediaRef }) => {
 export const NewNote = () => {
   let ref!: HTMLDivElement;
 
-  const editor = createTiptapEditor(() => ({
-    element: ref!,
-    extensions: [StarterKit],
-    content: `<p>Example Text</p>`,
-  }));
+  // const editor = createTiptapEditor(() => ({
+  //   element: ref!,
+  //   extensions: [StarterKit],
+  //   content: `<p>Example Text</p>`,
+  // }));
 
   return <div id="editor" ref={ref} />;
 };
@@ -98,7 +89,7 @@ export const NewNote = () => {
 const VideoItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <div
-      class="rounded-xl p-3 relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
+      class="rounded-xl relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
       style={{
         height: getRandomHeight(refHeigts),
       }}
@@ -121,13 +112,16 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
   const c = children(() => props.children);
   const [board, setBoard] = createSignal(props.collectionName);
 
+  const {
+    refService: { refetchRefs },
+  } = useRefSelector();
+
   const moveToCollection = async (collection: string) => {
     if (!props.refID) {
       return;
     }
-    // await moveRef(props.collectionName, collection, props.refID);
     setBoard(collection);
-    props.refresh();
+    await refetchRefs();
   };
 
   return (
@@ -160,7 +154,7 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
                 return;
               }
               await deleteRef(props.refID);
-              props.refresh();
+              await refetchRefs();
             }}
           >
             <span>Delete Ref</span>

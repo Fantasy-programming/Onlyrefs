@@ -27,8 +27,8 @@ const Board = ({ collection, home, refs }: BoardProps) => {
   } = useRefSelector();
 
   createEffect(
-    on(progress, () => {
-      refetchRefs();
+    on(progress, async () => {
+      await refetchRefs();
     }),
   );
 
@@ -62,7 +62,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>
-            <BoardItem image={item} refresh={() => refetchRefs()} />
+            <BoardItem image={item} />
           </Suspense>
         )}
       </Mason>
