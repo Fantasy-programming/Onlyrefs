@@ -22,4 +22,12 @@ pub fn init(handle: AppHandle) {
     if !Path::new(&collection_path).exists() {
         fs::create_dir_all(&collection_path).unwrap();
     }
+
+    // if !Path::new(&get_settings_path(handle)).exists() {
+    //     let default_settings = r#"{
+    //         "theme": "light",
+    //         "language": "en"
+    //     }"#;
+    //     fs::write(&get_settings_path(handle), default_settings).unwrap();
+    // }
 }
