@@ -1,10 +1,21 @@
+use crate::commands::Metadata;
 use image::{imageops, DynamicImage, GenericImageView, RgbaImage};
 use kmeans_colors::Sort;
 use kmeans_colors::{get_kmeans, Kmeans};
 use mime_guess::from_path;
 use palette::{FromColor, IntoColor, Lab, Pixel, Srgb};
+use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use tauri::Url;
+
+#[derive(Serialize, Deserialize)]
+pub struct MediaRef {
+    imagepath: String,
+    low_res_imagepath: String,
+    metapath: String,
+    metadata: Option<Metadata>,
+}
 
 pub fn determine_media_type(file_name: &str) -> String {
     if let Some(media_type) = from_path(file_name).first() {
@@ -155,4 +166,102 @@ fn reduce_image_quality(rgba_image: &mut RgbaImage, target_size_kb: u32) {
 
 pub fn analyze_file_size(file_path: &str) -> u64 {
     fs::metadata(file_path).map(|meta| meta.len()).unwrap_or(0)
+}
+
+fn convert_file_src(path: &Path) -> String {
+    let url = Url::from_file_path(path).unwrap();
+    url.to_string()
+}
+
+fn parse_refs(refs: &[PathBuf]) -> MediaRef {
+    let mut result = MediaRef {
+        imagepath: String::new(),
+        low_res_imagepath: String::new(),
+        metapath: String::new(),
+        metadata: None,
+    };
+
+    for ref_path in refs {
+        if ref_path.file_name().unwrap() == "metadata.json" {
+            result.metapath = convert_file_src(ref_path);
+            result.metadata = Some(parse_metadata(ref_path));
+        } else if ref_path
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .starts_with("lower_")
+        {
+            result.low_res_imagepath = convert_file_src(ref_path);
+        } else {
+            result.imagepath = convert_file_src(ref_path);
+        }
+    }
+
+    result
+}
+
+fn get_all_refs(collections_dir: &Path) -> Vec<Vec<PathBuf>> {
+    // Get all subdirectories in the collections_dir
+    let mut refs = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(collections_dir) {
+        for entry in entries.flatten() {
+            if let Ok(path) = entry.path().canonicalize() {
+                if path.is_dir() {
+                    let mut children = Vec::new();
+                    if let Ok(dir_entries) = std::fs::read_dir(&path) {
+                        for child in dir_entries.flatten() {
+                            children.push(child.path());
+                        }
+                    }
+                    refs.push(children);
+                }
+            }
+        }
+    }
+    refs
+}
+
+fn parse_metadata(path: &Path) -> Metadata {
+    let content = std::fs::read_to_string(path).unwrap();
+
+    let mut metadata: Metadata = serde_json::from_str(&content).unwrap_or_default();
+
+    // If the `tags` field is missing, initialize it to an empty Vec
+    if metadata.tags.is_empty() {
+        metadata.tags = Vec::new();
+    }
+
+    metadata = Metadata {
+        id: metadata.id,
+        file_name: metadata.file_name,
+        name: metadata.name,
+        media_type: metadata.media_type,
+        dimensions: metadata.dimensions,
+        file_size: metadata.file_size,
+        collection: metadata.collection,
+        colors: metadata.colors,
+        created_at: metadata.created_at,
+        updated_at: metadata.updated_at,
+        tags: metadata.tags,
+        // Add any new fields here with their default values
+        ..Default::default()
+    };
+
+    metadata
+}
+
+pub fn fetch_refs(collections_dir: &Path) -> Vec<MediaRef> {
+    let refs = get_all_refs(collections_dir);
+    refs.into_iter()
+        .map(|ref_paths| parse_refs(&ref_paths))
+        .collect()
+}
+
+pub fn add_tag(collections_dir: &Path, ref_id: &str, tag: &str) {
+    let metadata_path = collections_dir.join(ref_id).join("metadata.json");
+    let mut metadata: Metadata = parse_metadata(&metadata_path);
+    metadata.tags.push(tag.to_string());
+    let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+    fs::write(metadata_path, json_data).expect("Failed to write metadata file");
 }

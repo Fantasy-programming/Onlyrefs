@@ -9,6 +9,7 @@ export interface Metadata {
   colors: string[];
   created_at: string;
   updated_at: string;
+  tags?: string[];
 }
 
 export interface MediaRef {

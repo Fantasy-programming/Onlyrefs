@@ -1,22 +1,26 @@
+use crate::config::get_app_data_dir_path;
 use crate::utils;
 use chrono::Local;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use std::default::Default;
 use std::fs;
 use std::path::Path;
 
-#[derive(Serialize, Deserialize)]
-struct Metadata {
-    id: String,
-    file_name: String,
-    name: String,
-    media_type: String,
-    dimensions: Option<(u32, u32)>,
-    file_size: u64,
-    collection: String,
-    colors: Vec<String>,
-    created_at: String,
-    updated_at: String,
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct Metadata {
+    pub id: String,
+    pub file_name: String,
+    pub name: String,
+    pub media_type: String,
+    pub dimensions: Option<(u32, u32)>,
+    pub file_size: u64,
+    pub collection: String,
+    pub colors: Vec<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 #[tauri::command]
@@ -38,6 +42,7 @@ fn generate_metadata(
         colors: utils::extract_colors(dest_file),
         created_at: Local::now().to_string(),
         updated_at: Local::now().to_string(),
+        tags: Vec::new(),
     };
 
     // Write Json metadata file
@@ -64,6 +69,25 @@ fn generate_id(lenght: usize) -> String {
     id
 }
 
+#[tauri::command]
+async fn get_media_refs(app_handle: tauri::AppHandle) -> Vec<utils::MediaRef> {
+    let app_data_dir = get_app_data_dir_path(app_handle);
+    let collections_dir = app_data_dir.join("collections");
+    utils::fetch_refs(&collections_dir)
+}
+
+#[tauri::command]
+fn add_tag(ref_id: &str, tag: &str, app_handle: tauri::AppHandle) {
+    let app_data_dir = get_app_data_dir_path(app_handle);
+    let collections_dir = app_data_dir.join("collections");
+    utils::add_tag(&collections_dir, ref_id, tag);
+}
+
 pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
-    Box::new(tauri::generate_handler![generate_id, generate_metadata])
+    Box::new(tauri::generate_handler![
+        generate_id,
+        generate_metadata,
+        get_media_refs,
+        add_tag
+    ])
 }

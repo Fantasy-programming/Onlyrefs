@@ -7,7 +7,7 @@ import {
   BaseDirectory,
   FileEntry,
 } from "@tauri-apps/api/fs";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { convertFileSrc, invoke } from "@tauri-apps/api/tauri";
 import { MediaRef, Metadata } from "./types";
 import {
   COLLECTIONS_DIR,
@@ -93,6 +93,18 @@ export const fetchRefs = async () => {
       return await parseRefs(ref);
     }),
   );
+};
+
+export const changRefName = async (refID: string, newName: string) => {
+  await invoke("rename_ref", { refID, newName });
+};
+
+export const deleteTag = async (refID: string, tag: string) => {
+  await invoke("delete_tag", { refID, tag });
+};
+
+export const addTag = async (refID: string, tag: string) => {
+  await invoke("add_tag", { refId: refID, tag: tag });
 };
 
 export const getBreakpoints = (columns: number) => {
