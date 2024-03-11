@@ -3,6 +3,7 @@ import { Progress, ProgressValueLabel } from "../ui/progress";
 import {
   onMount,
   Show,
+  createSignal,
   createEffect,
   createMemo,
   on,
@@ -14,12 +15,14 @@ import { useFileSelector } from "./Board.hook";
 import { BoardProps } from "./Board.types";
 import { Button } from "../ui/button";
 import { gridSizeHook } from "../../state/hook";
-import { getBreakpoints } from "../../lib/helper";
+import { getBreakpoints, searchByText } from "../../lib/helper";
 import { useRefSelector } from "../../state/store";
+import { Input } from "../ui/input";
 
 const Board = ({ collection, home, refs }: BoardProps) => {
   // TODO: Make this dude rerender
   const [selectFiles, dropFiles, progress] = useFileSelector();
+  const [boardRefs, setBoardRefs] = createSignal(refs);
   const [gridSize] = gridSizeHook();
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
   const {
@@ -51,11 +54,24 @@ const Board = ({ collection, home, refs }: BoardProps) => {
         >
           Save
         </Button>
+        <Input
+          placeholder="Search your refs..."
+          class="border-none outline-none text-4xl italic font-serif focus-visible:ring-0 focus-visible:ring-offset-0"
+          oninput={(e) => {
+            console.log(e);
+            const value = e.target.value;
+            if (value === "") {
+              setBoardRefs(refs);
+              return;
+            }
+            setBoardRefs(searchByText(refs, value));
+          }}
+        />
       </div>
       <Mason
         as="section"
         class="w-full h-full relative"
-        items={refs}
+        items={boardRefs()}
         gap={20}
         columns={breakPoints()()}
       >
