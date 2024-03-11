@@ -58,7 +58,6 @@ const Board = ({ collection, home, refs }: BoardProps) => {
         items={refs}
         gap={20}
         columns={breakPoints()()}
-        ondrop={() => console.log("dropped")}
       >
         {(item, index) => (
           <Suspense fallback={<BoardItemSkeleton index={index()} />}>

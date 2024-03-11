@@ -56,17 +56,13 @@ export const BoardItem = ({ image }: BoardItemProps) => {
 
 // Render an image into the board
 const ImageItem = (props: { mediaInfo: MediaRef }) => {
-  const lowResImagePath = props.mediaInfo.low_res_imagepath;
-  const imagePath =
-    lowResImagePath !== "" ? lowResImagePath : props.mediaInfo.imagepath;
-
   return (
     <ViewBox source={props.mediaInfo}>
       <div
         class={`rounded-xl  cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
         style={{
           "aspect-ratio": `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
-          "background-image": `url(${imagePath})`,
+          "background-image": `url(${props.mediaInfo.low_res_imagepath})`,
         }}
       />
     </ViewBox>
