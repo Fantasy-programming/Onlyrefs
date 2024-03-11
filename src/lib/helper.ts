@@ -1,7 +1,18 @@
-import { exists, createDir, removeDir, BaseDirectory } from "@tauri-apps/api/fs";
+import {
+  exists,
+  createDir,
+  removeDir,
+  BaseDirectory,
+} from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 
-import { COLLECTIONS_DIR, breakpoints_4, breakpoints_5, breakpoints_6 } from "./config";
+import {
+  COLLECTIONS_DIR,
+  breakpoints_4,
+  breakpoints_5,
+  breakpoints_6,
+} from "./config";
+import { MediaRef } from "./types";
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
@@ -25,6 +36,29 @@ export const deleteRef = async (collectionID: string) => {
     recursive: true,
   });
 };
+
+export function searchByText(refs: MediaRef[], searchText: string) {
+  // Convert searchText to lowercase for case-insensitive matching
+  const lowercaseSearchText = searchText.toLowerCase();
+
+  // Use filter to find objects that have matching text in name or tags
+  const results = refs.filter((ref) => {
+    // Convert object name to lowercase for case-insensitive matching
+    const lowercaseObjectName = ref.metadata.name.toLowerCase();
+
+    const lowercaseObjectTags = ref.metadata.tags?.map((tag) =>
+      tag.toLowerCase(),
+    );
+
+    // Check if searchText is present in the object name or tags
+    return (
+      lowercaseObjectName.includes(lowercaseSearchText) ||
+      lowercaseObjectTags?.some((tag) => tag.includes(lowercaseSearchText))
+    );
+  });
+
+  return results;
+}
 
 export const changRefName = async (refID: string, newName: string) => {
   await invoke("rename_ref", { refID, newName });
