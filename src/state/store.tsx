@@ -1,7 +1,8 @@
 import { onMount, createContext, ParentComponent, useContext } from "solid-js";
 import { createStore } from "solid-js/store";
 import { MediaRef } from "../lib/types";
-import { fetchRefs } from "../lib/helper";
+import { invoke } from "@tauri-apps/api";
+import { convertFileSrc } from "@tauri-apps/api/tauri";
 
 const refStore = createStore<MediaRef[]>([]);
 
@@ -9,12 +10,27 @@ export const RefService = () => {
   const [ref, setRef] = refStore;
 
   onMount(async () => {
-    const data = await fetchRefs();
+    let data: MediaRef[] = await invoke("get_media_refs");
+    data = data.map((ref) => {
+      return {
+        ...ref,
+        imagepath: convertFileSrc(ref.imagepath),
+        low_res_imagepath: convertFileSrc(ref.low_res_imagepath),
+      };
+    });
+
     setRef(data);
   });
 
   const refetchRefs = async () => {
-    const data = await fetchRefs();
+    let data: MediaRef[] = await invoke("get_media_refs");
+    data = data.map((ref) => {
+      return {
+        ...ref,
+        imagepath: convertFileSrc(ref.imagepath),
+        low_res_imagepath: convertFileSrc(ref.low_res_imagepath),
+      };
+    });
     setRef(data);
   };
 
@@ -27,11 +43,7 @@ export type RootState = {
   refService: ReturnType<typeof RefService>;
 };
 
-const initialState: RootState = {
-  refService: RefService(),
-};
-
-const Context = createContext<RootState>(initialState);
+const Context = createContext<RootState>({} as RootState);
 
 export const useRefSelector = () => useContext(Context);
 
@@ -42,7 +54,5 @@ export const RefProvider: ParentComponent<{
     refService: props.refService,
   };
 
-  return (
-    <Context.Provider value={rootState}>{props.children}</Context.Provider>
-  );
+  return <Context.Provider value={rootState}>{props.children}</Context.Provider>;
 };
