@@ -83,11 +83,19 @@ fn add_tag(ref_id: &str, tag: &str, app_handle: tauri::AppHandle) {
     utils::add_tag(&collections_dir, ref_id, tag);
 }
 
+#[tauri::command]
+fn remove_tag(ref_id: &str, tag: &str, app_handle: tauri::AppHandle) {
+    let app_data_dir = get_app_data_dir_path(app_handle);
+    let collections_dir = app_data_dir.join("collections");
+    utils::remove_tag(&collections_dir, ref_id, tag);
+}
+
 pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
     Box::new(tauri::generate_handler![
         generate_id,
         generate_metadata,
         get_media_refs,
-        add_tag
+        add_tag,
+        remove_tag
     ])
 }

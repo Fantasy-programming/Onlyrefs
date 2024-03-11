@@ -2,7 +2,7 @@ import { writeText } from "@tauri-apps/api/clipboard";
 import { IoCloseOutline } from "solid-icons/io";
 import { VsAdd } from "solid-icons/vs";
 import { Component, For, JSX, ParentProps, Show, createSignal } from "solid-js";
-import { addTag } from "../../lib/helper";
+import { addTag, deleteTag } from "../../lib/helper";
 import { MediaRef } from "../../lib/types";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
@@ -11,25 +11,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 // TODO: Make it work for videos
 
-export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
-  children,
-  source,
-}) => {
-  console.log(source.metadata.tags);
+export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ children, source }) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");
   const [showAllTags, setShowAllTags] = createSignal(false);
   const [tags, setTags] = createSignal(source.metadata.tags);
 
-  const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (
-    event,
-  ) => {
+  const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (event) => {
     setInputValue(event.currentTarget.value);
   };
 
-  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (
-    event,
-  ) => {
+  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (event) => {
     event.preventDefault();
     if (inputValue() === "") return;
     if (tags()?.includes(inputValue())) {
@@ -52,6 +44,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
 
   const removeTag = async (name: string) => {
     const newTags = tags()?.filter((tag) => tag !== name);
+    await deleteTag(source.metadata.id, name);
     setTags(newTags);
   };
 
@@ -202,11 +195,11 @@ interface TagProps {
 const Tag = (props: ParentProps & TagProps) => {
   return (
     <span class="relative whitespace-nowrap inline-flex mr-[5px] mb-[7px] group">
-      <span class="py-[6px] px-3 text-nowrap rounded-full text-lg   bg-primary hover:bg-primary/20 text-foreground">
+      <span class="py-[6px] px-3 text-nowrap rounded-full text-lg   bg-primary hover:bg-primary/20 text-foreground cursor-zoom-in">
         # {props.children}
       </span>
       <span
-        class="absolute group-hover:opacity-100 opacity-0  transition-opacity -top-1 -right-1  p-[2px] bg-primary rounded-full"
+        class="absolute group-hover:opacity-100 opacity-0  transition-opacity -top-1 -right-1  p-[2px] bg-primary rounded-full cursor-pointer"
         onClick={() => props.removeTag(props.name)}
       >
         <IoCloseOutline />
