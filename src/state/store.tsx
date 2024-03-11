@@ -15,7 +15,10 @@ export const RefService = () => {
       return {
         ...ref,
         imagepath: convertFileSrc(ref.imagepath),
-        low_res_imagepath: convertFileSrc(ref.low_res_imagepath),
+        low_res_imagepath:
+          ref.low_res_imagepath === ""
+            ? convertFileSrc(ref.imagepath)
+            : convertFileSrc(ref.low_res_imagepath),
       };
     });
 
@@ -28,7 +31,10 @@ export const RefService = () => {
       return {
         ...ref,
         imagepath: convertFileSrc(ref.imagepath),
-        low_res_imagepath: convertFileSrc(ref.low_res_imagepath),
+        low_res_imagepath:
+          ref.low_res_imagepath === ""
+            ? convertFileSrc(ref.imagepath)
+            : convertFileSrc(ref.low_res_imagepath),
       };
     });
     setRef(data);
@@ -54,5 +60,7 @@ export const RefProvider: ParentComponent<{
     refService: props.refService,
   };
 
-  return <Context.Provider value={rootState}>{props.children}</Context.Provider>;
+  return (
+    <Context.Provider value={rootState}>{props.children}</Context.Provider>
+  );
 };

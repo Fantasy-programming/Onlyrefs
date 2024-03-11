@@ -32,7 +32,6 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       while (true) {
         // Generate the ID
         randomID = await invoke("generate_id", { lenght: 13 });
-        console.log(randomID);
 
         // Check if the collection exists
         const exist = await refExist(randomID);
@@ -82,7 +81,6 @@ export const useFileSelector = (): useFileSelectorReturnType => {
         while (true) {
           // Generate the ID
           randomID = await invoke("generate_id", { lenght: 13 });
-          console.log(randomID);
 
           // Check if the collection exists
           const exist = await refExist(randomID);
