@@ -183,7 +183,7 @@ fn parse_refs(refs: &[PathBuf]) -> MediaRef {
 
     for ref_path in refs {
         if ref_path.file_name().unwrap() == "metadata.json" {
-            result.metapath = convert_file_src(ref_path);
+            result.metapath = ref_path.to_str().unwrap().to_string();
             result.metadata = Some(parse_metadata(ref_path));
         } else if ref_path
             .file_name()
@@ -192,9 +192,9 @@ fn parse_refs(refs: &[PathBuf]) -> MediaRef {
             .unwrap()
             .starts_with("lower_")
         {
-            result.low_res_imagepath = convert_file_src(ref_path);
+            result.low_res_imagepath = ref_path.to_str().unwrap().to_string();
         } else {
-            result.imagepath = convert_file_src(ref_path);
+            result.imagepath = ref_path.to_str().unwrap().to_string();
         }
     }
 
@@ -262,6 +262,14 @@ pub fn add_tag(collections_dir: &Path, ref_id: &str, tag: &str) {
     let metadata_path = collections_dir.join(ref_id).join("metadata.json");
     let mut metadata: Metadata = parse_metadata(&metadata_path);
     metadata.tags.push(tag.to_string());
+    let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+    fs::write(metadata_path, json_data).expect("Failed to write metadata file");
+}
+
+pub fn remove_tag(collections_dir: &Path, ref_id: &str, tag: &str) {
+    let metadata_path = collections_dir.join(ref_id).join("metadata.json");
+    let mut metadata: Metadata = parse_metadata(&metadata_path);
+    metadata.tags.retain(|t| t != tag);
     let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
     fs::write(metadata_path, json_data).expect("Failed to write metadata file");
 }
