@@ -19,6 +19,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [inputValue, setInputValue] = createSignal("");
   const [showAllTags, setShowAllTags] = createSignal(false);
+  const [tags, setTags] = createSignal(source.metadata.tags);
 
   const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
@@ -26,12 +27,32 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
     setInputValue(event.currentTarget.value);
   };
 
-  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = (
+  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (
     event,
   ) => {
     event.preventDefault();
-    addTag(source.metadata.id, inputValue());
-    setInputValue("");
+    if (inputValue() === "") return;
+    if (tags()?.includes(inputValue())) {
+      setInputValue("");
+      return;
+    }
+    if (!tags()) {
+      setTags([inputValue()]);
+      await addTag(source.metadata.id, inputValue());
+      setInputValue("");
+      return;
+    }
+    if (tags()) {
+      setTags([...(tags() as string[]), inputValue()]);
+      await addTag(source.metadata.id, inputValue());
+      setInputValue("");
+      return;
+    }
+  };
+
+  const removeTag = async (name: string) => {
+    const newTags = tags()?.filter((tag) => tag !== name);
+    setTags(newTags);
   };
 
   return (
@@ -123,7 +144,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
                   </div>
                 </form>
                 <div
-                  class="flex flex-row flex-wrap relative overflow-hidden  max-h-36"
+                  class="flex flex-row flex-wrap relative overflow-hidden py-3  max-h-36"
                   classList={{
                     "max-h-none": showAllTags(),
                     "overflow-auto": showAllTags(),
@@ -131,14 +152,18 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
                   onClick={() => setShowAllTags(true)}
                 >
                   <Button
-                    class="py-[6px] px-3 mr-[5px] mb-[7px] text-xl"
+                    class="py-[6px] px-3 mr-[5px] mb-[7px] text-lg"
                     onClick={() => setOpenTagsAdder(!openTagsAdder())}
                   >
                     Add Tags
                   </Button>
-                  <Show when={source.metadata?.tags}>
-                    <For each={source.metadata.tags}>
-                      {(tag) => <Tag>{tag}</Tag>}
+                  <Show when={tags()}>
+                    <For each={tags()}>
+                      {(tag) => (
+                        <Tag name={tag} removeTag={removeTag}>
+                          {tag}
+                        </Tag>
+                      )}
                     </For>
                   </Show>
                 </div>
@@ -159,12 +184,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
                 </div>
               </div>
               <h4 class="uppercase">Notes</h4>
-              <div class="my-3">
-                <textarea
-                  class="w-full h-[50px] border-none"
-                  placeholder="Add Notes"
-                ></textarea>
-              </div>
+              <div class="my-3"></div>
             </div>
           </div>
           <div class="actions absolute bottom-0 px-4 pb-4 w-full z-30"></div>
@@ -174,13 +194,21 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
   );
 };
 
-const Tag = (props: ParentProps) => {
+interface TagProps {
+  name: string;
+  removeTag: (name: string) => void;
+}
+
+const Tag = (props: ParentProps & TagProps) => {
   return (
     <span class="relative whitespace-nowrap inline-flex mr-[5px] mb-[7px] group">
-      <span class="py-[6px] px-3 text-nowrap rounded-full text-xl   bg-primary hover:bg-primary/20 text-foreground">
+      <span class="py-[6px] px-3 text-nowrap rounded-full text-lg   bg-primary hover:bg-primary/20 text-foreground">
         # {props.children}
       </span>
-      <span class="absolute group-hover:opacity-100 opacity-0  transition-opacity -top-1 -right-1  p-[2px] bg-primary rounded-full">
+      <span
+        class="absolute group-hover:opacity-100 opacity-0  transition-opacity -top-1 -right-1  p-[2px] bg-primary rounded-full"
+        onClick={() => props.removeTag(props.name)}
+      >
         <IoCloseOutline />
       </span>
     </span>
