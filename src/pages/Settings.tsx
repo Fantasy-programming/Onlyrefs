@@ -1,4 +1,4 @@
-import { Motion } from "solid-motionone";
+import { Motion } from 'solid-motionone';
 
 const Settings = () => {
   return <Motion.div>Settings</Motion.div>;

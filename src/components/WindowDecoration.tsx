@@ -1,33 +1,33 @@
-import { appWindow } from "@tauri-apps/api/window";
-import { RiSystemCloseLine } from "solid-icons/ri";
-import { VsChromeMinimize, VsChromeMaximize } from "solid-icons/vs";
+import { appWindow } from '@tauri-apps/api/window';
+import { RiSystemCloseLine } from 'solid-icons/ri';
+import { VsChromeMinimize, VsChromeMaximize } from 'solid-icons/vs';
 
 export const WindowDecoration = () => {
   return (
     <div
       data-tauri-drag-region
-      class=" h-8 rounded-t-md bg-transparent shadow-subtleBtn flex justify-end top-0 left-0 right-0 fixed select-none z-50"
+      class="fixed left-0 right-0 top-0 z-50 flex h-8 select-none justify-end rounded-t-md bg-transparent shadow-subtleBtn"
     >
       <div
-        class="inline-flex justify-center items-center h-8 w-8 hover:bg-foreground/10"
+        class="inline-flex h-8 w-8 items-center justify-center hover:bg-foreground/10"
         id="titlebar-minimize"
         onClick={() => appWindow.minimize()}
       >
-        <VsChromeMinimize class="w-1/2 h-1/2 " />
+        <VsChromeMinimize class="h-1/2 w-1/2 " />
       </div>
       <div
-        class="inline-flex justify-center items-center h-8 w-8 hover:bg-foreground/10"
+        class="inline-flex h-8 w-8 items-center justify-center hover:bg-foreground/10"
         id="titlebar-maximize"
         onClick={() => appWindow.toggleMaximize()}
       >
-        <VsChromeMaximize class="w-1/2 h-1/2 " />
+        <VsChromeMaximize class="h-1/2 w-1/2 " />
       </div>
       <div
-        class="inline-flex justify-center items-center text-foreground hover:text-white hover:bg-destructive h-8 w-8"
+        class="inline-flex h-8 w-8 items-center justify-center text-foreground hover:bg-destructive hover:text-white"
         id="titlebar-close"
         onClick={() => appWindow.close()}
       >
-        <RiSystemCloseLine class="w-1/2 h-1/2 " />
+        <RiSystemCloseLine class="h-1/2 w-1/2 " />
       </div>
     </div>
   );

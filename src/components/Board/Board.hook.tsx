@@ -1,11 +1,11 @@
-import { listen } from "@tauri-apps/api/event";
-import { copyFile } from "@tauri-apps/api/fs";
-import { appDataDir, join, sep } from "@tauri-apps/api/path";
-import { open } from "@tauri-apps/api/dialog";
-import { onCleanup, createSignal } from "solid-js";
-import { refExist, createRefDir } from "../../lib/helper";
-import { ProgressionProps, useFileSelectorReturnType } from "./Board.types";
-import { invoke } from "@tauri-apps/api";
+import { listen } from '@tauri-apps/api/event';
+import { copyFile } from '@tauri-apps/api/fs';
+import { appDataDir, join, sep } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/api/dialog';
+import { onCleanup, createSignal } from 'solid-js';
+import { refExist, createRefDir } from '~/lib/helper';
+import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
+import { invoke } from '@tauri-apps/api';
 
 export const useFileSelector = (): useFileSelectorReturnType => {
   let waitForFiles: Promise<() => void>;
@@ -23,15 +23,15 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       return;
     }
 
-    const destDir = await join(await appDataDir(), "collections");
+    const destDir = await join(await appDataDir(), 'collections');
     setProgress({ total: result.length, completed: 0 });
 
     for (const image of result) {
-      let randomID: string = "";
+      let randomID: string = '';
 
       while (true) {
         // Generate the ID
-        randomID = await invoke("generate_id", { lenght: 13 });
+        randomID = await invoke('generate_id', { lenght: 13 });
 
         // Check if the collection exists
         const exist = await refExist(randomID);
@@ -53,7 +53,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       await copyFile(image, newPath);
 
       // Generate the metadata (rust)
-      await invoke("generate_metadata", {
+      await invoke('generate_metadata', {
         destPath: destinationFolder,
         destFile: newPath,
         refId: randomID,
@@ -69,18 +69,18 @@ export const useFileSelector = (): useFileSelectorReturnType => {
   };
 
   const dropFiles = async (collection: string) => {
-    waitForFiles = listen("tauri://file-drop", async (event) => {
+    waitForFiles = listen('tauri://file-drop', async (event) => {
       const files = event.payload as string[];
 
-      const destDir = await join(await appDataDir(), "collections");
+      const destDir = await join(await appDataDir(), 'collections');
       setProgress({ total: files.length, completed: 0 });
 
       for (const image of files) {
-        let randomID: string = "";
+        let randomID: string = '';
 
         while (true) {
           // Generate the ID
-          randomID = await invoke("generate_id", { lenght: 13 });
+          randomID = await invoke('generate_id', { lenght: 13 });
 
           // Check if the collection exists
           const exist = await refExist(randomID);
@@ -102,7 +102,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
         await copyFile(image, newPath);
 
         // Generate the metadata (rust)
-        await invoke("generate_metadata", {
+        await invoke('generate_metadata', {
           destPath: destinationFolder,
           destFile: newPath,
           refId: randomID,

@@ -1,19 +1,19 @@
 /* @refresh reload */
-import { Router, Route } from "@solidjs/router";
-import { render } from "solid-js/web";
-import { ColorModeProvider, localStorageManager } from "@kobalte/core";
-import { RefProvider, RefService } from "./state/store";
+import { Router, Route } from '@solidjs/router';
+import { render } from 'solid-js/web';
+import { ColorModeProvider, localStorageManager } from '@kobalte/core';
+import { RefProvider, RefService } from './state/store';
 
 //fonts
-import "@fontsource-variable/nunito";
-import "@fontsource-variable/hahmlet";
-import "./index.css";
+import '@fontsource-variable/nunito';
+import '@fontsource-variable/hahmlet';
+import './index.css';
 
 // Pages
-import App from "./App";
-import Home from "./pages/Home";
-import Boards from "./pages/Boards";
-import Settings from "./pages/Settings";
+import App from './App';
+import Home from './pages/Home';
+import Boards from './pages/Boards';
+import Settings from './pages/Settings';
 
 // Initialize all services
 const refService = RefService();
@@ -31,5 +31,5 @@ render(
       </ColorModeProvider>
     </RefProvider>
   ),
-  document.getElementById("root") as HTMLElement,
+  document.getElementById('root') as HTMLElement,
 );

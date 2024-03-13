@@ -1,43 +1,50 @@
-import { writeText } from "@tauri-apps/api/clipboard";
-import { IoCloseOutline } from "solid-icons/io";
-import { VsAdd } from "solid-icons/vs";
-import { Component, For, JSX, ParentProps, Show, createSignal } from "solid-js";
-import { addTag, deleteTag } from "../../lib/helper";
-import { MediaRef } from "../../lib/types";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { writeText } from '@tauri-apps/api/clipboard';
+import { IoCloseOutline } from 'solid-icons/io';
+import { VsAdd } from 'solid-icons/vs';
+import { Component, For, JSX, ParentProps, Show, createSignal } from 'solid-js';
+import { addTag, deleteTag } from '../../lib/helper';
+import { MediaRef } from '../../lib/types';
+import { Button } from '../ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 // TODO: Make it work for videos
 
-export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ children, source }) => {
+export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
+  children,
+  source,
+}) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
-  const [inputValue, setInputValue] = createSignal("");
+  const [inputValue, setInputValue] = createSignal('');
   const [showAllTags, setShowAllTags] = createSignal(false);
   const [tags, setTags] = createSignal(source.metadata.tags);
 
-  const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (event) => {
+  const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (
+    event,
+  ) => {
     setInputValue(event.currentTarget.value);
   };
 
-  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (event) => {
+  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (
+    event,
+  ) => {
     event.preventDefault();
-    if (inputValue() === "") return;
+    if (inputValue() === '') return;
     if (tags()?.includes(inputValue())) {
-      setInputValue("");
+      setInputValue('');
       return;
     }
     if (!tags()) {
       setTags([inputValue()]);
       await addTag(source.metadata.id, inputValue());
-      setInputValue("");
+      setInputValue('');
       return;
     }
     if (tags()) {
       setTags([...(tags() as string[]), inputValue()]);
       await addTag(source.metadata.id, inputValue());
-      setInputValue("");
+      setInputValue('');
       return;
     }
   };
@@ -52,30 +59,30 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ childre
     <Dialog>
       <DialogTrigger class="w-full">{children}</DialogTrigger>
       <DialogContent
-        class={"w-[90%] p-0 h-[90%] max-w-none max-h-none flex"}
+        class={'flex h-[90%] max-h-none w-[90%] max-w-none p-0'}
         style={{
           background: source.metadata.colors[0],
         }}
       >
         <div
-          class="relative flex py-2 pl-2 flex-grow justify-center items-center"
+          class="relative flex flex-grow items-center justify-center py-2 pl-2"
           style={{
-            width: "cacl(100% - 400px)",
-            "padding-right": "calc((0.5rem * 2) + 400px)",
+            width: 'cacl(100% - 400px)',
+            'padding-right': 'calc((0.5rem * 2) + 400px)',
           }}
         >
-          <div class="rounded-xl p-7 w-full h-full flex justify-center items-center overflow-clip ">
+          <div class="flex h-full w-full items-center justify-center overflow-clip rounded-xl p-7 ">
             <img
               src={source.imagepath}
               loading="lazy"
-              class="rounded-xl w-auto h-auto"
+              class="h-auto w-auto rounded-xl"
               style={{
-                "max-width": `min(100%, ${source.metadata.dimensions[0]}px )`,
-                "max-height": `min(100%, ${source.metadata.dimensions[1]}px )`,
+                'max-width': `min(100%, ${source.metadata.dimensions[0]}px )`,
+                'max-height': `min(100%, ${source.metadata.dimensions[1]}px )`,
               }}
             />
           </div>
-          <div class="flex flex-row-reverse absolute bottom-4 left-4 -space-x-7 space-x-reverse  hover:space-x-0 focus-within:space-x-0   ">
+          <div class="absolute bottom-4 left-4 flex flex-row-reverse -space-x-7 space-x-reverse  focus-within:space-x-0 hover:space-x-0   ">
             <For each={source.metadata.colors}>
               {(color, index) => (
                 <>
@@ -86,9 +93,9 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ childre
                       as="div"
                     >
                       <div
-                        class="w-10 h-10 rounded-full"
+                        class="h-10 w-10 rounded-full"
                         classList={{
-                          "border-white border": index() === 0,
+                          'border-white border': index() === 0,
                         }}
                         style={{ background: color }}
                       />
@@ -101,15 +108,15 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ childre
           </div>
         </div>
         <div
-          class=" z-10  top-0 right-0 my-2 mr-2 w-[400px] absolute bg-background    h-[95%] rounded-xl"
+          class=" absolute  right-0 top-0 z-10 my-2 mr-2 h-[95%] w-[400px]    rounded-xl bg-background"
           style={{
-            height: "calc(100% - (0.5rem * 2))",
+            height: 'calc(100% - (0.5rem * 2))',
           }}
         >
-          <header class="flex flex-col gap-3 p-7 bg-gradient-to-tr from-primary/20 to-background/80  rounded-t-xl ">
+          <header class="flex flex-col gap-3 rounded-t-xl bg-gradient-to-tr from-primary/20 to-background/80  p-7 ">
             <input
               type="text"
-              class="outline-none border-none h-[50px] text-3xl bg-transparent "
+              class="h-[50px] border-none bg-transparent text-3xl outline-none "
               value={source.metadata.name}
               autofocus
             />
@@ -117,35 +124,35 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ childre
           </header>
           <div class="p-4">
             <div>
-              <h4 class="uppercase text-lg">Tags</h4>
+              <h4 class="text-lg uppercase">Tags</h4>
               <div class="my-3">
                 <form
-                  class="transition-all  duration-500 animate-in pb-5"
+                  class="pb-5  transition-all duration-500 animate-in"
                   classList={{ hidden: !openTagsAdder() }}
                   onSubmit={handleSubmit}
                 >
                   <div class="flex">
                     <Input
                       type="text"
-                      class="w-full h-[50px] border-none rounded-r-none bg-foreground/10 text-lg"
+                      class="h-[50px] w-full rounded-r-none border-none bg-foreground/10 text-lg"
                       value={inputValue()}
                       onInput={handleInputChange}
                     />
-                    <Button class="rounded-l-none text-lg h-auto rounded-r-sm">
+                    <Button class="h-auto rounded-l-none rounded-r-sm text-lg">
                       <VsAdd />
                     </Button>
                   </div>
                 </form>
                 <div
-                  class="flex flex-row flex-wrap relative overflow-hidden py-3  max-h-36"
+                  class="relative flex max-h-36 flex-row flex-wrap overflow-hidden  py-3"
                   classList={{
-                    "max-h-none": showAllTags(),
-                    "overflow-auto": showAllTags(),
+                    'max-h-none': showAllTags(),
+                    'overflow-auto': showAllTags(),
                   }}
                   onClick={() => setShowAllTags(true)}
                 >
                   <Button
-                    class="py-[6px] px-3 mr-[5px] mb-[7px] text-lg"
+                    class="mb-[7px] mr-[5px] px-3 py-[6px] text-lg"
                     onClick={() => setOpenTagsAdder(!openTagsAdder())}
                   >
                     Add Tags
@@ -161,11 +168,11 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ childre
                   </Show>
                 </div>
               </div>
-              <h4 class="uppercase text-lg">Info</h4>
+              <h4 class="text-lg uppercase">Info</h4>
               <div class="my-3">
                 <div class="text-lg">
                   <span class="font-semibold">Dimension: </span>
-                  <span>{source.metadata.dimensions.join(" x ")}</span>
+                  <span>{source.metadata.dimensions.join(' x ')}</span>
                 </div>
                 <div class="text-lg">
                   <span class="font-semibold">File Size: </span>
@@ -180,7 +187,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({ childre
               <div class="my-3"></div>
             </div>
           </div>
-          <div class="actions absolute bottom-0 px-4 pb-4 w-full z-30"></div>
+          <div class="actions absolute bottom-0 z-30 w-full px-4 pb-4"></div>
         </div>
       </DialogContent>
     </Dialog>
@@ -194,12 +201,12 @@ interface TagProps {
 
 const Tag = (props: ParentProps & TagProps) => {
   return (
-    <span class="relative whitespace-nowrap inline-flex mr-[5px] mb-[7px] group">
-      <span class="py-[6px] px-3 text-nowrap rounded-full text-lg   bg-primary hover:bg-primary/20 text-foreground cursor-zoom-in">
+    <span class="group relative mb-[7px] mr-[5px] inline-flex whitespace-nowrap">
+      <span class="cursor-zoom-in text-nowrap rounded-full bg-primary px-3   py-[6px] text-lg text-foreground hover:bg-primary/20">
         # {props.children}
       </span>
       <span
-        class="absolute group-hover:opacity-100 opacity-0  transition-opacity -top-1 -right-1  p-[2px] bg-primary rounded-full cursor-pointer"
+        class="absolute -right-1 -top-1  cursor-pointer rounded-full bg-primary  p-[2px] opacity-0 transition-opacity group-hover:opacity-100"
         onClick={() => props.removeTag(props.name)}
       >
         <IoCloseOutline />

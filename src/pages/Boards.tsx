@@ -1,9 +1,9 @@
-import { Motion } from "solid-motionone";
-import { useParams } from "@solidjs/router";
-import { JSX, Setter, Show, createSignal, onMount } from "solid-js";
-import { useRefSelector } from "../state/store";
+import { Motion } from 'solid-motionone';
+import { useParams } from '@solidjs/router';
+import { JSX, Setter, Show, createSignal, onMount } from 'solid-js';
+import { useRefSelector } from '~/state/store';
 
-import Board from "../components/Board/Board";
+import Board from '~/components/Board/Board';
 
 import {
   Dialog,
@@ -13,13 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../components/ui/dialog";
+} from '~/components/ui/dialog';
 
-import { Label } from "../components/ui/label";
-import { Input } from "../components/ui/input";
+import { Label } from '~/components/ui/label';
+import { Input } from '~/components/ui/input';
 
-import BoardList from "../components/BoardList/BoardList";
-import { Button } from "../components/ui/button";
+import BoardList from '~/components/BoardList/BoardList';
+import { Button } from '~/components/ui/button';
 
 const BoardsPage = () => {
   const [boards, setBoards] = createSignal<string[]>([]);
@@ -75,7 +75,7 @@ const NewCollectionDialog = (props: { setter: Setter<string[]> }) => {
   ) => {
     e.preventDefault();
     const formData = new FormData(e?.currentTarget);
-    const name = formData.get("name");
+    const name = formData.get('name');
     if (name) {
       // await createCollection(name.toString());
 
@@ -90,7 +90,7 @@ const NewCollectionDialog = (props: { setter: Setter<string[]> }) => {
     <Dialog open={showDialog()} onOpenChange={setShowDialog}>
       <DialogTrigger
         as={Button}
-        class=" bg-transparent border border-input hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 "
+        class=" h-11 rounded-md border border-input bg-transparent px-8 hover:bg-accent hover:text-accent-foreground "
       >
         Create Collection
       </DialogTrigger>

@@ -1,12 +1,12 @@
-import type { Component } from "solid-js";
-import { splitProps } from "solid-js";
+import type { Component } from 'solid-js';
+import { splitProps } from 'solid-js';
 
-import { Progress as ProgressPrimitive } from "@kobalte/core";
+import { Progress as ProgressPrimitive } from '@kobalte/core';
 
-import { Label } from "./label";
+import { Label } from './label';
 
 const Progress: Component<ProgressPrimitive.ProgressRootProps> = (props) => {
-  const [, rest] = splitProps(props, ["children"]);
+  const [, rest] = splitProps(props, ['children']);
   return (
     <ProgressPrimitive.Root {...rest}>
       {props.children}

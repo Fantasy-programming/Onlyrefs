@@ -1,5 +1,3 @@
-import { BoardItem, BoardItemSkeleton } from "../BoardItem/BoardItem";
-import { Progress, ProgressValueLabel } from "../ui/progress";
 import {
   onMount,
   Show,
@@ -8,16 +6,20 @@ import {
   createMemo,
   on,
   Suspense,
-} from "solid-js";
-import { Portal } from "solid-js/web";
-import { Mason } from "../Mason";
-import { useFileSelector } from "./Board.hook";
-import { BoardProps } from "./Board.types";
-import { Button } from "../ui/button";
-import { gridSizeHook } from "../../state/hook";
-import { getBreakpoints, searchByText } from "../../lib/helper";
-import { useRefSelector } from "../../state/store";
-import { Input } from "../ui/input";
+} from 'solid-js';
+import { Portal } from 'solid-js/web';
+
+import { useFileSelector } from './Board.hook';
+import { gridSizeHook } from '~/state/hook';
+import { useRefSelector } from '~/state/store';
+import { getBreakpoints, searchByText } from '~/lib/helper';
+import { BoardProps } from './Board.types';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Mason } from '../Mason';
+import { Progress, ProgressValueLabel } from '../ui/progress';
+import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 
 const Board = ({ collection, home, refs }: BoardProps) => {
   // TODO: Make this dude rerender
@@ -40,10 +42,10 @@ const Board = ({ collection, home, refs }: BoardProps) => {
   });
 
   return (
-    <main class="w-full pt-16 h-screen">
+    <main class="h-screen w-full pt-16">
       <div class="mb-8 flex justify-between">
         <Show when={home}>
-          <h1 class="text-4xl text-primary-foreground uppercase italic">
+          <h1 class="text-4xl uppercase italic text-primary-foreground">
             {collection}
           </h1>
         </Show>
@@ -56,11 +58,11 @@ const Board = ({ collection, home, refs }: BoardProps) => {
         </Button>
         <Input
           placeholder="Search your refs..."
-          class="border-none outline-none text-4xl italic font-serif focus-visible:ring-0 focus-visible:ring-offset-0"
+          class="border-none font-serif text-4xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           oninput={(e) => {
             console.log(e);
             const value = e.target.value;
-            if (value === "") {
+            if (value === '') {
               setBoardRefs(refs);
               return;
             }
@@ -68,26 +70,35 @@ const Board = ({ collection, home, refs }: BoardProps) => {
           }}
         />
       </div>
-      <Mason
-        as="section"
-        class="w-full h-full relative"
-        items={boardRefs()}
-        gap={20}
-        columns={breakPoints()()}
+      <Show
+        when={refs.length !== 0}
+        fallback={
+          <div class="flex h-full w-full items-center justify-center font-serif text-4xl text-muted/50">
+            <span>Drop or Save Reference file here to start</span>
+          </div>
+        }
       >
-        {(item, index) => (
-          <Suspense fallback={<BoardItemSkeleton index={index()} />}>
-            <BoardItem image={item} />
-          </Suspense>
-        )}
-      </Mason>
+        <Mason
+          as="section"
+          class="relative h-full w-full"
+          items={boardRefs()}
+          gap={20}
+          columns={breakPoints()()}
+        >
+          {(item, index) => (
+            <Suspense fallback={<BoardItemSkeleton index={index()} />}>
+              <BoardItem image={item} />
+            </Suspense>
+          )}
+        </Mason>
+      </Show>
       <Show when={progress().total !== progress().completed}>
         <Portal>
-          <div class="fixed h-20 bg-white text-black shadow-md w-[300px] rounded-md right-5 bottom-5">
+          <div class="fixed bottom-5 right-5 h-20 w-[300px] rounded-md bg-white text-black shadow-md">
             <Progress
-              class="p-4 space-y-1"
+              class="space-y-1 p-4"
               minValue={0}
-              getValueLabel={() => "Copying..."}
+              getValueLabel={() => 'Copying...'}
               value={progress().total - progress().completed}
               maxValue={progress().total}
             >
