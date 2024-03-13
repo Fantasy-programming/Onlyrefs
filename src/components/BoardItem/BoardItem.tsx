@@ -1,11 +1,11 @@
-import { Show, children, Component, ParentProps, createSignal } from "solid-js";
-import { deleteRef } from "../../lib/helper.ts";
-import { useRefSelector } from "../../state/store";
+import { Show, children, Component, ParentProps, createSignal } from 'solid-js';
+import { deleteRef } from '~/lib/helper.ts';
+import { useRefSelector } from '~/state/store';
 // import { createTiptapEditor } from "solid-tiptap";
 // import StarterKit from "@tiptap/starter-kit";
 
-import { BoardItemProps, RefContextMenuProps } from "./BoardItem.types.ts";
-import { MediaRef } from "../../lib/types.ts";
+import { BoardItemProps, RefContextMenuProps } from './BoardItem.types.ts';
+import { MediaRef } from '~/lib/types.ts';
 
 import {
   ContextMenu,
@@ -18,19 +18,19 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
   ContextMenuRadioGroup,
-} from "../ui/context-menu.tsx";
-import { Skeleton } from "../ui/skeleton";
-import { ViewBox } from "../ViewBox/ViewBox.tsx";
+} from '../ui/context-menu.tsx';
+import { Skeleton } from '../ui/skeleton';
+import { ViewBox } from '../ViewBox/ViewBox.tsx';
 
-const refHeigts = ["440px", "300px", "400px", "500px", "350px"];
+const refHeigts = ['440px', '300px', '400px', '500px', '350px'];
 
 const getRandomHeight = (array: string[]) => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
 export const BoardItem = ({ image }: BoardItemProps) => {
-  const type = image.metadata.media_type.split("/")[0];
-  const isVideo = type === "video";
+  const type = image.metadata.media_type.split('/')[0];
+  const isVideo = type === 'video';
 
   return (
     <Show
@@ -59,10 +59,10 @@ const ImageItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <ViewBox source={props.mediaInfo}>
       <div
-        class={`rounded-xl  cursor-pointer border bg-cover bg-center bg-no-repeat border-transparent hover:border-primary hover:shadow-inner hover:shadow-foreground/20 shadow-md transition-all duration-300`}
+        class={`cursor-pointer  rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20`}
         style={{
-          "aspect-ratio": `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
-          "background-image": `url(${props.mediaInfo.low_res_imagepath})`,
+          'aspect-ratio': `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
+          'background-image': `url(${props.mediaInfo.low_res_imagepath})`,
         }}
       />
     </ViewBox>
@@ -85,13 +85,13 @@ export const NewNote = () => {
 const VideoItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <div
-      class="rounded-xl relative cursor-pointer overflow-hidden border border-transparent hover:border-primary shadow-md"
+      class="relative cursor-pointer overflow-hidden rounded-xl border border-transparent shadow-md hover:border-primary"
       style={{
         height: getRandomHeight(refHeigts),
       }}
     >
       <video
-        class="object-cover h-full w-full rounded-xl absolute"
+        class="absolute h-full w-full rounded-xl object-cover"
         src={props.mediaInfo.imagepath}
         preload="auto"
         autoplay
@@ -165,9 +165,9 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
 export const BoardItemSkeleton = ({ index }: { index: number }) => {
   return (
     <Skeleton
-      class={`rounded-xl m-3 cursor-pointer shadow-md`}
+      class={`m-3 cursor-pointer rounded-xl shadow-md`}
       style={{
-        height: index % 2 ? "300px" : "440px",
+        height: index % 2 ? '300px' : '440px',
       }}
     />
   );

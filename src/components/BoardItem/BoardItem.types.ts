@@ -1,5 +1,5 @@
-import { SourceRef } from "../Board/Board.types.ts";
-import { MediaRef } from "../../lib/types.ts";
+import { SourceRef } from '../Board/Board.types.ts';
+import { MediaRef } from '~/lib/types.ts';
 
 export interface BoardItemProps {
   image: MediaRef;

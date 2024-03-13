@@ -47,11 +47,11 @@
 
     --radius: 0.5rem;
 
-    --font-serif: "Hahmlet Variable", serif;
-    --font-sans: "Nunito Variable", sans-serif;
+    --font-serif: 'Hahmlet Variable', serif;
+    --font-sans: 'Nunito Variable', sans-serif;
   }
 
-  [data-kb-theme="dark"] {
+  [data-kb-theme='dark'] {
     --background: 0 0% 10%;
     --foreground: 0 10% 90%;
 
@@ -104,8 +104,8 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+      'rlig' 1,
+      'calt' 1;
   }
 }
 

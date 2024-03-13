@@ -1,8 +1,8 @@
 <div align="center">
 <br>
 <br>
-<h1> OnlyRef </h1>
-<img src="screenshots/logo.png"  height="200">
+<h3> OnlyRef </h3>
+<img src="screenshots/logo.png"  height="150">
 <br>
 <br>
 <b>

@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js";
+import type { JSX } from 'solid-js';
 import {
   For,
   createEffect,
@@ -7,16 +7,16 @@ import {
   mergeProps,
   on,
   onCleanup,
-} from "solid-js";
-import type { DynamicProps } from "solid-js/web";
-import { Dynamic } from "solid-js/web";
-import { omitProps } from "solid-use/props";
+} from 'solid-js';
+import type { DynamicProps } from 'solid-js/web';
+import { Dynamic } from 'solid-js/web';
+import { omitProps } from 'solid-use/props';
 
 type OmitAndMerge<T, U> = T & Omit<U, keyof T>;
 
 type MasonProps<
   Data,
-  T extends keyof JSX.HTMLElementTags = "div",
+  T extends keyof JSX.HTMLElementTags = 'div',
 > = OmitAndMerge<
   {
     as?: T;
@@ -58,14 +58,14 @@ function getLongestColumn(columns: number[]): number {
 }
 
 const MASON_STYLE: JSX.CSSProperties = {
-  position: "relative",
-  width: "100%",
-  "max-width": "100%",
+  position: 'relative',
+  width: '100%',
+  'max-width': '100%',
 };
 
-const MASON_STYLE_STRING = ";position:relative;width:100%;max-width:100%;";
+const MASON_STYLE_STRING = ';position:relative;width:100%;max-width:100%;';
 
-const MASON_KEY = "data-solid-mason";
+const MASON_KEY = 'data-solid-mason';
 
 function getContentWidth(el: HTMLElement | SVGAElement): number {
   const styles = getComputedStyle(el);
@@ -107,7 +107,7 @@ function createMason(el: HTMLElement, state: MasonState): void {
         // Set the width of the node
         node.style.width = `${widthPerColumn}px`;
         // Set the position
-        node.style.position = "absolute";
+        node.style.position = 'absolute';
         // Set the top/left
         const currentColumnHeight = newColumns[targetColumn];
         node.style.top = `${currentColumnHeight}px`;
@@ -185,9 +185,9 @@ export function createMasonryBreakpoints(
           }
         };
         callback();
-        media.addEventListener("change", callback, false);
+        media.addEventListener('change', callback, false);
         onCleanup(() => {
-          media.removeEventListener("change", callback, false);
+          media.removeEventListener('change', callback, false);
         });
       });
     }
@@ -196,7 +196,7 @@ export function createMasonryBreakpoints(
   return columns;
 }
 
-export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
+export function Mason<Data, T extends keyof JSX.HTMLElementTags = 'div'>(
   props: MasonProps<Data, T>,
 ): JSX.Element {
   const [ref, setRef] = createSignal<HTMLElement>();
@@ -206,9 +206,9 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
     const el = ref();
     if (el) {
       // Set style
-      el.style.position = "relative";
-      el.style.width = "100%";
-      el.style.maxWidth = "100%";
+      el.style.position = 'relative';
+      el.style.width = '100%';
+      el.style.maxWidth = '100%';
 
       const state: MasonState = {
         width: 0,
@@ -241,9 +241,9 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
       );
 
       // Track window resize
-      window.addEventListener("resize", recalculate, { passive: true });
+      window.addEventListener('resize', recalculate, { passive: true });
       onCleanup(() => {
-        window.removeEventListener("resize", recalculate);
+        window.removeEventListener('resize', recalculate);
       });
 
       // Track child mutations
@@ -271,7 +271,7 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
     mergeProps(
       {
         get component() {
-          return props.as ?? "div";
+          return props.as ?? 'div';
         },
         ref: setRef,
         get children() {
@@ -281,12 +281,12 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
             },
             children(item, index) {
               return Dynamic({
-                component: "div",
+                component: 'div',
                 get children() {
                   return props.children(item, index);
                 },
                 style: {
-                  position: "absolute",
+                  position: 'absolute',
                 },
               });
             },
@@ -297,7 +297,7 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
         },
         get style() {
           const current = props.style;
-          if (typeof current === "string") {
+          if (typeof current === 'string') {
             return `${current}${MASON_STYLE_STRING}`;
           }
           if (current) {
@@ -306,7 +306,7 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = "div">(
           return MASON_STYLE_STRING;
         },
       },
-      omitProps(props, ["as", "children", "columns", "items", "style"]),
+      omitProps(props, ['as', 'children', 'columns', 'items', 'style']),
     ) as unknown as DynamicProps<T>,
   );
 }

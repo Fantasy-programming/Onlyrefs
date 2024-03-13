@@ -1,6 +1,6 @@
-import { Motion } from "solid-motionone";
-import Board from "../components/Board/Board";
-import { useRefSelector } from "../state/store";
+import { Motion } from 'solid-motionone';
+import Board from '~/components/Board/Board';
+import { useRefSelector } from '~/state/store';
 
 const Home = () => {
   const {
