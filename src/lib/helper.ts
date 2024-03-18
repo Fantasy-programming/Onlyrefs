@@ -3,16 +3,16 @@ import {
   createDir,
   removeDir,
   BaseDirectory,
-} from "@tauri-apps/api/fs";
-import { invoke } from "@tauri-apps/api/tauri";
+} from '@tauri-apps/api/fs';
+import { invoke } from '@tauri-apps/api/tauri';
 
 import {
   COLLECTIONS_DIR,
   breakpoints_4,
   breakpoints_5,
   breakpoints_6,
-} from "./config";
-import { MediaRef } from "./types";
+} from './config';
+import { MediaRef } from './types';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
@@ -31,6 +31,7 @@ export const createRefDir = async (collectionName: string) => {
 
 // Delete a ref with its metadata
 export const deleteRef = async (collectionID: string) => {
+  await invoke('remove_ref', { refId: collectionID });
   await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
     dir: BaseDirectory.AppData,
     recursive: true,
@@ -41,6 +42,12 @@ export function searchByText(refs: MediaRef[], searchText: string) {
   // Convert searchText to lowercase for case-insensitive matching
   const lowercaseSearchText = searchText.toLowerCase();
 
+  // Create a regex pattern to match variations of the search text
+  const regexPattern = new RegExp(
+    lowercaseSearchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),
+    'i',
+  );
+
   // Use filter to find objects that have matching text in name or tags
   const results = refs.filter((ref) => {
     // Convert object name to lowercase for case-insensitive matching
@@ -50,10 +57,10 @@ export function searchByText(refs: MediaRef[], searchText: string) {
       tag.toLowerCase(),
     );
 
-    // Check if searchText is present in the object name or tags
+    // Check if searchText matches the object name or any tag
     return (
-      lowercaseObjectName.includes(lowercaseSearchText) ||
-      lowercaseObjectTags?.some((tag) => tag.includes(lowercaseSearchText))
+      regexPattern.test(lowercaseObjectName) ||
+      lowercaseObjectTags?.some((tag) => regexPattern.test(tag))
     );
   });
 
@@ -61,15 +68,15 @@ export function searchByText(refs: MediaRef[], searchText: string) {
 }
 
 export const changRefName = async (refID: string, newName: string) => {
-  await invoke("rename_ref", { refID, newName });
+  await invoke('rename_ref', { refID, newName });
 };
 
 export const deleteTag = async (refID: string, tag: string) => {
-  await invoke("remove_tag", { refId: refID, tag: tag });
+  await invoke('remove_tag', { refId: refID, tag: tag });
 };
 
 export const addTag = async (refID: string, tag: string) => {
-  await invoke("add_tag", { refId: refID, tag: tag });
+  await invoke('add_tag', { refId: refID, tag: tag });
 };
 
 export const getBreakpoints = (columns: number) => {

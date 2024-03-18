@@ -52,6 +52,7 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       const newPath = await join(destDir, randomID, filename);
       await copyFile(image, newPath);
 
+      const x = performance.now();
       // Generate the metadata (rust)
       await invoke('generate_metadata', {
         destPath: destinationFolder,
@@ -60,6 +61,8 @@ export const useFileSelector = (): useFileSelectorReturnType => {
         fileName: filename,
         collection: collection,
       });
+      const y = performance.now();
+      console.log('Time to generate metadata: ', y - x);
 
       setProgress({
         total: progress().total,

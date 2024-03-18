@@ -6,6 +6,7 @@ import { TbGridDots } from 'solid-icons/tb';
 import { Toggle } from '../ui/toggle';
 import { Show } from 'solid-js';
 import { gridSizeHook } from '../../state/hook';
+import Logo from '~/assets/logo-simple.svg';
 
 export const Navigation = () => {
   return (
@@ -35,9 +36,12 @@ export const LeftNav = () => {
   return (
     <nav class="fixed left-0 top-0 z-50 flex h-screen w-24 flex-col items-center justify-end bg-transparent opacity-100  ">
       <div class="logo absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
-        <div class="text-4xl">
-          <span class="opacity-9 text-foreground ">Only</span>
-          <span class="opacity-9 text-accent">Ref</span>
+        <div class="flex items-center gap-4 text-4xl">
+          <Logo class="h-10 w-10" />
+          <span>
+            <span class="opacity-9 text-foreground ">Only</span>
+            <span class="opacity-9 text-accent">Ref</span>
+          </span>
         </div>
       </div>
       <div class="flex flex-col items-center gap-6 py-12 text-white">

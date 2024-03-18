@@ -4,7 +4,7 @@ import { render } from 'solid-js/web';
 import { ColorModeProvider, localStorageManager } from '@kobalte/core';
 import { RefProvider, RefService } from './state/store';
 
-//fonts
+//TODO: Pick the fonts sizes
 import '@fontsource-variable/nunito';
 import '@fontsource-variable/hahmlet';
 import './index.css';
