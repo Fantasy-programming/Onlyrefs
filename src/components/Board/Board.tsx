@@ -44,7 +44,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
 
   return (
     <main class="h-screen w-full pt-10">
-      <div class="mb-8 flex justify-between">
+      <div class="mb-12 flex justify-between">
         <Show when={home}>
           <h1 class="text-4xl uppercase italic text-primary-foreground">
             {collection}
@@ -102,7 +102,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
             <Progress
               class="space-y-1 p-4"
               minValue={0}
-              getValueLabel={() => 'Copying...'}
+              getValueLabel={() => 'Processing...'}
               value={progress().total - progress().completed}
               maxValue={progress().total}
             >

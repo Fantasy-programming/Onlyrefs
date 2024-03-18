@@ -6,7 +6,7 @@ import { RefProvider, RefService } from './state/store';
 
 //TODO: Pick the fonts sizes
 import '@fontsource-variable/nunito';
-import '@fontsource-variable/hahmlet';
+import '@fontsource/prociono';
 import './index.css';
 
 // Pages

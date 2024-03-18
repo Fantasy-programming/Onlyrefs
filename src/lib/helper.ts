@@ -39,32 +39,43 @@ export const deleteRef = async (collectionID: string) => {
 };
 
 export function searchByText(refs: MediaRef[], searchText: string) {
-  // Convert searchText to lowercase for case-insensitive matching
+  // Convert searchText to lowercase
   const lowercaseSearchText = searchText.toLowerCase();
-
-  // Create a regex pattern to match variations of the search text
-  const regexPattern = new RegExp(
-    lowercaseSearchText.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'),
-    'i',
-  );
 
   // Use filter to find objects that have matching text in name or tags
   const results = refs.filter((ref) => {
-    // Convert object name to lowercase for case-insensitive matching
+    // Convert object name to lowercase
     const lowercaseObjectName = ref.metadata.name.toLowerCase();
-
     const lowercaseObjectTags = ref.metadata.tags?.map((tag) =>
       tag.toLowerCase(),
     );
 
-    // Check if searchText matches the object name or any tag
-    return (
-      regexPattern.test(lowercaseObjectName) ||
-      lowercaseObjectTags?.some((tag) => regexPattern.test(tag))
+    // Check if searchText characters are present in the same order in the object name or any tag
+    const matchesName = containsCharsInOrder(
+      lowercaseObjectName,
+      lowercaseSearchText,
     );
+    const matchesTags = lowercaseObjectTags?.some((tag) =>
+      containsCharsInOrder(tag, lowercaseSearchText),
+    );
+
+    return matchesName || matchesTags;
   });
 
   return results;
+}
+
+function containsCharsInOrder(str: string, searchStr: string) {
+  let searchIndex = 0;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === searchStr[searchIndex]) {
+      searchIndex++;
+    }
+    if (searchIndex === searchStr.length) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export const changRefName = async (refID: string, newName: string) => {
