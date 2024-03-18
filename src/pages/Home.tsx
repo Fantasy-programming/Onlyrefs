@@ -10,7 +10,6 @@ const Home = () => {
   return (
     <>
       <Motion.div animate={{ opacity: [0, 1] }}>
-        <div class="input-component"></div>
         <Board collection="all" refs={ref} />
       </Motion.div>
     </>

@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --background: 216 20% 95%;
+    --background: 216 50% 95%;
     --foreground: 0 10% 10%;
 
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 68 29% 45%;
+    --accent: 35 98% 39%;
     --accent-foreground: 0 0% 98%;
 
     --popover: 240 10% 3.9%;
@@ -22,10 +22,10 @@
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
 
-    --primary: 68 29% 45%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 219 58% 37%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 68 29% 45%;
+    --secondary: 16 99% 34%;
     --secondary-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -52,7 +52,7 @@
   }
 
   [data-kb-theme='dark'] {
-    --background: 0 0% 10%;
+    --background: 0 0% 5%;
     --foreground: 0 10% 90%;
 
     --muted: 240 4.8% 95.9%;
@@ -67,13 +67,13 @@
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
 
-    --primary: 68 29% 55%;
+    --primary: 219 58% 27%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 68 29% 55%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 16 99% 44%;
+    --primary-foreground: 0 0% 98%;
 
-    --accent: 68 29% 55%;
+    --accent: 35 98% 59%;
     --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;

@@ -18,6 +18,7 @@ import { BoardProps } from './Board.types';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Mason } from '../Mason';
+import Logo from '~/assets/logo-bw.svg';
 import { Progress, ProgressValueLabel } from '../ui/progress';
 import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 
@@ -42,7 +43,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
   });
 
   return (
-    <main class="h-screen w-full pt-16">
+    <main class="h-screen w-full pt-10">
       <div class="mb-8 flex justify-between">
         <Show when={home}>
           <h1 class="text-4xl uppercase italic text-primary-foreground">
@@ -73,8 +74,11 @@ const Board = ({ collection, home, refs }: BoardProps) => {
       <Show
         when={refs.length !== 0}
         fallback={
-          <div class="flex h-full w-full items-center justify-center font-serif text-4xl text-muted/50">
-            <span>Drop or Save Reference file here to start</span>
+          <div class="flex h-3/4  w-full  flex-col items-center justify-center gap-5 text-center font-serif text-2xl text-muted/50 md:text-4xl">
+            <Logo class="h-36 w-36 opacity-40 dark:opacity-10 md:h-64 md:w-64 " />
+            <span class="opacity-80 dark:opacity-30">
+              Drop or Save Reference file here to start
+            </span>
           </div>
         }
       >

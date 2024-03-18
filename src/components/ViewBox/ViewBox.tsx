@@ -59,18 +59,14 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
     <Dialog>
       <DialogTrigger class="w-full">{children}</DialogTrigger>
       <DialogContent
-        class={'flex h-[90%] max-h-none w-[90%] max-w-none p-0'}
+        class={
+          'flex h-full max-h-none  w-full max-w-none flex-col overflow-y-scroll p-0 md:h-[90%] md:w-[90%] md:flex-row'
+        }
         style={{
           background: source.metadata.colors[0],
         }}
       >
-        <div
-          class="relative flex flex-grow items-center justify-center py-2 pl-2"
-          style={{
-            width: 'cacl(100% - 400px)',
-            'padding-right': 'calc((0.5rem * 2) + 400px)',
-          }}
-        >
+        <div class="relative flex flex-grow flex-col items-center  justify-center p-0 py-2 pl-2 md:w-full md:pr-[calc((0.5rem*2)+400px)]">
           <div class="flex h-full w-full items-center justify-center overflow-clip rounded-xl p-7 ">
             <img
               src={source.imagepath}
@@ -82,7 +78,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
               }}
             />
           </div>
-          <div class="absolute bottom-4 left-4 flex flex-row-reverse -space-x-7 space-x-reverse  focus-within:space-x-0 hover:space-x-0   ">
+          <div class="static bottom-4 left-4 flex flex-row-reverse -space-x-7 space-x-reverse focus-within:space-x-0  hover:space-x-0 md:absolute   ">
             <For each={source.metadata.colors}>
               {(color, index) => (
                 <>
@@ -107,13 +103,8 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
             </For>
           </div>
         </div>
-        <div
-          class=" absolute  right-0 top-0 z-10 my-2 mr-2 h-[95%] w-[400px]    rounded-xl bg-background"
-          style={{
-            height: 'calc(100% - (0.5rem * 2))',
-          }}
-        >
-          <header class="flex flex-col gap-3 rounded-t-xl bg-gradient-to-tr from-primary/20 to-background/80  p-7 ">
+        <div class="static right-0 top-0 z-10 my-2 mr-2 h-full w-full rounded-xl bg-background md:absolute md:h-[calc(100%-(0.5rem*2))]  md:w-[400px]">
+          <header class="flex flex-col gap-3 rounded-t-xl bg-gradient-to-tr from-primary/80 to-primary/40  p-7 ">
             <input
               type="text"
               class="h-[50px] border-none bg-transparent text-3xl outline-none "
@@ -152,6 +143,7 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
                   onClick={() => setShowAllTags(true)}
                 >
                   <Button
+                    variant="secondary"
                     class="mb-[7px] mr-[5px] px-3 py-[6px] text-lg"
                     onClick={() => setOpenTagsAdder(!openTagsAdder())}
                   >
@@ -160,9 +152,9 @@ export const ViewBox: Component<ParentProps & { source: MediaRef }> = ({
                   <Show when={tags()}>
                     <For each={tags()}>
                       {(tag) => (
-                        <Tag name={tag} removeTag={removeTag}>
+                        <ViewBoxTag name={tag} removeTag={removeTag}>
                           {tag}
-                        </Tag>
+                        </ViewBoxTag>
                       )}
                     </For>
                   </Show>
@@ -199,10 +191,10 @@ interface TagProps {
   removeTag: (name: string) => void;
 }
 
-const Tag = (props: ParentProps & TagProps) => {
+const ViewBoxTag = (props: ParentProps & TagProps) => {
   return (
     <span class="group relative mb-[7px] mr-[5px] inline-flex whitespace-nowrap">
-      <span class="cursor-zoom-in text-nowrap rounded-full bg-primary px-3   py-[6px] text-lg text-foreground hover:bg-primary/20">
+      <span class="cursor-zoom-in text-nowrap rounded-full bg-primary px-3 py-[6px] text-lg text-primary-foreground hover:bg-primary/20">
         # {props.children}
       </span>
       <span
