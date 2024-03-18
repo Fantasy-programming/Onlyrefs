@@ -1,6 +1,7 @@
-use auto_palette::{Algorithm, Palette};
 use image::{imageops, DynamicImage, GenericImageView, RgbaImage};
+use kmeans_colors::{get_kmeans, Kmeans, Sort};
 use mime_guess::from_path;
+use palette::{FromColor, IntoColor, Lab, Pixel, Srgb};
 use std::collections::HashSet;
 use std::path::Path;
 
@@ -14,82 +15,52 @@ pub fn determine_media_type(file_name: &str) -> String {
 
 pub fn extract_colors(file_path: &str) -> Vec<String> {
     let media_type = determine_media_type(file_path);
+
     // Change the way we handle videos
     if media_type.contains("video") {
         return Vec::new();
     }
 
-    print!("opening the image");
-    let image = image::open(file_path).unwrap();
-
-    print!("ready to go");
-
-    let palette: Palette<f64> = Palette::extract(&image);
-
-    print!("Extraction over");
-
-    let swatches = palette.swatches(10);
-
-    print!("here i am");
-
-    let mut hex_codes = Vec::new();
-    let mut unique_hex_codes = HashSet::new();
-
-    swatches.iter().for_each(|swatch| {
-        let hex_code = swatch.color().to_hex_string();
-
-        if unique_hex_codes.insert(hex_code.clone()) {
-            hex_codes.push(hex_code);
-        }
-    });
-
-    hex_codes
+    let pixels = read_image(file_path).unwrap();
+    dominant_colors(&pixels)
 }
 
-// pub fn extract_colors(file_path: &str) -> Vec<String> {
-//     let media_type = determine_media_type(file_path);
-//
-//     // Change the way we handle videos
-//     if media_type.contains("video") {
-//         return Vec::new();
-//     }
-//     let pixels = read_image(file_path).unwrap();
-//     dominant_colors(&pixels)
-// }
-
 //TODO: Improve performance
-// fn dominant_colors(pixels: &Vec<u8>) -> Vec<String> {
-//     // Convert RGB [u8] buffer to Lab for k-means.
-//     let color: Vec<PackedArgb> = from_uint_vec(pixels);
-//
-//     // Iterate over the runs, keep the best results.
-//     let mut result = Kmeans::new();
-//     for i in 0..3 {
-//         let run_result = get_kmeans(5, 20, 0.0, false, &lab, 1000 + i as u64);
-//         if run_result.score < result.score {
-//             result = run_result;
-//         }
-//     }
-//
-//     // Process centroid data.
-//     let mut res = Lab::sort_indexed_colors(&result.centroids, &result.indices);
-//
-//     // Sort indexed colors by percentage.
-//     res.sort_unstable_by(|a, b| {
-//         (b.percentage)
-//             .partial_cmp(&a.percentage)
-//             .expect("Failed to compare values while sorting.")
-//     });
-//
-//     // Format colors as RGB HEX string.
-//     let mut hex_colors = Vec::new();
-//     for r in res.iter() {
-//         let c: Srgb<u8> = Srgb::from_color(r.centroid).into_format();
-//         let hex_str = format!("#{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
-//         hex_colors.push(hex_str);
-//     }
-//     hex_colors
-// }
+fn dominant_colors(pixels: &[u8]) -> Vec<String> {
+    // Convert RGB [u8] buffer to Lab for k-means.
+    let lab: Vec<Lab> = Srgb::from_raw_slice(pixels)
+        .iter()
+        .map(|x| x.into_format().into_color())
+        .collect();
+
+    // Iterate over the runs, keep the best results.
+    let mut result = Kmeans::new();
+    for i in 0..3 {
+        let run_result = get_kmeans(10, 20, 0.0, false, &lab, 1000 + i as u64);
+        if run_result.score < result.score {
+            result = run_result;
+        }
+    }
+
+    // Process centroid data.
+    let mut res = Lab::sort_indexed_colors(&result.centroids, &result.indices);
+
+    // Sort indexed colors by percentage.
+    res.sort_unstable_by(|a, b| {
+        (b.percentage)
+            .partial_cmp(&a.percentage)
+            .expect("Failed to compare values while sorting.")
+    });
+
+    // Format colors as RGB HEX string.
+    let mut hex_colors = Vec::new();
+    for r in res.iter() {
+        let c: Srgb<u8> = Srgb::from_color(r.centroid).into_format();
+        let hex_str = format!("#{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
+        hex_colors.push(hex_str);
+    }
+    hex_colors
+}
 
 fn read_image(path: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let img = image::open(path)?;
@@ -104,11 +75,9 @@ fn read_image(path: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 }
 
 pub fn analyze_dimensions(file_path: &str) -> Option<(u32, u32)> {
-    // Use the image crate to open the image and retrieve its dimensions
     if let Ok(image) = image::open(file_path) {
         Some(image.dimensions())
     } else {
-        // Return None if dimensions cannot be determined (e.g., non-image file)
         None
     }
 }
@@ -144,24 +113,14 @@ pub fn generate_image(
 }
 
 fn reduce_quality(image: DynamicImage, target_size_kb: u32) -> DynamicImage {
-    // Convert the image to RgbaImage for manipulation
     let mut rgba_image = RgbaImage::from(image.to_rgba8());
-
-    // Reduce the image quality
     reduce_image_quality(&mut rgba_image, target_size_kb);
-
-    // Convert the RgbaImage back to DynamicImage
     DynamicImage::ImageRgba8(rgba_image)
 }
 
 fn reduce_image_quality(rgba_image: &mut RgbaImage, target_size_kb: u32) {
-    // Calculate the target size in bytes
     let target_size_bytes = target_size_kb * 1024;
-
-    // Calculate the current size of the image in bytes
     let current_size_bytes = rgba_image.dimensions().0 * rgba_image.dimensions().1 * 4;
-
-    // Calculate the quality factor to achieve the target size
     let quality_factor = (target_size_bytes as f64 / current_size_bytes as f64).sqrt();
 
     // Apply the quality factor to reduce image quality

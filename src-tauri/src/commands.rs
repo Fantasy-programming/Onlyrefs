@@ -1,4 +1,6 @@
-use crate::config::get_app_data_dir_path;
+use crate::config::get_collection_path;
+use crate::media;
+use crate::state::{MediaRef, Metadata};
 use crate::utils;
 use chrono::Local;
 use rand::Rng;
@@ -6,40 +8,28 @@ use serde::{Deserialize, Serialize};
 use std::default::Default;
 use std::fs;
 use std::path::Path;
+use std::sync::Mutex;
+use tauri::State;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
-pub struct Metadata {
-    pub id: String,
-    pub file_name: String,
-    pub name: String,
-    pub media_type: String,
-    pub dimensions: Option<(u32, u32)>,
-    pub file_size: u64,
-    pub collection: String,
-    pub colors: Vec<String>,
-    pub created_at: String,
-    pub updated_at: String,
-    #[serde(default)]
-    pub tags: Vec<String>,
-}
-
+//TODO: Change to add to the state
 #[tauri::command]
-fn generate_metadata(
+async fn generate_metadata(
     dest_path: &str,
     dest_file: &str,
     ref_id: &str,
     file_name: &str,
     collection: &str,
-) {
+    state: State<'_, Mutex<Vec<MediaRef>>>,
+) -> Result<(), String> {
     let metadata = Metadata {
         id: ref_id.to_string(),
         name: file_name.to_string(),
         file_name: file_name.to_string(),
-        media_type: utils::determine_media_type(file_name),
-        dimensions: utils::analyze_dimensions(dest_file),
+        media_type: media::determine_media_type(file_name),
+        dimensions: media::analyze_dimensions(dest_file),
         file_size: utils::analyze_file_size(dest_file),
         collection: collection.to_string(),
-        colors: utils::extract_colors(dest_file),
+        colors: media::extract_colors(dest_file),
         created_at: Local::now().to_string(),
         updated_at: Local::now().to_string(),
         tags: Vec::new(),
@@ -47,11 +37,26 @@ fn generate_metadata(
 
     // Write Json metadata file
     let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
-    let metada_path = Path::new(dest_path).join("metadata.json");
-    fs::write(metada_path, json_data).expect("Failed to write metadata file");
+    let metadata_path = Path::new(dest_path).join("metadata.json");
+    fs::write(metadata_path.clone(), json_data).expect("Failed to write metadata file");
 
     // Generate lower image
-    utils::generate_image(file_name, dest_file, dest_path, 500, 500, 500);
+    media::generate_image(file_name, dest_file, dest_path, 500, 500, 500);
+
+    // Store into state
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+
+    let new_ref = MediaRef {
+        imagepath: dest_file.to_string(),
+        low_res_imagepath: dest_path.to_string() + "/lower_" + file_name,
+        metapath: metadata_path.to_str().unwrap().to_string(),
+        metadata: Some(metadata),
+    };
+
+    state_guard.push(new_ref);
+    Ok(())
 }
 
 #[tauri::command]
@@ -70,31 +75,100 @@ fn generate_id(lenght: usize) -> String {
 }
 
 #[tauri::command]
-async fn get_media_refs(app_handle: tauri::AppHandle) -> Vec<utils::MediaRef> {
-    let app_data_dir = get_app_data_dir_path(app_handle);
-    let collections_dir = app_data_dir.join("collections");
-    utils::fetch_refs(&collections_dir)
+async fn get_media_refs(state: State<'_, Mutex<Vec<MediaRef>>>) -> Result<Vec<MediaRef>, String> {
+    let state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+    Ok(state_guard.clone())
 }
 
 #[tauri::command]
-fn add_tag(ref_id: &str, tag: &str, app_handle: tauri::AppHandle) {
-    let app_data_dir = get_app_data_dir_path(app_handle);
-    let collections_dir = app_data_dir.join("collections");
+async fn remove_ref(ref_id: &str, state: State<'_, Mutex<Vec<MediaRef>>>) -> Result<(), String> {
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+    state_guard.retain(|media_ref| {
+        if let Some(metadata) = &media_ref.metadata {
+            metadata.id != ref_id
+        } else {
+            true
+        }
+    });
+    Ok(())
+}
+
+#[tauri::command]
+async fn add_tag(
+    ref_id: &str,
+    tag: &str,
+    app_handle: tauri::AppHandle,
+    state: State<'_, Mutex<Vec<MediaRef>>>,
+) -> Result<(), String> {
+    // Add tags manually
+    let collections_dir = get_collection_path(&app_handle);
     utils::add_tag(&collections_dir, ref_id, tag);
+
+    // Update state
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+
+    if let Some(media_ref) = state_guard.iter_mut().find(|media_ref| {
+        if let Some(metadata) = &media_ref.metadata {
+            metadata.id == ref_id
+        } else {
+            false
+        }
+    }) {
+        // Add the tag to the media reference's metadata
+        if let Some(metadata) = &mut media_ref.metadata {
+            metadata.tags.push(tag.to_string());
+            Ok(())
+        } else {
+            Err("Metadata is missing for the media reference".to_string())
+        }
+    } else {
+        Err(format!("Media reference with ID '{}' not found", ref_id))
+    }
 }
 
 #[tauri::command]
-fn remove_tag(ref_id: &str, tag: &str, app_handle: tauri::AppHandle) {
-    let app_data_dir = get_app_data_dir_path(app_handle);
-    let collections_dir = app_data_dir.join("collections");
+async fn remove_tag(
+    ref_id: &str,
+    tag: &str,
+    app_handle: tauri::AppHandle,
+    state: State<'_, Mutex<Vec<MediaRef>>>,
+) -> Result<(), String> {
+    let collections_dir = get_collection_path(&app_handle);
     utils::remove_tag(&collections_dir, ref_id, tag);
+
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+    if let Some(media_ref) = state_guard.iter_mut().find(|media_ref| {
+        if let Some(metadata) = &media_ref.metadata {
+            metadata.id == ref_id
+        } else {
+            false
+        }
+    }) {
+        if let Some(metadata) = &mut media_ref.metadata {
+            metadata.tags.retain(|existing_tag| *existing_tag != tag);
+            Ok(())
+        } else {
+            Err("Metadata is missing for the media reference".to_string())
+        }
+    } else {
+        Err(format!("Media reference with ID '{}' not found", ref_id))
+    }
 }
 
 pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
     Box::new(tauri::generate_handler![
+        get_media_refs,
         generate_id,
         generate_metadata,
-        get_media_refs,
+        remove_ref,
         add_tag,
         remove_tag
     ])
