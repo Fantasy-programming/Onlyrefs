@@ -16,6 +16,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    "types": ["vite-plugin-solid-svg/types-component-solid", "vite/client"],
     "paths": {
       "~/*": ["./src/*"]
     }
@@ -27,4 +28,3 @@
     }
   ]
 }
-

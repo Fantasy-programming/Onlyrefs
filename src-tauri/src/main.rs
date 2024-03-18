@@ -6,14 +6,17 @@ use window_shadows::set_shadow;
 
 mod commands;
 mod config;
+mod media;
+mod state;
 mod utils;
 
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            // Initialize the config
             let handle = app.handle();
             config::init(handle);
+
+            app.manage(state::init_media_ref(app.handle()));
 
             // Set window shadow (macos & windows only)
             #[cfg(any(windows, target_os = "macos"))]
