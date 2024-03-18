@@ -7,45 +7,40 @@ import { refExist, createRefDir } from '~/lib/helper';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
 import { invoke } from '@tauri-apps/api';
 
-export const useFileSelector = (): useFileSelectorReturnType => {
-  let waitForFiles: Promise<() => void>;
-  const [progress, setProgress] = createSignal<ProgressionProps>({
-    total: 0,
-    completed: 0,
-  });
+const [isProcessing, setIsProcessing] = createSignal(false);
+const [progress, setProgress] = createSignal<ProgressionProps>({
+  total: 0,
+  completed: 0,
+});
 
-  const selectFiles = async (collection: string) => {
-    const result = await open({
-      multiple: true,
-    });
+const fileOperationQueue: { collection: string; files: string[] }[] = [];
+let waitForFiles: Promise<() => void>;
 
-    if (!result || !Array.isArray(result)) {
-      return;
-    }
+const processQueue = async () => {
+  if (isProcessing() || fileOperationQueue.length === 0) {
+    return;
+  }
 
+  const { collection, files } = fileOperationQueue.shift()!;
+
+  setIsProcessing(true);
+
+  try {
     const destDir = await join(await appDataDir(), 'collections');
-    setProgress({ total: result.length, completed: 0 });
 
-    for (const image of result) {
+    for (const image of files) {
       let randomID: string = '';
 
       while (true) {
-        // Generate the ID
         randomID = await invoke('generate_id', { lenght: 13 });
-
-        // Check if the collection exists
         const exist = await refExist(randomID);
 
-        // if it doesn't then continue the loop
         if (!exist) {
           break;
         }
       }
 
-      // Create the folder
       await createRefDir(randomID);
-
-      // Move the file to the folder
       const segments = image.split(sep);
       const filename = segments[segments.length - 1];
       const destinationFolder = await join(destDir, randomID);
@@ -53,7 +48,6 @@ export const useFileSelector = (): useFileSelectorReturnType => {
       await copyFile(image, newPath);
 
       const x = performance.now();
-      // Generate the metadata (rust)
       await invoke('generate_metadata', {
         destPath: destinationFolder,
         destFile: newPath,
@@ -69,63 +63,61 @@ export const useFileSelector = (): useFileSelectorReturnType => {
         completed: progress().completed + 1,
       });
     }
-  };
+  } finally {
+    setIsProcessing(false);
+    processQueue();
+  }
+};
 
-  const dropFiles = async (collection: string) => {
-    waitForFiles = listen('tauri://file-drop', async (event) => {
-      const files = event.payload as string[];
-
-      const destDir = await join(await appDataDir(), 'collections');
-      setProgress({ total: files.length, completed: 0 });
-
-      for (const image of files) {
-        let randomID: string = '';
-
-        while (true) {
-          // Generate the ID
-          randomID = await invoke('generate_id', { lenght: 13 });
-
-          // Check if the collection exists
-          const exist = await refExist(randomID);
-
-          // if it doesn't then continue the loop
-          if (!exist) {
-            break;
-          }
-        }
-
-        // Create the folder
-        await createRefDir(randomID);
-
-        // Move the file to the folder
-        const segments = image.split(sep);
-        const filename = segments[segments.length - 1];
-        const destinationFolder = await join(destDir, randomID);
-        const newPath = await join(destDir, randomID, filename);
-        await copyFile(image, newPath);
-
-        // Generate the metadata (rust)
-        await invoke('generate_metadata', {
-          destPath: destinationFolder,
-          destFile: newPath,
-          refId: randomID,
-          fileName: filename,
-          collection: collection,
-        });
-
-        setProgress({
-          total: progress().total,
-          completed: progress().completed + 1,
-        });
-      }
-    });
-  };
-
-  // Cleanup progress when the component unmounts
-  onCleanup(() => {
-    waitForFiles.then((f) => f());
-    setProgress({ total: 0, completed: 0 });
+const selectFiles = async (collection: string) => {
+  const files = await open({
+    multiple: true,
   });
 
+  if (!files || !Array.isArray(files)) {
+    return;
+  }
+
+  fileOperationQueue.push({
+    files: files,
+    collection: collection,
+  });
+
+  setProgress((prev) => {
+    return {
+      total: prev.total + files.length,
+      completed: prev.completed,
+    };
+  });
+
+  await processQueue();
+};
+
+const dropFiles = async (collection: string) => {
+  waitForFiles = listen('tauri://file-drop', async (event) => {
+    const files = event.payload as string[];
+
+    fileOperationQueue.push({
+      files: files,
+      collection: collection,
+    });
+
+    setProgress((prev) => {
+      return {
+        total: prev.total + files.length,
+        completed: prev.completed,
+      };
+    });
+
+    await processQueue();
+  });
+};
+
+onCleanup(() => {
+  waitForFiles.then((f) => f());
+  setProgress({ total: 0, completed: 0 });
+});
+
+export const useFileSelector = (): useFileSelectorReturnType => {
   return [selectFiles, dropFiles, progress];
 };
