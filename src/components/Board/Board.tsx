@@ -85,6 +85,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
         <Mason
           as="section"
           class="relative h-full w-full"
+          pre={[]}
           items={boardRefs()}
           gap={20}
           columns={breakPoints()()}

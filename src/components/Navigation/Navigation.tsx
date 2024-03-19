@@ -36,7 +36,7 @@ export const LeftNav = () => {
   return (
     <nav class="fixed left-0 top-0 z-50 flex h-screen w-20 flex-col items-center justify-end bg-transparent opacity-100  ">
       <div class="logo absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
-        <div class="flex items-center gap-4 text-2xl">
+        <div class="flex items-center gap-4 text-3xl">
           <Logo class="h-8 w-8" />
           <span>
             <span class="opacity-9 text-foreground ">Only</span>
@@ -55,9 +55,9 @@ export const LeftNav = () => {
           {(state) => (
             <Show
               when={state.pressed()}
-              fallback={<FiMoon class="h-4 w-4 text-foreground" />}
+              fallback={<FiMoon class="h-5 w-5 text-foreground" />}
             >
-              <FiSun class="h-4 w-4 text-foreground" />
+              <FiSun class="h-5 w-5 text-foreground" />
             </Show>
           )}
         </Toggle>
@@ -68,7 +68,7 @@ export const LeftNav = () => {
           {(state) => (
             <Show
               when={state.pressed()}
-              fallback={<FiGrid class="h-4 w-4 text-foreground" />}
+              fallback={<FiGrid class="h-5 w-5 text-foreground" />}
             >
               <SizePicker />
             </Show>
@@ -81,7 +81,7 @@ export const LeftNav = () => {
           }
         >
           <span>
-            <FiSettings class="h-4 w-4 text-foreground" />
+            <FiSettings class="h-5 w-5 text-foreground" />
           </span>
         </a>
       </div>
@@ -98,19 +98,19 @@ const SizePicker = () => {
         class={gridSize() === 4 ? '' : 'opacity-50'}
         onclick={() => updateGridSize(4)}
       >
-        <FiGrid class="h-4 w-4 text-background" />
+        <FiGrid class="h-5 w-5 text-background" />
       </div>
       <div
         class={gridSize() === 5 ? '' : 'opacity-50'}
         onClick={() => updateGridSize(5)}
       >
-        <BsGrid3x3Gap class="h-4 w-4 text-background" />
+        <BsGrid3x3Gap class="h-5 w-5 text-background" />
       </div>
       <div
         class={gridSize() === 6 ? '' : 'opacity-50'}
         onclick={() => updateGridSize(6)}
       >
-        <TbGridDots class="h-4 w-4 text-background" />
+        <TbGridDots class="h-5 w-5 text-background" />
       </div>
     </div>
   );
