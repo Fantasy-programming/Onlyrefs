@@ -16,13 +16,15 @@ type OmitAndMerge<T, U> = T & Omit<U, keyof T>;
 
 type MasonProps<
   Data,
+  PreData,
   T extends keyof JSX.HTMLElementTags = 'div',
 > = OmitAndMerge<
   {
     as?: T;
     columns: number;
     items?: Data[] | null | undefined;
-    children: (item: Data, index: () => number) => JSX.Element;
+    pre?: PreData[] | null | undefined;
+    children: (item: Data | PreData, index: () => number) => JSX.Element;
     style?: JSX.CSSProperties | string;
     gap?: number;
   },
@@ -196,9 +198,11 @@ export function createMasonryBreakpoints(
   return columns;
 }
 
-export function Mason<Data, T extends keyof JSX.HTMLElementTags = 'div'>(
-  props: MasonProps<Data, T>,
-): JSX.Element {
+export function Mason<
+  Data,
+  PreData,
+  T extends keyof JSX.HTMLElementTags = 'div',
+>(props: MasonProps<Data, PreData, T>): JSX.Element {
   const [ref, setRef] = createSignal<HTMLElement>();
   const [columns, setColumns] = createSignal(props.columns);
 
@@ -277,7 +281,7 @@ export function Mason<Data, T extends keyof JSX.HTMLElementTags = 'div'>(
         get children() {
           return For({
             get each() {
-              return props.items;
+              return [...(props.pre || []), ...(props.items || [])];
             },
             children(item, index) {
               return Dynamic({
