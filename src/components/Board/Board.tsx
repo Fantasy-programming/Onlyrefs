@@ -23,7 +23,6 @@ import { Progress, ProgressValueLabel } from '../ui/progress';
 import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 
 const Board = ({ collection, home, refs }: BoardProps) => {
-  // TODO: Make this dude rerender
   const [selectFiles, dropFiles, progress] = useFileSelector();
   const [boardRefs, setBoardRefs] = createSignal(refs);
   const [gridSize] = gridSizeHook();
