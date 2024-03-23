@@ -19,6 +19,9 @@ import {
   ContextMenuTrigger,
   ContextMenuRadioGroup,
 } from '../ui/context-menu.tsx';
+
+import { Dialog, DialogTrigger } from '../ui/dialog';
+
 import { Skeleton } from '../ui/skeleton';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 
@@ -48,24 +51,53 @@ export const BoardItem = ({ image }: BoardItemProps) => {
         collectionName={image.metadata.collection}
         refID={image.metadata.id}
       >
-        <ImageItem mediaInfo={image} />
+        <ImageItem mediaInfo={image} type="image" />
       </RefContextMenu>
     </Show>
   );
 };
 
 // Render an image into the board
-const ImageItem = (props: { mediaInfo: MediaRef }) => {
+const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
   return (
-    <ViewBox source={props.mediaInfo}>
-      <div
-        class={`cursor-pointer  rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20`}
-        style={{
-          'aspect-ratio': `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
-          'background-image': `url(${props.mediaInfo.low_res_imagepath})`,
-        }}
-      />
-    </ViewBox>
+    <Dialog>
+      <DialogTrigger class="w-full">
+        <div
+          class={`cursor-pointer  rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20`}
+          style={{
+            'aspect-ratio': `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
+            'background-image': `url(${props.mediaInfo.low_res_imagepath})`,
+          }}
+        />
+      </DialogTrigger>
+      <ViewBox source={props.mediaInfo} type="image" />
+    </Dialog>
+  );
+};
+
+// Render a video into the board
+const VideoItem = (props: { mediaInfo: MediaRef }) => {
+  return (
+    <Dialog>
+      <DialogTrigger class="w-full">
+        <div
+          class="relative cursor-pointer overflow-hidden rounded-xl border border-transparent shadow-md hover:border-primary"
+          style={{
+            height: getRandomHeight(refHeigts),
+          }}
+        >
+          <video
+            class="absolute h-full w-full rounded-xl object-cover"
+            src={props.mediaInfo.imagepath}
+            preload="auto"
+            autoplay
+            loop
+            muted
+          ></video>
+        </div>
+      </DialogTrigger>
+      <ViewBox source={props.mediaInfo} type="video" />
+    </Dialog>
   );
 };
 
@@ -79,27 +111,6 @@ export const NewNote = () => {
   // }));
 
   return <div id="editor" ref={ref} />;
-};
-
-// Render a video into the board
-const VideoItem = (props: { mediaInfo: MediaRef }) => {
-  return (
-    <div
-      class="relative cursor-pointer overflow-hidden rounded-xl border border-transparent shadow-md hover:border-primary"
-      style={{
-        height: getRandomHeight(refHeigts),
-      }}
-    >
-      <video
-        class="absolute h-full w-full rounded-xl object-cover"
-        src={props.mediaInfo.imagepath}
-        preload="auto"
-        autoplay
-        loop
-        muted
-      ></video>
-    </div>
-  );
 };
 
 const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
