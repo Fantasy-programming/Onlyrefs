@@ -1,13 +1,9 @@
-import {
-  exists,
-  createDir,
-  removeDir,
-  BaseDirectory,
-} from '@tauri-apps/api/fs';
+import { exists, createDir, removeDir } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 
 import {
   COLLECTIONS_DIR,
+  DATA_DIR,
   breakpoints_4,
   breakpoints_5,
   breakpoints_6,
@@ -17,14 +13,14 @@ import { MediaRef } from './types';
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
   return exists(`${COLLECTIONS_DIR}/${collectionName}`, {
-    dir: BaseDirectory.AppData,
+    dir: DATA_DIR,
   });
 };
 
 // Create a new ref directory
 export const createRefDir = async (collectionName: string) => {
   await createDir(`${COLLECTIONS_DIR}/${collectionName}`, {
-    dir: BaseDirectory.AppData,
+    dir: DATA_DIR,
     recursive: true,
   });
 };
@@ -32,8 +28,9 @@ export const createRefDir = async (collectionName: string) => {
 // Delete a ref with its metadata
 export const deleteRef = async (collectionID: string) => {
   await invoke('remove_ref', { refId: collectionID });
+
   await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
-    dir: BaseDirectory.AppData,
+    dir: DATA_DIR,
     recursive: true,
   });
 };

@@ -21,7 +21,7 @@ pub struct Metadata {
     pub name: String,
     pub media_type: String,
     pub dimensions: Option<(u32, u32)>,
-    pub file_size: u64,
+    pub file_size: String,
     pub collection: String,
     pub colors: Vec<String>,
     pub created_at: String,

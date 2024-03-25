@@ -12,5 +12,4 @@ export interface BoardItemType {
 export interface RefContextMenuProps {
   collectionName: string;
   refID: string;
-  // collections: Accessor<FileEntry[]>;
 }

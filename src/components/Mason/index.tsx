@@ -66,7 +66,6 @@ const MASON_STYLE: JSX.CSSProperties = {
 };
 
 const MASON_STYLE_STRING = ';position:relative;width:100%;max-width:100%;';
-
 const MASON_KEY = 'data-solid-mason';
 
 function getContentWidth(el: HTMLElement | SVGAElement): number {
@@ -95,6 +94,7 @@ function createMason(el: HTMLElement, state: MasonState): void {
   const widthPerColumn = containerWidth / columnCount;
 
   const newColumns: number[] = new Array<number>(state.columns.length).fill(0);
+
   if (isAllDirty) {
     state.columns = [...newColumns];
   }
@@ -114,6 +114,7 @@ function createMason(el: HTMLElement, state: MasonState): void {
         const currentColumnHeight = newColumns[targetColumn];
         node.style.top = `${currentColumnHeight}px`;
         node.style.left = `${targetColumn * widthPerColumn + (targetColumn > 0 ? targetColumn * state.gap : 0)}px`;
+
         // Increase column height
         node.getBoundingClientRect();
         const nodeHeight = node.offsetHeight;
@@ -246,6 +247,7 @@ export function Mason<
 
       // Track window resize
       window.addEventListener('resize', recalculate, { passive: true });
+
       onCleanup(() => {
         window.removeEventListener('resize', recalculate);
       });

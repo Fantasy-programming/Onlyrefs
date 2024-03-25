@@ -1,8 +1,10 @@
-import { Show, children, Component, ParentProps, createSignal } from 'solid-js';
+import { Show, Component, ParentProps } from 'solid-js';
 import { deleteRef } from '~/lib/helper.ts';
 import { useRefSelector } from '~/state/store';
-// import { createTiptapEditor } from "solid-tiptap";
-// import StarterKit from "@tiptap/starter-kit";
+import { createTiptapEditor } from 'solid-tiptap';
+import StarterKit from '@tiptap/starter-kit';
+import BubbleMenu from '@tiptap/extension-bubble-menu';
+import { Markdown } from 'tiptap-markdown';
 
 import { BoardItemProps, RefContextMenuProps } from './BoardItem.types.ts';
 import { MediaRef } from '~/lib/types.ts';
@@ -13,11 +15,7 @@ import {
   ContextMenuItem,
   ContextMenuPortal,
   ContextMenuShortcut,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
   ContextMenuTrigger,
-  ContextMenuRadioGroup,
 } from '../ui/context-menu.tsx';
 
 import { Dialog, DialogTrigger } from '../ui/dialog';
@@ -104,57 +102,59 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
 export const NewNote = () => {
   let ref!: HTMLDivElement;
 
-  // const editor = createTiptapEditor(() => ({
-  //   element: ref!,
-  //   extensions: [StarterKit],
-  //   content: `<p>Example Text</p>`,
-  // }));
+  createTiptapEditor(() => ({
+    element: ref!,
+    extensions: [StarterKit, Markdown, BubbleMenu],
+    editorProps: {
+      attributes: {
+        class: 'focus:outline-none prose max-w-full max-h-full',
+      },
+    },
+    content: `<p>Example Text</p>`,
+  }));
 
-  return <div id="editor" ref={ref} />;
+  return (
+    <div
+      id="editor"
+      class="h-[400px] overflow-hidden rounded-xl border border-transparent bg-foreground/30 p-6 shadow-md hover:border-primary"
+    >
+      <h4 class="mb-2 text-lg  text-secondary">ADD NEW NOTE</h4>
+      <div ref={ref} />
+    </div>
+  );
 };
 
 const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
   props,
 ) => {
-  const c = children(() => props.children);
-  const [board, setBoard] = createSignal(props.collectionName);
-
   const {
     refService: { refetchRefs },
   } = useRefSelector();
 
-  const moveToCollection = async (collection: string) => {
-    if (!props.refID) {
-      return;
-    }
-    setBoard(collection);
-    await refetchRefs();
-  };
-
   return (
     <ContextMenu>
-      <ContextMenuTrigger>{c()}</ContextMenuTrigger>
+      <ContextMenuTrigger>{props.children}</ContextMenuTrigger>
       <ContextMenuPortal>
         <ContextMenuContent class="w-48">
-          <ContextMenuSub overlap>
-            <ContextMenuSubTrigger>Add to Board</ContextMenuSubTrigger>
-            <ContextMenuPortal>
-              <ContextMenuSubContent>
-                <ContextMenuRadioGroup
-                  value={board()}
-                  onChange={moveToCollection}
-                >
-                  {/* <For each={props.collections()}> */}
-                  {/*   {(collection) => ( */}
-                  {/*     <ContextMenuRadioItem value={collection.name ?? "all"}> */}
-                  {/*       {collection.name} */}
-                  {/*     </ContextMenuRadioItem> */}
-                  {/*   )} */}
-                  {/* </For> */}
-                </ContextMenuRadioGroup>
-              </ContextMenuSubContent>
-            </ContextMenuPortal>
-          </ContextMenuSub>
+          {/* <ContextMenuSub overlap> */}
+          {/*   <ContextMenuSubTrigger>Add to Board</ContextMenuSubTrigger> */}
+          {/*   <ContextMenuPortal> */}
+          {/*     <ContextMenuSubContent> */}
+          {/*       <ContextMenuRadioGroup */}
+          {/*         value={board()} */}
+          {/*         onChange={moveToCollection} */}
+          {/*       > */}
+          {/* <For each={props.collections()}> */}
+          {/*   {(collection) => ( */}
+          {/*     <ContextMenuRadioItem value={collection.name ?? "all"}> */}
+          {/*       {collection.name} */}
+          {/*     </ContextMenuRadioItem> */}
+          {/*   )} */}
+          {/* </For> */}
+          {/*       </ContextMenuRadioGroup> */}
+          {/*     </ContextMenuSubContent> */}
+          {/*   </ContextMenuPortal> */}
+          {/* </ContextMenuSub> */}
           <ContextMenuItem
             onSelect={async () => {
               if (props.refID === undefined) {

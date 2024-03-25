@@ -20,7 +20,7 @@ import { Input } from '../ui/input';
 import { Mason } from '../Mason';
 import Logo from '~/assets/logo-bw.svg';
 import { Progress, ProgressValueLabel } from '../ui/progress';
-import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
+import { BoardItem, NewNote, BoardItemSkeleton } from '../BoardItem/BoardItem';
 
 const Board = ({ collection, home, refs }: BoardProps) => {
   const [selectFiles, dropFiles, progress] = useFileSelector();
@@ -84,14 +84,18 @@ const Board = ({ collection, home, refs }: BoardProps) => {
         <Mason
           as="section"
           class="relative h-full w-full"
-          pre={[]}
+          pre={[NewNote]}
           items={boardRefs()}
           gap={20}
           columns={breakPoints()()}
         >
           {(item, index) => (
             <Suspense fallback={<BoardItemSkeleton index={index()} />}>
-              <BoardItem image={item} />
+              {typeof item === 'object' && item !== null ? (
+                <BoardItem image={item} />
+              ) : (
+                item()
+              )}
             </Suspense>
           )}
         </Mason>

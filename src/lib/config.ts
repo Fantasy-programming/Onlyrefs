@@ -1,5 +1,8 @@
 import { createMasonryBreakpoints } from '~/components/Mason';
+import { BaseDirectory } from '@tauri-apps/api/fs';
+
 export const COLLECTIONS_DIR = 'collections';
+export const DATA_DIR = BaseDirectory.AppData;
 
 export const breakpoints_4 = createMasonryBreakpoints(() => [
   { query: '(min-width: 1536px)', columns: 4 },

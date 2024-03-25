@@ -4,7 +4,7 @@ export interface Metadata {
   name: string;
   media_type: string;
   dimensions: [number, number];
-  file_size: number;
+  file_size: String;
   collection: string;
   colors: string[];
   created_at: string;
