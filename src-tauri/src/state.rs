@@ -21,6 +21,7 @@ pub struct Metadata {
     pub name: String,
     pub media_type: String,
     pub dimensions: Option<(u32, u32)>,
+    #[serde(deserialize_with = "utils::deserialize_file_size")]
     pub file_size: String,
     pub collection: String,
     pub colors: Vec<String>,

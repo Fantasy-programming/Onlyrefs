@@ -1,5 +1,8 @@
 use palette::white_point::D65;
 use palette::{IntoColor, Lab, Srgba};
+use serde::de::Error;
+use serde::{Deserialize, Deserializer};
+use serde_json::Value;
 
 use crate::state::{MediaRef, Metadata};
 use std::fs;
@@ -151,4 +154,17 @@ pub fn cached_srgba_to_lab<'a>(
         *map.entry([color.red, color.green, color.blue])
             .or_insert_with(|| color.into_linear::<_, f32>().into_color())
     }))
+}
+
+pub fn deserialize_file_size<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = Value::deserialize(deserializer)?;
+
+    match value {
+        Value::String(s) => Ok(s),
+        Value::Number(n) => Ok(human_size(n.as_u64().unwrap())),
+        _ => Err(D::Error::custom("Invalid file_size value")),
+    }
 }
