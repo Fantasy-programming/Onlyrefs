@@ -4,8 +4,9 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 // Give the size of a file
-pub fn analyze_file_size(file_path: &str) -> u64 {
-    fs::metadata(file_path).map(|meta| meta.len()).unwrap_or(0)
+pub fn analyze_file_size(file_path: &str) -> String {
+    let size = fs::metadata(file_path).map(|meta| meta.len()).unwrap_or(0);
+    human_size(size)
 }
 
 // Get all subdirectories in the collections_dir
@@ -107,4 +108,33 @@ pub fn remove_tag(collections_dir: &Path, ref_id: &str, tag: &str) {
     metadata.tags.retain(|t| t != tag);
     let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
     fs::write(metadata_path, json_data).expect("Failed to write metadata file");
+}
+
+fn human_size(size: u64) -> String {
+    let multiplier = 1000f64;
+    let units = ["KB", "MB", "GB", "TB", "PB", "EB", "ZB"];
+    let mut size = size as f64;
+    if size < multiplier {
+        return format!("{:.0}B", size);
+    };
+    for unit in &units {
+        size /= multiplier;
+        let precision: usize;
+        if size < multiplier {
+            if size < 10f64 {
+                precision = 2;
+            } else if size < 100f64 {
+                precision = 1;
+            } else {
+                precision = 0;
+            }
+            return format!("{:.*}{}", precision, round_up(size, precision), unit);
+        }
+    }
+    format!("{:.0}{}", size.ceil(), units[units.len() - 1])
+}
+
+fn round_up(value: f64, precision: usize) -> f64 {
+    let multiplier = 10u64.pow(precision as u32) as f64;
+    (value * multiplier).ceil() / multiplier
 }

@@ -10,40 +10,47 @@ export const RefService = () => {
   const [ref, setRef] = refStore;
 
   onMount(async () => {
-    let data: MediaRef[] = await invoke('get_media_refs');
-    data = data.map((ref) => {
-      return {
-        ...ref,
-        imagepath: convertFileSrc(ref.imagepath),
-        low_res_imagepath:
-          ref.low_res_imagepath === ''
-            ? convertFileSrc(ref.imagepath)
-            : convertFileSrc(ref.low_res_imagepath),
-      };
-    });
+    try {
+      let data: MediaRef[] = await invoke('get_media_refs');
+      data = data.map((ref) => {
+        return {
+          ...ref,
+          imagepath: convertFileSrc(ref.imagepath),
+          low_res_imagepath:
+            ref.low_res_imagepath === ''
+              ? convertFileSrc(ref.imagepath)
+              : convertFileSrc(ref.low_res_imagepath),
+        };
+      });
 
-    setRef(data);
+      setRef(data);
+    } catch (e) {
+      console.error(e);
+    }
   });
 
   const refetchRefs = async () => {
-    let data: MediaRef[] = await invoke('get_media_refs');
-    data = data.map((ref) => {
-      return {
-        ...ref,
-        imagepath: convertFileSrc(ref.imagepath),
-        low_res_imagepath:
-          ref.low_res_imagepath === ''
-            ? convertFileSrc(ref.imagepath)
-            : convertFileSrc(ref.low_res_imagepath),
-      };
-    });
-    setRef(data);
+    try {
+      let data: MediaRef[] = await invoke('get_media_refs');
+      data = data.map((ref) => {
+        return {
+          ...ref,
+          imagepath: convertFileSrc(ref.imagepath),
+          low_res_imagepath:
+            ref.low_res_imagepath === ''
+              ? convertFileSrc(ref.imagepath)
+              : convertFileSrc(ref.low_res_imagepath),
+        };
+      });
+
+      setRef(data);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return { ref, refetchRefs };
 };
-
-// Context Stuff
 
 export type RootState = {
   refService: ReturnType<typeof RefService>;
