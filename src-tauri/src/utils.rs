@@ -1,3 +1,6 @@
+use palette::white_point::D65;
+use palette::{IntoColor, Lab, Srgba};
+
 use crate::state::{MediaRef, Metadata};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -137,4 +140,15 @@ fn human_size(size: u64) -> String {
 fn round_up(value: f64, precision: usize) -> f64 {
     let multiplier = 10u64.pow(precision as u32) as f64;
     (value * multiplier).ceil() / multiplier
+}
+
+pub fn cached_srgba_to_lab<'a>(
+    rgb: impl Iterator<Item = &'a Srgba<u8>>,
+    map: &mut fxhash::FxHashMap<[u8; 3], Lab<D65, f32>>,
+    lab_pixels: &mut Vec<Lab<D65, f32>>,
+) {
+    lab_pixels.extend(rgb.map(|color| {
+        *map.entry([color.red, color.green, color.blue])
+            .or_insert_with(|| color.into_linear::<_, f32>().into_color())
+    }))
 }
