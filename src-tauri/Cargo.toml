@@ -1,11 +1,10 @@
 [package]
 name = "only-refs"
 version = "0.0.3"
-description = "A Tauri App"
-authors = ["you"]
+description = "All your references in a single place"
+authors = ["Ngobo Ridy"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "1.5.1", features = [] }
@@ -33,11 +32,12 @@ serde_json = "1.0"
 base64 = "0.22.0"
 rand = "0.8.5"
 mime_guess = "2.0.4"
-image = "0.24.9"
+image = "0.25.0"
 window-shadows = "0.2.2"
-chrono = "0.4.34"
-kmeans_colors = "0.5.0"
-palette = "0.6.1"
+chrono = "0.4.35"
+kmeans_colors = "0.6.0"
+palette = "0.7.5"
+fxhash = "0.2.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

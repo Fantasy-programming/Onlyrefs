@@ -1,9 +1,14 @@
+use fxhash::FxHashMap;
 use image::{imageops, DynamicImage, GenericImageView, RgbaImage};
-use kmeans_colors::{get_kmeans, Kmeans, Sort};
+use kmeans_colors::{get_kmeans, get_kmeans_hamerly, Calculate, Kmeans, MapColor, Sort};
+use palette::cast::{AsComponents, ComponentsAs};
+use palette::{white_point::D65, Alpha, FromColor, IntoColor, Lab, LinSrgba, Srgb, Srgba};
+
 use mime_guess::from_path;
-use palette::{FromColor, IntoColor, Lab, Pixel, Srgb};
 use std::collections::HashSet;
 use std::path::Path;
+
+use crate::utils::cached_srgba_to_lab;
 
 pub fn determine_media_type(file_name: &str) -> String {
     if let Some(media_type) = from_path(file_name).first() {
@@ -21,57 +26,50 @@ pub fn extract_colors(file_path: &str) -> Vec<String> {
         return Vec::new();
     }
 
-    let pixels = read_image(file_path).unwrap();
-    dominant_colors(&pixels)
-}
+    let mut lab_cache = FxHashMap::default();
+    let mut lab_pixels: Vec<Lab<D65, f32>> = Vec::new();
 
-//TODO: Improve performance
-fn dominant_colors(pixels: &[u8]) -> Vec<String> {
-    // Convert RGB [u8] buffer to Lab for k-means.
-    let lab: Vec<Lab> = Srgb::from_raw_slice(pixels)
-        .iter()
-        .map(|x| x.into_format().into_color())
-        .collect();
+    let img = image::open(file_path).unwrap();
+    img.resize(400, 400, image::imageops::Nearest);
+    let raw_img = img.into_rgb8();
+    let pixels: &[Srgba<u8>] = raw_img.as_raw().components_as();
 
-    // Iterate over the runs, keep the best results.
+    lab_pixels.clear();
+    cached_srgba_to_lab(pixels.iter(), &mut lab_cache, &mut lab_pixels);
+
     let mut result = Kmeans::new();
-    for i in 0..3 {
-        let run_result = get_kmeans(10, 20, 0.0, false, &lab, 1000 + i as u64);
+    let colors_amount = 10;
+    let max_iterations = 20;
+    let converge = 5.0;
+    let verbose = false;
+    let run = 1;
+    let seed: u64 = 0;
+
+    for i in 0..run {
+        let run_result = get_kmeans_hamerly(
+            colors_amount,
+            max_iterations,
+            converge,
+            verbose,
+            &lab_pixels,
+            seed + i,
+        );
         if run_result.score < result.score {
             result = run_result;
         }
     }
 
-    // Process centroid data.
-    let mut res = Lab::sort_indexed_colors(&result.centroids, &result.indices);
+    let mut res = Lab::<D65, f32>::sort_indexed_colors(&result.centroids, &result.indices);
+    res.sort_unstable_by(|a, b| (b.percentage).total_cmp(&a.percentage));
 
-    // Sort indexed colors by percentage.
-    res.sort_unstable_by(|a, b| {
-        (b.percentage)
-            .partial_cmp(&a.percentage)
-            .expect("Failed to compare values while sorting.")
-    });
-
-    // Format colors as RGB HEX string.
     let mut hex_colors = Vec::new();
     for r in res.iter() {
         let c: Srgb<u8> = Srgb::from_color(r.centroid).into_format();
         let hex_str = format!("#{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
         hex_colors.push(hex_str);
     }
+
     hex_colors
-}
-
-fn read_image(path: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let img = image::open(path)?;
-    img.resize(150, 150, image::imageops::Triangle);
-
-    let pixels = img
-        .pixels()
-        .flat_map(|p| [p.2 .0[0], p.2 .0[1], p.2 .0[2]])
-        .collect();
-
-    Ok(pixels)
 }
 
 pub fn analyze_dimensions(file_path: &str) -> Option<(u32, u32)> {
@@ -128,6 +126,6 @@ fn reduce_image_quality(rgba_image: &mut RgbaImage, target_size_kb: u32) {
         rgba_image,
         (quality_factor * rgba_image.width() as f64) as u32,
         (quality_factor * rgba_image.height() as f64) as u32,
-        image::imageops::FilterType::Lanczos3,
+        image::imageops::FilterType::CatmullRom,
     );
 }
