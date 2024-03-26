@@ -20,11 +20,12 @@ import { Input } from '../ui/input';
 import { Mason } from '../Mason';
 import Logo from '~/assets/logo-bw.svg';
 import { Progress, ProgressValueLabel } from '../ui/progress';
-import { BoardItem, NewNote, BoardItemSkeleton } from '../BoardItem/BoardItem';
+import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
+import { NewNote } from '../BoardItem/BoardNoteItem';
 
-const Board = ({ collection, home, refs }: BoardProps) => {
+const Board = (props: BoardProps) => {
   const [selectFiles, dropFiles, progress] = useFileSelector();
-  const [boardRefs, setBoardRefs] = createSignal(refs);
+  const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [gridSize] = gridSizeHook();
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
   const {
@@ -38,21 +39,21 @@ const Board = ({ collection, home, refs }: BoardProps) => {
   );
 
   onMount(() => {
-    dropFiles(collection);
+    dropFiles(props.collection);
   });
 
   return (
     <main class="h-screen w-full pt-10">
       <div class="mb-12 flex justify-between">
-        <Show when={home}>
+        <Show when={props.home}>
           <h1 class="text-4xl uppercase italic text-primary-foreground">
-            {collection}
+            {props.collection}
           </h1>
         </Show>
         <Button
           variant="default"
           size="lg"
-          onclick={() => selectFiles(collection)}
+          onclick={() => selectFiles(props.collection)}
         >
           Save
         </Button>
@@ -60,18 +61,17 @@ const Board = ({ collection, home, refs }: BoardProps) => {
           placeholder="Search your refs..."
           class="border-none font-serif text-4xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           oninput={(e) => {
-            console.log(e);
             const value = e.target.value;
             if (value === '') {
-              setBoardRefs(refs);
+              setBoardRefs(props.refs);
               return;
             }
-            setBoardRefs(searchByText(refs, value));
+            setBoardRefs(searchByText(props.refs, value));
           }}
         />
       </div>
       <Show
-        when={refs.length !== 0}
+        when={props.refs.length !== 0}
         fallback={
           <div class="flex h-3/4  w-full  flex-col items-center justify-center gap-5 text-center font-serif text-2xl text-muted/50 md:text-4xl">
             <Logo class="h-36 w-36 opacity-40 dark:opacity-10 md:h-64 md:w-64 " />
@@ -92,7 +92,7 @@ const Board = ({ collection, home, refs }: BoardProps) => {
           {(item, index) => (
             <Suspense fallback={<BoardItemSkeleton index={index()} />}>
               {typeof item === 'object' && item !== null ? (
-                <BoardItem image={item} />
+                <BoardItem refItem={item} />
               ) : (
                 item()
               )}

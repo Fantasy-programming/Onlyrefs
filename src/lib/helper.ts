@@ -1,4 +1,4 @@
-import { exists, createDir, removeDir } from '@tauri-apps/api/fs';
+import { exists, createDir, removeDir, readTextFile } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 
 import {
@@ -8,7 +8,8 @@ import {
   breakpoints_5,
   breakpoints_6,
 } from './config';
-import { MediaRef } from './types';
+import { Ref } from './types';
+import { appDataDir, join } from '@tauri-apps/api/path';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
@@ -35,14 +36,66 @@ export const deleteRef = async (collectionID: string) => {
   });
 };
 
-export function searchByText(refs: MediaRef[], searchText: string) {
+interface GenerateID {
+  lenght: number;
+  createDir?: boolean;
+}
+
+export const create_note_ref = async (
+  collectionName: string,
+  content: string,
+) => {
+  const destDir = await join(await appDataDir(), 'collections');
+  const noteID = await generate_id({ lenght: 13, createDir: true });
+
+  const notepath = await join(destDir, noteID, 'note.md');
+  const notedir = await join(destDir, noteID);
+
+  await invoke('generate_note_metadata', {
+    refId: noteID,
+    collection: collectionName,
+    notePath: notepath,
+    noteDir: notedir,
+    noteContent: content,
+  });
+
+  console.log('Note created');
+};
+
+export const get_note_content = async (notepath: string) => {
+  const content = await readTextFile(notepath);
+  return content;
+};
+
+export const generate_id = async ({
+  lenght,
+  createDir = false,
+}: GenerateID) => {
+  let randomID: string = '';
+
+  while (true) {
+    randomID = await invoke('generate_id', { lenght: lenght });
+    const exist = await refExist(randomID);
+
+    if (!exist) {
+      if (createDir) {
+        await createRefDir(randomID);
+      }
+      break;
+    }
+  }
+  return randomID;
+};
+
+export function searchByText(refs: Ref[], searchText: string) {
   // Convert searchText to lowercase
   const lowercaseSearchText = searchText.toLowerCase();
 
   // Use filter to find objects that have matching text in name or tags
   const results = refs.filter((ref) => {
     // Convert object name to lowercase
-    const lowercaseObjectName = ref.metadata.name.toLowerCase();
+    // TODO: Fix the search
+    const lowercaseObjectName = ref.metadata.id.toLowerCase();
     const lowercaseObjectTags = ref.metadata.tags?.map((tag) =>
       tag.toLowerCase(),
     );

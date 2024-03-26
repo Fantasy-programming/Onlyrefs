@@ -14,6 +14,25 @@ pub struct MediaRef {
     pub metadata: Option<Metadata>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct NoteRef {
+    pub notepath: String,
+    pub metapath: String,
+    pub metadata: Option<NoteMetadata>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct NoteMetadata {
+    pub id: String,
+    pub note_name: String,
+    pub media_type: String,
+    pub collection: String,
+    pub created_at: String,
+    pub updated_at: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
+}
+
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Metadata {
     pub id: String,
@@ -31,7 +50,13 @@ pub struct Metadata {
     pub tags: Vec<String>,
 }
 
-pub fn init_media_ref(app_handle: AppHandle) -> Mutex<Vec<MediaRef>> {
+#[derive(Clone, Serialize, Deserialize)]
+pub enum Ref {
+    Media(MediaRef),
+    Note(NoteRef),
+}
+
+pub fn init_media_ref(app_handle: AppHandle) -> Mutex<Vec<Ref>> {
     let collections_dir = get_collection_path(&app_handle);
     utils::fetch_refs(&collections_dir)
 }

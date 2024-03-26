@@ -15,7 +15,7 @@ import Boards from './pages/Boards';
 import Settings from './pages/Settings';
 
 // Initialize all services
-const refService = RefService();
+const refService = RefService(); /* once */
 
 render(
   () => (

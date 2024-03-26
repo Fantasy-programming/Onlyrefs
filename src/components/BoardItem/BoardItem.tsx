@@ -1,13 +1,8 @@
-import { Show, Component, ParentProps } from 'solid-js';
+import { Component, ParentProps, Switch, Match } from 'solid-js';
 import { deleteRef } from '~/lib/helper.ts';
 import { useRefSelector } from '~/state/store';
-import { createTiptapEditor } from 'solid-tiptap';
-import StarterKit from '@tiptap/starter-kit';
-import BubbleMenu from '@tiptap/extension-bubble-menu';
-import { Markdown } from 'tiptap-markdown';
-
 import { BoardItemProps, RefContextMenuProps } from './BoardItem.types.ts';
-import { MediaRef } from '~/lib/types.ts';
+import { MediaRef, NoteRef } from '~/lib/types.ts';
 
 import {
   ContextMenu,
@@ -22,36 +17,41 @@ import { Dialog, DialogTrigger } from '../ui/dialog';
 
 import { Skeleton } from '../ui/skeleton';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
+import { NoteItem } from './BoardNoteItem.tsx';
 
 const refHeigts = ['440px', '300px', '400px', '500px', '350px'];
-
 const getRandomHeight = (array: string[]) => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
-export const BoardItem = ({ image }: BoardItemProps) => {
-  const type = image.metadata.media_type.split('/')[0];
+export const BoardItem = (props: BoardItemProps) => {
+  const type = props.refItem?.metadata?.media_type?.split('/')[0];
   const isVideo = type === 'video';
+  const isImage = type === 'image';
+  const isNote = type === 'text';
 
   return (
-    <Show
-      when={!isVideo}
-      fallback={
+    <Switch>
+      <Match when={isImage}>
         <RefContextMenu
-          collectionName={image.metadata.collection}
-          refID={image.metadata.id}
+          collectionName={props.refItem.metadata.collection}
+          refID={props.refItem.metadata.id}
         >
-          <VideoItem mediaInfo={image} />
+          <ImageItem mediaInfo={props.refItem as MediaRef} type="image" />
         </RefContextMenu>
-      }
-    >
-      <RefContextMenu
-        collectionName={image.metadata.collection}
-        refID={image.metadata.id}
-      >
-        <ImageItem mediaInfo={image} type="image" />
-      </RefContextMenu>
-    </Show>
+      </Match>
+      <Match when={isVideo}>
+        <RefContextMenu
+          collectionName={props.refItem.metadata.collection}
+          refID={props.refItem.metadata.id}
+        >
+          <VideoItem mediaInfo={props.refItem as MediaRef} />
+        </RefContextMenu>
+      </Match>
+      <Match when={isNote}>
+        <NoteItem noteInfo={props.refItem as NoteRef} type="string" />
+      </Match>
+    </Switch>
   );
 };
 
@@ -63,8 +63,8 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
         <div
           class={`cursor-pointer  rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20`}
           style={{
-            'aspect-ratio': `${props.mediaInfo.metadata.dimensions[0]}/${props.mediaInfo.metadata.dimensions[1]}`,
-            'background-image': `url(${props.mediaInfo.low_res_imagepath})`,
+            'aspect-ratio': `${props?.mediaInfo?.metadata?.dimensions[0]}/${props?.mediaInfo?.metadata?.dimensions[1]}`,
+            'background-image': `url(${props?.mediaInfo?.low_res_imagepath})`,
           }}
         />
       </DialogTrigger>
@@ -86,7 +86,7 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
         >
           <video
             class="absolute h-full w-full rounded-xl object-cover"
-            src={props.mediaInfo.imagepath}
+            src={props?.mediaInfo?.imagepath}
             preload="auto"
             autoplay
             loop
@@ -94,33 +94,8 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
           ></video>
         </div>
       </DialogTrigger>
-      <ViewBox source={props.mediaInfo} type="video" />
+      <ViewBox source={props?.mediaInfo} type="video" />
     </Dialog>
-  );
-};
-
-export const NewNote = () => {
-  let ref!: HTMLDivElement;
-
-  createTiptapEditor(() => ({
-    element: ref!,
-    extensions: [StarterKit, Markdown, BubbleMenu],
-    editorProps: {
-      attributes: {
-        class: 'focus:outline-none prose max-w-full max-h-full',
-      },
-    },
-    content: `<p>Example Text</p>`,
-  }));
-
-  return (
-    <div
-      id="editor"
-      class="h-[400px] overflow-hidden rounded-xl border border-transparent bg-foreground/30 p-6 shadow-md hover:border-primary"
-    >
-      <h4 class="mb-2 text-lg  text-secondary">ADD NEW NOTE</h4>
-      <div ref={ref} />
-    </div>
   );
 };
 

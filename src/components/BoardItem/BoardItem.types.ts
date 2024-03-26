@@ -1,15 +1,31 @@
 import { SourceRef } from '../Board/Board.types.ts';
-import { MediaRef } from '~/lib/types.ts';
+import { Ref } from '~/lib/types.ts';
+import type { Editor } from '@tiptap/core';
+import { JSX } from 'solid-js';
 
 export interface BoardItemProps {
-  image: MediaRef;
+  refItem: Ref;
 }
 
 export interface BoardItemType {
-  image: SourceRef;
+  ref: SourceRef;
 }
 
 export interface RefContextMenuProps {
   collectionName: string;
   refID: string;
+}
+
+export interface ControlProps {
+  class: string;
+  editor: Editor;
+  title: string;
+  key: string;
+  onChange: () => void;
+  isActive?: (editor: Editor) => boolean;
+  children: JSX.Element;
+}
+
+export interface ToolbarProps {
+  editor: Editor;
 }
