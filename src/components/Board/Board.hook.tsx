@@ -3,7 +3,7 @@ import { copyFile } from '@tauri-apps/api/fs';
 import { appDataDir, join, sep } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
 import { onCleanup, createSignal } from 'solid-js';
-import { refExist, createRefDir } from '~/lib/helper';
+import { generate_id } from '~/lib/helper';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
 import { invoke } from '@tauri-apps/api';
 
@@ -29,25 +29,17 @@ const processQueue = async () => {
     const destDir = await join(await appDataDir(), 'collections');
 
     for (const image of files) {
-      let randomID: string = '';
+      const randomID = await generate_id({
+        lenght: 13,
+        createDir: true,
+      });
 
-      while (true) {
-        randomID = await invoke('generate_id', { lenght: 13 });
-        const exist = await refExist(randomID);
-
-        if (!exist) {
-          break;
-        }
-      }
-
-      await createRefDir(randomID);
       const segments = image.split(sep);
       const filename = segments[segments.length - 1];
       const destinationFolder = await join(destDir, randomID);
       const newPath = await join(destDir, randomID, filename);
       await copyFile(image, newPath);
 
-      const x = performance.now();
       await invoke('generate_metadata', {
         destPath: destinationFolder,
         destFile: newPath,
@@ -55,8 +47,6 @@ const processQueue = async () => {
         fileName: filename,
         collection: collection,
       });
-      const y = performance.now();
-      console.log('Time to generate metadata: ', y - x);
 
       setProgress({
         total: progress().total,

@@ -1,9 +1,9 @@
 import { Accessor } from 'solid-js';
-import { MediaRef } from '../../lib/types';
+import { Ref } from '../../lib/types';
 
 export interface BoardProps {
   collection: string;
-  refs: MediaRef[];
+  refs: Ref[];
   home?: boolean;
 }
 

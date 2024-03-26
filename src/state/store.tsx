@@ -1,29 +1,37 @@
 import { onMount, createContext, ParentComponent, useContext } from 'solid-js';
 import { createStore } from 'solid-js/store';
-import { MediaRef } from '~/lib/types';
+import { MediaRef, NoteRef, Ref, backendRef } from '~/lib/types';
 import { invoke } from '@tauri-apps/api';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-const refStore = createStore<MediaRef[]>([]);
+const refStore = createStore<Ref[]>([]);
 
 export const RefService = () => {
   const [ref, setRef] = refStore;
 
   onMount(async () => {
     try {
-      let data: MediaRef[] = await invoke('get_media_refs');
-      data = data.map((ref) => {
-        return {
-          ...ref,
-          imagepath: convertFileSrc(ref.imagepath),
-          low_res_imagepath:
-            ref.low_res_imagepath === ''
-              ? convertFileSrc(ref.imagepath)
-              : convertFileSrc(ref.low_res_imagepath),
-        };
-      });
+      let data: backendRef[] = await invoke('get_media_refs');
 
-      setRef(data);
+      const parsedData: Ref[] = data.map((ref) => {
+        if ('Media' in ref) {
+          const mediaref = ref.Media as MediaRef;
+          return {
+            ...mediaref,
+            imagepath: convertFileSrc(mediaref.imagepath),
+            low_res_imagepath:
+              mediaref.low_res_imagepath === ''
+                ? convertFileSrc(mediaref.imagepath)
+                : convertFileSrc(mediaref.low_res_imagepath),
+          } as MediaRef;
+        } else {
+          const noteref = ref.Note as NoteRef;
+          return {
+            ...noteref,
+          } as NoteRef;
+        }
+      });
+      setRef(parsedData);
     } catch (e) {
       console.error(e);
     }
@@ -31,19 +39,28 @@ export const RefService = () => {
 
   const refetchRefs = async () => {
     try {
-      let data: MediaRef[] = await invoke('get_media_refs');
-      data = data.map((ref) => {
-        return {
-          ...ref,
-          imagepath: convertFileSrc(ref.imagepath),
-          low_res_imagepath:
-            ref.low_res_imagepath === ''
-              ? convertFileSrc(ref.imagepath)
-              : convertFileSrc(ref.low_res_imagepath),
-        };
+      let data: backendRef[] = await invoke('get_media_refs');
+
+      const parsedData: Ref[] = data.map((ref) => {
+        if ('Media' in ref) {
+          const mediaref = ref.Media as MediaRef;
+          return {
+            ...mediaref,
+            imagepath: convertFileSrc(mediaref.imagepath),
+            low_res_imagepath:
+              mediaref.low_res_imagepath === ''
+                ? convertFileSrc(mediaref.imagepath)
+                : convertFileSrc(mediaref.low_res_imagepath),
+          } as MediaRef;
+        } else {
+          const noteref = ref.Note as NoteRef;
+          return {
+            ...noteref,
+          } as NoteRef;
+        }
       });
 
-      setRef(data);
+      setRef(parsedData);
     } catch (e) {
       console.error(e);
     }

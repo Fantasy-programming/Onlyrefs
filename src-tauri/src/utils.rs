@@ -4,7 +4,7 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
-use crate::state::{MediaRef, Metadata};
+use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -37,18 +37,26 @@ fn get_all_refs(collections_dir: &Path) -> Vec<Vec<PathBuf>> {
 }
 
 // Parse one reference array into a MediaRef struct
-fn parse_refs(refs: &[PathBuf]) -> MediaRef {
-    let mut result = MediaRef {
+fn parse_refs(refs: &[PathBuf]) -> Ref {
+    let mut media_ref = MediaRef {
         imagepath: String::new(),
         low_res_imagepath: String::new(),
+        metapath: String::new(),
+        metadata: None,
+    };
+    let mut note_ref = NoteRef {
+        notepath: String::new(),
         metapath: String::new(),
         metadata: None,
     };
 
     for ref_path in refs {
         if ref_path.file_name().unwrap() == "metadata.json" {
-            result.metapath = ref_path.to_str().unwrap().to_string();
-            result.metadata = Some(parse_metadata(ref_path));
+            media_ref.metapath = ref_path.to_str().unwrap().to_string();
+            media_ref.metadata = Some(parse_metadata(ref_path));
+        } else if ref_path.file_name().unwrap() == "metadata.note.json" {
+            note_ref.metapath = ref_path.to_str().unwrap().to_string();
+            note_ref.metadata = Some(parse_note_metadata(ref_path));
         } else if ref_path
             .file_name()
             .unwrap()
@@ -56,13 +64,27 @@ fn parse_refs(refs: &[PathBuf]) -> MediaRef {
             .unwrap()
             .starts_with("lower_")
         {
-            result.low_res_imagepath = ref_path.to_str().unwrap().to_string();
+            media_ref.low_res_imagepath = ref_path.to_str().unwrap().to_string();
+        } else if ref_path
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or_default()
+            .ends_with("md")
+        {
+            note_ref.notepath = ref_path.to_str().unwrap().to_string();
         } else {
-            result.imagepath = ref_path.to_str().unwrap().to_string();
+            media_ref.imagepath = ref_path.to_str().unwrap().to_string();
         }
     }
 
-    result
+    if !media_ref.imagepath.is_empty() {
+        Ref::Media(media_ref)
+    } else if !note_ref.notepath.is_empty() {
+        Ref::Note(note_ref)
+    } else {
+        panic!("Invalid input: neither a media nor a note reference found");
+    }
 }
 
 fn parse_metadata(path: &Path) -> Metadata {
@@ -74,24 +96,21 @@ fn parse_metadata(path: &Path) -> Metadata {
         metadata.tags = Vec::new();
     }
 
-    metadata = Metadata {
-        id: metadata.id,
-        file_name: metadata.file_name,
-        name: metadata.name,
-        media_type: metadata.media_type,
-        dimensions: metadata.dimensions,
-        file_size: metadata.file_size,
-        collection: metadata.collection,
-        colors: metadata.colors,
-        created_at: metadata.created_at,
-        updated_at: metadata.updated_at,
-        tags: metadata.tags,
-    };
+    metadata
+}
+
+fn parse_note_metadata(path: &Path) -> NoteMetadata {
+    let content = std::fs::read_to_string(path).unwrap();
+    let mut metadata: NoteMetadata = serde_json::from_str(&content).unwrap_or_default();
+
+    if metadata.tags.is_empty() {
+        metadata.tags = Vec::new();
+    }
 
     metadata
 }
 
-pub fn fetch_refs(collections_dir: &Path) -> Mutex<Vec<MediaRef>> {
+pub fn fetch_refs(collections_dir: &Path) -> Mutex<Vec<Ref>> {
     let refs = get_all_refs(collections_dir);
     Mutex::new(
         refs.into_iter()

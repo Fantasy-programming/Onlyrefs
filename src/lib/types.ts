@@ -18,3 +18,26 @@ export interface MediaRef {
   metapath: string;
   metadata: Metadata;
 }
+
+export interface NoteRef {
+  notepath: string;
+  metapath: string;
+  metadata: NoteMetadata;
+}
+
+export interface NoteMetadata {
+  id: string;
+  note_name: string;
+  media_type: string;
+  collection: string;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+}
+
+export type backendRef = {
+  Media?: MediaRef;
+  Note?: NoteRef;
+};
+
+export type Ref = MediaRef | NoteRef;
