@@ -1,5 +1,6 @@
 import { exists, createDir, removeDir, readTextFile } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
+import { differenceInSeconds, parse } from 'date-fns';
 
 import {
   COLLECTIONS_DIR,
@@ -150,5 +151,37 @@ export const getBreakpoints = (columns: number) => {
       return breakpoints_6;
     default:
       return breakpoints_4;
+  }
+};
+
+export const getUpdatedAtTimestamp = (ref: Ref) => {
+  const updatedAt = parse(
+    ref.metadata.updated_at,
+    'yyyy-MM-dd HH:mm:ss.SSSSSSSSS XXX',
+    new Date(),
+  );
+  return updatedAt.getTime();
+};
+
+export const elapsedTime = (createdAt: string) => {
+  const currentTime = new Date();
+  const createdAtDate = parse(
+    createdAt,
+    'yyyy-MM-dd HH:mm:ss.SSSSSSSSS XXX',
+    new Date(),
+  );
+  const elapsedTimeInSeconds = differenceInSeconds(currentTime, createdAtDate);
+
+  if (elapsedTimeInSeconds < 60) {
+    return `${elapsedTimeInSeconds}s ago`;
+  } else if (elapsedTimeInSeconds < 3600) {
+    const minutes = Math.floor(elapsedTimeInSeconds / 60);
+    return `${minutes}m ago`;
+  } else if (elapsedTimeInSeconds < 86400) {
+    const hours = Math.floor(elapsedTimeInSeconds / 3600);
+    return `${hours}h ago`;
+  } else {
+    const days = Math.floor(elapsedTimeInSeconds / 86400);
+    return `${days}d ago`;
   }
 };

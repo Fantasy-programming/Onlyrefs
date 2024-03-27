@@ -1,12 +1,12 @@
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { VsAdd } from 'solid-icons/vs';
-import {  Metadata, NoteMetadata } from '../../lib/types';
+import { Metadata, NoteMetadata } from '../../lib/types';
 import { ViewBoxTag } from './ViewBoxTags';
 
 import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
 
-import { addTag, deleteTag } from '../../lib/helper';
+import { addTag, deleteTag, elapsedTime } from '../../lib/helper';
 
 export const ViewBoxInfo = (props: {
   metadata: Metadata | NoteMetadata;
@@ -61,7 +61,7 @@ export const ViewBoxInfo = (props: {
           value={props.metadata.name}
           autofocus
         />
-        <span class="text-sm">{props.metadata.created_at}</span>
+        <span class="text-sm">{elapsedTime(props.metadata.created_at)}</span>
       </header>
       <div class="p-4">
         <h4 class="text-lg uppercase">Tags</h4>
