@@ -95,7 +95,7 @@ export function searchByText(refs: Ref[], searchText: string) {
   const results = refs.filter((ref) => {
     // Convert object name to lowercase
     // TODO: Fix the search
-    const lowercaseObjectName = ref.metadata.id.toLowerCase();
+    const lowercaseObjectName = ref.metadata.name.toLowerCase();
     const lowercaseObjectTags = ref.metadata.tags?.map((tag) =>
       tag.toLowerCase(),
     );

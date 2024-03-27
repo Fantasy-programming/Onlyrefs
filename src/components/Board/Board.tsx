@@ -26,6 +26,7 @@ import { NewNote } from '../BoardItem/BoardNoteItem';
 const Board = (props: BoardProps) => {
   const [selectFiles, dropFiles, progress] = useFileSelector();
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
+  const [searching, setSearching] = createSignal(false);
   const [gridSize] = gridSizeHook();
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
   const {
@@ -64,9 +65,11 @@ const Board = (props: BoardProps) => {
             const value = e.target.value;
             if (value === '') {
               setBoardRefs(props.refs);
+              setSearching(false);
               return;
             }
             setBoardRefs(searchByText(props.refs, value));
+            if (!searching()) setSearching(true);
           }}
         />
       </div>
@@ -84,7 +87,7 @@ const Board = (props: BoardProps) => {
         <Mason
           as="section"
           class="relative h-full w-full"
-          pre={[NewNote]}
+          pre={!searching() ? [NewNote] : []}
           items={boardRefs()}
           gap={20}
           columns={breakPoints()()}

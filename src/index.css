@@ -114,3 +114,8 @@
     @apply px-4;
   }
 }
+
+i,
+em {
+  @apply italic;
+}
