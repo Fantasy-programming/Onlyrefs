@@ -55,12 +55,13 @@ const Board = (props: BoardProps) => {
           variant="default"
           size="lg"
           onclick={() => selectFiles(props.collection)}
+          class="hidden md:inline-flex"
         >
           Save
         </Button>
         <Input
           placeholder="Search your refs..."
-          class="border-none font-serif text-4xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+          class="border-none font-serif text-3xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-4xl"
           oninput={(e) => {
             const value = e.target.value;
             if (value === '') {

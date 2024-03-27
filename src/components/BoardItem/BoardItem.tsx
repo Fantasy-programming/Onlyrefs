@@ -53,7 +53,7 @@ export const BoardItem = (props: BoardItemProps) => {
           collectionName={props.refItem.metadata.collection}
           refID={props.refItem.metadata.id}
         >
-          <NoteItem noteInfo={props.refItem as NoteRef} type="string" />
+          <NoteItem noteInfo={props.refItem as NoteRef} />
         </RefContextMenu>
       </Match>
     </Switch>

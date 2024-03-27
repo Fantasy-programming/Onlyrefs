@@ -202,7 +202,7 @@ const SaveNote = Extension.create({
   },
 });
 
-export const NoteItem = (props: { noteInfo: NoteRef; type: string }) => {
+export const NoteItem = (props: { noteInfo: NoteRef }) => {
   const [loading, setLoading] = createSignal(true);
   const [noteContent, setNoteContent] = createSignal('');
 

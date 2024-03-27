@@ -34,7 +34,7 @@ export const LeftNav = () => {
   const [gridPressed, setGridPressed] = createSignal(false);
 
   return (
-    <nav class="fixed left-0 top-0 z-50 flex h-screen w-20 flex-col items-center justify-end bg-transparent opacity-100  ">
+    <nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end bg-transparent opacity-100 md:flex md:w-20  ">
       <div class="logo absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
         <div class="flex items-center gap-4 text-3xl">
           <Logo class="h-8 w-8" />
