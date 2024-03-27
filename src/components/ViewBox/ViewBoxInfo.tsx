@@ -1,14 +1,17 @@
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { VsAdd } from 'solid-icons/vs';
-import { Metadata } from '../../lib/types';
+import {  Metadata, NoteMetadata } from '../../lib/types';
 import { ViewBoxTag } from './ViewBoxTags';
 
 import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
 
 import { addTag, deleteTag } from '../../lib/helper';
 
-export const ViewBoxInfo = (props: { metadata: Metadata; type: string }) => {
+export const ViewBoxInfo = (props: {
+  metadata: Metadata | NoteMetadata;
+  type: string;
+}) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [inputValue, setInputValue] = createSignal('');
   const [showAllTags, setShowAllTags] = createSignal(false);
@@ -111,9 +114,9 @@ export const ViewBoxInfo = (props: { metadata: Metadata; type: string }) => {
           <Switch>
             <Match when={props.type === 'image'}>
               <ViewBoxInfoImage
-                dimensions={props.metadata.dimensions}
-                file_size={props.metadata.file_size}
-                media_type={props.metadata.media_type}
+                dimensions={(props.metadata as Metadata).dimensions}
+                file_size={(props.metadata as Metadata).file_size}
+                media_type={(props.metadata as Metadata).media_type}
               />
             </Match>
             <Match when={props.type === 'video'}>
@@ -131,7 +134,7 @@ export const ViewBoxInfo = (props: { metadata: Metadata; type: string }) => {
 
 interface ViewBoxInfoImageProps {
   dimensions: number[];
-  file_size: number;
+  file_size: string;
   media_type: string;
 }
 

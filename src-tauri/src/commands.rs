@@ -23,7 +23,7 @@ async fn generate_metadata(
 ) -> Result<(), String> {
     let metadata = Metadata {
         id: ref_id.to_string(),
-        name: file_name.to_string(),
+        name: String::new(),
         file_name: file_name.to_string(),
         media_type: media::determine_media_type(file_name),
         dimensions: media::analyze_dimensions(dest_file),
@@ -70,7 +70,7 @@ fn generate_note_metadata(
 ) -> Result<(), String> {
     let note_metadata = NoteMetadata {
         id: ref_id.to_string(),
-        note_name: String::new(),
+        name: String::new(),
         media_type: "text/md".to_string(),
         collection: collection.to_string(),
         created_at: Local::now().to_string(),

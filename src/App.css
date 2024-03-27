@@ -11,6 +11,7 @@ body {
   position: fixed;
   width: 100vw;
   height: 100vh;
+  font-synthesis-weight: none;
 }
 
 ::-webkit-scrollbar {

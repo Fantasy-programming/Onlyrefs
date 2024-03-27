@@ -4,7 +4,7 @@ export interface Metadata {
   name: string;
   media_type: string;
   dimensions: [number, number];
-  file_size: String;
+  file_size: string;
   collection: string;
   colors: string[];
   created_at: string;
@@ -27,7 +27,7 @@ export interface NoteRef {
 
 export interface NoteMetadata {
   id: string;
-  note_name: string;
+  name: string;
   media_type: string;
   collection: string;
   created_at: string;

@@ -49,7 +49,12 @@ export const BoardItem = (props: BoardItemProps) => {
         </RefContextMenu>
       </Match>
       <Match when={isNote}>
-        <NoteItem noteInfo={props.refItem as NoteRef} type="string" />
+        <RefContextMenu
+          collectionName={props.refItem.metadata.collection}
+          refID={props.refItem.metadata.id}
+        >
+          <NoteItem noteInfo={props.refItem as NoteRef} type="string" />
+        </RefContextMenu>
       </Match>
     </Switch>
   );
@@ -59,7 +64,7 @@ export const BoardItem = (props: BoardItemProps) => {
 const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
   return (
     <Dialog>
-      <DialogTrigger class="w-full">
+      <DialogTrigger class="w-full rounded-xl">
         <div
           class={`cursor-pointer  rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20`}
           style={{
@@ -67,6 +72,11 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
             'background-image': `url(${props?.mediaInfo?.low_res_imagepath})`,
           }}
         />
+        {props.mediaInfo.metadata.name === '' ? null : (
+          <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
+            {props.mediaInfo.metadata.name}
+          </p>
+        )}
       </DialogTrigger>
       <ViewBox source={props.mediaInfo} type="image" />
     </Dialog>
@@ -77,7 +87,7 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
 const VideoItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <Dialog>
-      <DialogTrigger class="w-full">
+      <DialogTrigger class="w-full rounded-xl">
         <div
           class="relative cursor-pointer overflow-hidden rounded-xl border border-transparent shadow-md hover:border-primary"
           style={{
@@ -93,6 +103,11 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
             muted
           ></video>
         </div>
+        {props.mediaInfo.metadata.name === '' ? null : (
+          <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
+            {props.mediaInfo.metadata.name}
+          </p>
+        )}
       </DialogTrigger>
       <ViewBox source={props?.mediaInfo} type="video" />
     </Dialog>

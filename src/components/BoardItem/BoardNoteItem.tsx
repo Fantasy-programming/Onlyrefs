@@ -7,6 +7,7 @@ import { HiSolidCodeBracket } from 'solid-icons/hi';
 import { VsListOrdered, VsListUnordered } from 'solid-icons/vs';
 import { TbBlockquote } from 'solid-icons/tb';
 import { OcCodesquare2 } from 'solid-icons/oc';
+import { useRefSelector } from '~/state/store';
 
 import { createTiptapEditor } from 'solid-tiptap';
 import StarterKit from '@tiptap/starter-kit';
@@ -18,6 +19,8 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
 import { create_note_ref, get_note_content } from '~/lib/helper.ts';
 import { NoteRef } from '~/lib/types.ts';
+import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
+import { ViewBox } from '../ViewBox/ViewBox.tsx';
 
 function Control(props: ControlProps): JSX.Element {
   const flag = createEditorTransaction(
@@ -177,14 +180,22 @@ export function ToolbarContents(props: ToolbarProps): JSX.Element {
 
 const SaveNote = Extension.create({
   addKeyboardShortcuts() {
+    const { options } = this;
+
     return {
       'Ctrl-Enter': ({ editor }) => {
         const text: string = editor.storage.markdown.getMarkdown();
         if (text.trim() === '') {
           return false;
         }
-        create_note_ref('all', text);
-        editor.commands.clearContent();
+
+        create_note_ref('all', text).then(() => {
+          editor.commands.clearContent();
+          if (typeof options.refresh === 'function') {
+            options.refresh();
+          }
+        });
+
         return true;
       },
     };
@@ -207,9 +218,19 @@ export const NoteItem = (props: { noteInfo: NoteRef; type: string }) => {
 
   return (
     <Show when={!loading()}>
-      <div class="min-h-10 overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
-        <NoteContent content={noteContent()} />
-      </div>
+      <Dialog>
+        <DialogTrigger class="w-full">
+          <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
+            <NoteContent content={noteContent()} />
+          </div>
+          {props.noteInfo.metadata.name === '' ? null : (
+            <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
+              {props.noteInfo.metadata.name}
+            </p>
+          )}
+        </DialogTrigger>
+        <ViewBox source={props.noteInfo} type="note" />
+      </Dialog>
     </Show>
   );
 };
@@ -236,12 +257,13 @@ const NoteContent = (props: { content: string }) => {
     content: props.content,
   }));
 
-  return <div ref={setContainer} class="h-full overflow-y-scroll" />;
+  return <div ref={setContainer} class="h-full overflow-y-scroll text-start" />;
 };
 
 export const NewNote = () => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
+  const { refService } = useRefSelector();
 
   const editor = createTiptapEditor(() => ({
     element: container()!,
@@ -261,7 +283,9 @@ export const NewNote = () => {
       BubbleMenu.configure({
         element: menu()!,
       }),
-      SaveNote,
+      SaveNote.configure({
+        refresh: refService.refetchRefs,
+      }),
     ],
     editorProps: {
       attributes: {

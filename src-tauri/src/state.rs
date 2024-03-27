@@ -24,7 +24,7 @@ pub struct NoteRef {
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct NoteMetadata {
     pub id: String,
-    pub note_name: String,
+    pub name: String,
     pub media_type: String,
     pub collection: String,
     pub created_at: String,
