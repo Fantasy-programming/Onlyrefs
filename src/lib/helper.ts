@@ -129,8 +129,12 @@ function containsCharsInOrder(str: string, searchStr: string) {
   return false;
 }
 
-export const changRefName = async (refID: string, newName: string) => {
-  await invoke('rename_ref', { refID, newName });
+export const changeRefName = async (
+  refID: string,
+  newName: string,
+  type: string,
+) => {
+  await invoke('rename_ref', { refId: refID, newName: newName, refType: type });
 };
 
 export const deleteTag = async (refID: string, tag: string) => {

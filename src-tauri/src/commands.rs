@@ -123,6 +123,45 @@ async fn get_media_refs(state: State<'_, Mutex<Vec<Ref>>>) -> Result<Vec<Ref>, S
 }
 
 #[tauri::command]
+async fn rename_ref(
+    ref_id: &str,
+    new_name: &str,
+    ref_type: &str,
+    app_handle: tauri::AppHandle,
+    state: State<'_, Mutex<Vec<Ref>>>,
+) -> Result<(), String> {
+    let collections_dir = get_collection_path(&app_handle);
+    utils::change_name(&collections_dir, ref_type, ref_id, new_name);
+
+    // Now update the state with the new name
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+
+    for ref_instance in state_guard.iter_mut() {
+        match ref_instance {
+            Ref::Media(media_ref)
+                if media_ref.metadata.as_ref().map(|m| m.id.as_str()) == Some(ref_id) =>
+            {
+                if let Some(metadata) = media_ref.metadata.as_mut() {
+                    metadata.name = new_name.to_string();
+                }
+            }
+            Ref::Note(note_ref)
+                if note_ref.metadata.as_ref().map(|m| m.id.as_str()) == Some(ref_id) =>
+            {
+                if let Some(metadata) = note_ref.metadata.as_mut() {
+                    metadata.name = new_name.to_string();
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
 async fn remove_ref(ref_id: &str, state: State<'_, Mutex<Vec<Ref>>>) -> Result<(), String> {
     let mut state_guard = state
         .lock()
@@ -269,6 +308,7 @@ pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
         generate_metadata,
         remove_ref,
         add_tag,
+        rename_ref,
         remove_tag,
         generate_note_metadata
     ])
