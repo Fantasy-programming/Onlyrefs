@@ -3,6 +3,7 @@ import { createStore } from 'solid-js/store';
 import { MediaRef, NoteRef, Ref, backendRef } from '~/lib/types';
 import { invoke } from '@tauri-apps/api';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { getUpdatedAtTimestamp } from '~/lib/helper';
 
 const refStore = createStore<Ref[]>([]);
 
@@ -13,7 +14,7 @@ export const RefService = () => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
 
-      const parsedData: Ref[] = data.map((ref) => {
+      let parsedData: Ref[] = data.map((ref) => {
         if ('Media' in ref) {
           const mediaref = ref.Media as MediaRef;
           return {
@@ -31,6 +32,13 @@ export const RefService = () => {
           } as NoteRef;
         }
       });
+
+      parsedData = parsedData.sort((a, b) => {
+        const aUpdatedAt = getUpdatedAtTimestamp(a);
+        const bUpdatedAt = getUpdatedAtTimestamp(b);
+        return bUpdatedAt - aUpdatedAt;
+      });
+
       setRef(parsedData);
     } catch (e) {
       console.error(e);
@@ -41,7 +49,7 @@ export const RefService = () => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
 
-      const parsedData: Ref[] = data.map((ref) => {
+      let parsedData: Ref[] = data.map((ref) => {
         if ('Media' in ref) {
           const mediaref = ref.Media as MediaRef;
           return {
@@ -58,6 +66,12 @@ export const RefService = () => {
             ...noteref,
           } as NoteRef;
         }
+      });
+
+      parsedData = parsedData.sort((a, b) => {
+        const aUpdatedAt = getUpdatedAtTimestamp(a);
+        const bUpdatedAt = getUpdatedAtTimestamp(b);
+        return bUpdatedAt - aUpdatedAt;
       });
 
       setRef(parsedData);
