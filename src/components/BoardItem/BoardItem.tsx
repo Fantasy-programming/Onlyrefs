@@ -14,7 +14,6 @@ import {
 } from '../ui/context-menu.tsx';
 
 import { Dialog, DialogTrigger } from '../ui/dialog';
-
 import { Skeleton } from '../ui/skeleton';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { NoteItem } from './BoardNoteItem.tsx';
@@ -52,6 +51,7 @@ export const BoardItem = (props: BoardItemProps) => {
         <RefContextMenu
           collectionName={props.refItem.metadata.collection}
           refID={props.refItem.metadata.id}
+          type="note"
         >
           <NoteItem noteInfo={props.refItem as NoteRef} />
         </RefContextMenu>
@@ -123,7 +123,9 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger>{props.children}</ContextMenuTrigger>
+      <ContextMenuTrigger class={`${props.type}`}>
+        {props.children}
+      </ContextMenuTrigger>
       <ContextMenuPortal>
         <ContextMenuContent class="w-48">
           {/* <ContextMenuSub overlap> */}

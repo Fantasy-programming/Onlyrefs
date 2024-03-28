@@ -4,7 +4,6 @@ import { VsAdd } from 'solid-icons/vs';
 import { Metadata, NoteMetadata } from '../../lib/types';
 import { ViewBoxTag } from './ViewBoxTags';
 import { debounce } from '@solid-primitives/scheduled';
-
 import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
 
 import {

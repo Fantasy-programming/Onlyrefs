@@ -12,6 +12,7 @@ export interface BoardItemType {
 }
 
 export interface RefContextMenuProps {
+  type?: string;
   collectionName: string;
   refID: string;
 }
