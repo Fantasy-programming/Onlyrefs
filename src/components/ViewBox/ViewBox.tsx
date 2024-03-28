@@ -1,17 +1,22 @@
 import { writeText } from '@tauri-apps/api/clipboard';
 import { Component, For, Match, ParentProps, Show, Switch } from 'solid-js';
-import { MediaRef, Ref } from '../../lib/types';
+import { MediaRef, NoteRef, Ref } from '../../lib/types';
 import { DialogContent } from '../ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { ViewBoxInfo } from './ViewBoxInfo';
+import { NoteEditor } from '../BoardItem/BoardNoteItem';
 
 const isMediaRef = (source: Ref): source is MediaRef => {
   return 'colors' in (source.metadata as any);
 };
 
-export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
-  props,
-) => {
+const isNoteRef = (source: Ref): source is NoteRef => {
+  return 'notepath' in (source as any);
+};
+
+export const ViewBox: Component<
+  ParentProps & { source: Ref; type: string; content?: string }
+> = (props) => {
   return (
     <DialogContent
       class={
@@ -44,6 +49,13 @@ export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
                   'max-width': `min(100%, ${(props.source as MediaRef).metadata.dimensions[0]}px )`,
                   'max-height': `min(100%, ${(props.source as MediaRef).metadata.dimensions[1]}px )`,
                 }}
+              />
+            </Match>
+
+            <Match when={props.type === 'note' && isNoteRef(props.source)}>
+              <NoteEditor
+                source={props.source as NoteRef}
+                content={props.content ?? ''}
               />
             </Match>
           </Switch>

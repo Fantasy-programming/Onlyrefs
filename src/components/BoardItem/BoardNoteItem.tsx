@@ -229,7 +229,7 @@ export const NoteItem = (props: { noteInfo: NoteRef }) => {
             </p>
           )}
         </DialogTrigger>
-        <ViewBox source={props.noteInfo} type="note" />
+        <ViewBox source={props.noteInfo} content={noteContent()} type="note" />
       </Dialog>
     </Show>
   );
@@ -316,6 +316,54 @@ export const NewNote = () => {
         </Show>
       </Toolbar>
       <div ref={setContainer} class="h-full overflow-y-scroll" />
+    </div>
+  );
+};
+
+export const NoteEditor = (props: { source: NoteRef; content: string }) => {
+  const [container, setContainer] = createSignal<HTMLDivElement>();
+  const [menu, setMenu] = createSignal<HTMLDivElement>();
+
+  const editor = createTiptapEditor(() => ({
+    element: container()!,
+    extensions: [
+      StarterKit,
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      Placeholder.configure({
+        placeholder: 'Start writing your note here...',
+      }),
+      Markdown.configure({
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
+      BubbleMenu.configure({
+        element: menu()!,
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class:
+          'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
+      },
+    },
+    content: props.content,
+  }));
+
+  return (
+    <div class="flex h-full w-full flex-col items-center overflow-x-hidden overscroll-y-contain p-12">
+      <Toolbar
+        ref={setMenu}
+        class="dynamic-shadow rounded-lg bg-gradient-to-bl from-primary to-primary/50 text-white"
+        horizontal
+      >
+        <Show when={editor()} keyed>
+          {(instance) => <ToolbarContents editor={instance} />}
+        </Show>
+      </Toolbar>
+      <div ref={setContainer} class="m-auto w-full hyphens-auto break-words" />
     </div>
   );
 };
