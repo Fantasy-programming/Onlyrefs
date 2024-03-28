@@ -220,7 +220,7 @@ export const NoteItem = (props: { noteInfo: NoteRef }) => {
     <Show when={!loading()}>
       <Dialog>
         <DialogTrigger class="w-full">
-          <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
+          <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border  border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
             <NoteContent content={noteContent()} />
           </div>
           {props.noteInfo.metadata.name === '' ? null : (
@@ -237,10 +237,6 @@ export const NoteItem = (props: { noteInfo: NoteRef }) => {
 
 const NoteContent = (props: { content: string }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
-
-  // createEffect(() => {
-  //   window.dispatchEvent(new Event('resize'));
-  // });
 
   createTiptapEditor(() => ({
     element: container()!,

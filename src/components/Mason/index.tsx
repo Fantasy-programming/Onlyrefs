@@ -90,13 +90,15 @@ function createMason(el: HTMLElement, state: MasonState): void {
   // Get computed style
   const columnCount = state.columns.length;
   const containerWidth = getContentWidth(el);
-  let isAllDirty = containerWidth !== state.width;
+  const isContainerWidthDirty = containerWidth !== state.width;
   const widthPerColumn = containerWidth / columnCount;
 
   const newColumns: number[] = new Array<number>(state.columns.length).fill(0);
 
-  if (isAllDirty) {
+  if (isContainerWidthDirty) {
     state.columns = [...newColumns];
+    state.elements = [];
+    state.heights = [];
   }
 
   let node = el.firstElementChild;
@@ -105,33 +107,40 @@ function createMason(el: HTMLElement, state: MasonState): void {
   while (node) {
     if (node instanceof HTMLElement) {
       const targetColumn = getShortestColumn(newColumns);
-      if (isAllDirty || state.elements[nodeIndex] !== node) {
-        // Set the width of the node
-        node.style.width = `${widthPerColumn}px`;
-        // Set the position
-        node.style.position = 'absolute';
-        // Set the top/left
-        const currentColumnHeight = newColumns[targetColumn];
-        node.style.top = `${currentColumnHeight}px`;
-        node.style.left = `${targetColumn * widthPerColumn + (targetColumn > 0 ? targetColumn * state.gap : 0)}px`;
+      // Set the width of the node
+      node.style.width = `${widthPerColumn}px`;
+      // Set the position
+      node.style.position = 'absolute';
+      // Set the top/left
+      const currentColumnHeight = newColumns[targetColumn];
+      node.style.top = `${currentColumnHeight}px`;
+      node.style.left = `${targetColumn * widthPerColumn + (targetColumn > 0 ? targetColumn * state.gap : 0)}px`;
 
-        // Increase column height
-        node.getBoundingClientRect();
-        const nodeHeight = node.offsetHeight;
+      // Set height to auto for dynamic sizing
+      node.style.height = 'auto';
+
+      if (isContainerWidthDirty || state.elements[nodeIndex] !== node) {
         state.elements[nodeIndex] = node;
+        const nodeHeight = node.offsetHeight;
         state.heights[nodeIndex] = nodeHeight;
-        isAllDirty = true;
         newColumns[targetColumn] = currentColumnHeight + nodeHeight + state.gap;
       } else {
-        newColumns[targetColumn] += state.heights[nodeIndex] + state.gap;
+        const nodeHeight = node.offsetHeight;
+        if (nodeHeight !== state.heights[nodeIndex]) {
+          state.heights[nodeIndex] = nodeHeight;
+          newColumns[targetColumn] += nodeHeight - state.heights[nodeIndex];
+        } else {
+          newColumns[targetColumn] += state.heights[nodeIndex] + state.gap;
+        }
       }
       nodeIndex += 1;
     }
     node = node.nextElementSibling;
   }
-  const targetColumn = getLongestColumn(newColumns);
-  const currentColumnHeight = newColumns[targetColumn];
-  el.style.height = `${currentColumnHeight + (newColumns.length - 1) * state.gap}px`;
+
+  const longestColumnIndex = getLongestColumn(newColumns);
+  const longestColumnHeight = newColumns[longestColumnIndex];
+  el.style.height = `${longestColumnHeight + (newColumns.length - 1) * state.gap}px`;
   state.width = containerWidth;
   state.columns = newColumns;
 }
@@ -262,11 +271,15 @@ export function Mason<
 
       observer.observe(el, {
         childList: true,
-        subtree: true,
       });
+
+      const gridinterval = setInterval(() => {
+        recalculate();
+      }, 1000);
 
       onCleanup(() => {
         observer.disconnect();
+        clearInterval(gridinterval);
       });
     }
   });
