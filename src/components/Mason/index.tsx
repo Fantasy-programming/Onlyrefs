@@ -224,6 +224,7 @@ export function Mason<
       };
 
       const recalculate = createRAFDebounce(() => {
+        console.log('recalculating');
         createMason(el, state);
       });
 
@@ -261,6 +262,7 @@ export function Mason<
 
       observer.observe(el, {
         childList: true,
+        subtree: true,
       });
 
       onCleanup(() => {
