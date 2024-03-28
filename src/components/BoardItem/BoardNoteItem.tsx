@@ -1,7 +1,7 @@
 import { Toggle, Toolbar } from 'terracotta';
 import { createEditorTransaction } from 'solid-tiptap';
 import { ControlProps, ToolbarProps } from './BoardItem.types.ts';
-import { JSX, Show, createEffect, createSignal, onMount } from 'solid-js';
+import { JSX, Show, createSignal, onMount } from 'solid-js';
 import { BsTextParagraph } from 'solid-icons/bs';
 import { HiSolidCodeBracket } from 'solid-icons/hi';
 import { VsListOrdered, VsListUnordered } from 'solid-icons/vs';
@@ -238,9 +238,9 @@ export const NoteItem = (props: { noteInfo: NoteRef }) => {
 const NoteContent = (props: { content: string }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
 
-  createEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  });
+  // createEffect(() => {
+  //   window.dispatchEvent(new Event('resize'));
+  // });
 
   createTiptapEditor(() => ({
     element: container()!,
