@@ -80,9 +80,7 @@ fn generate_note_metadata(
 
     let json_metadata = serde_json::to_string_pretty(&note_metadata).unwrap();
     let metadata_path = Path::new(note_dir).join("metadata.note.json");
-    let note_file_path = Path::new(note_dir).join("note.md");
     fs::write(metadata_path.clone(), json_metadata).expect("Failed to write metadata file");
-    fs::write(note_file_path.clone(), note_content).expect("Failed to write note file");
 
     // Store into state
     let mut state_guard = state
