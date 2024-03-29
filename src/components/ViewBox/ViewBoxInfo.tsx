@@ -15,23 +15,30 @@ import {
 import { useRefSelector } from '~/state/store';
 
 const debouncedSave = debounce(
-  async (value: string, id: string, type: string, more: () => void) => {
+  async (
+    value: string,
+    id: string,
+    type: string,
+    more: (id: string, value: string) => void,
+  ) => {
     await changeRefName(id, value, type);
-    more();
+    more(id, value);
   },
   1000,
 );
 
 export const ViewBoxInfo = (props: {
   metadata: Metadata | NoteMetadata;
+  path: string;
   type: string;
 }) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [inputValue, setInputValue] = createSignal('');
+  const [inputName, setInputName] = createSignal(props.metadata.name);
   const [showAllTags, setShowAllTags] = createSignal(false);
   const [tags, setTags] = createSignal(props.metadata.tags);
   const {
-    refService: { refetchRefs },
+    refService: { mutateTag, mutateName },
   } = useRefSelector();
 
   const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (
@@ -44,11 +51,12 @@ export const ViewBoxInfo = (props: {
   const handleNameInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
   ) => {
+    setInputName(event.currentTarget.value);
     debouncedSave(
       event.currentTarget.value,
       props.metadata.id,
       props.type,
-      refetchRefs,
+      mutateName,
     );
   };
 
@@ -63,13 +71,15 @@ export const ViewBoxInfo = (props: {
     }
     if (!tags()) {
       setTags([inputValue()]);
-      await addTag(props.metadata.id, inputValue());
+      await addTag(props.metadata.id, props.path, props.type, inputValue());
+      mutateTag(props.metadata.id, inputValue(), 'add');
       setInputValue('');
       return;
     }
     if (tags()) {
       setTags([...(tags() as string[]), inputValue()]);
-      await addTag(props.metadata.id, inputValue());
+      await addTag(props.metadata.id, props.path, props.type, inputValue());
+      mutateTag(props.metadata.id, inputValue(), 'add');
       setInputValue('');
       return;
     }
@@ -77,7 +87,7 @@ export const ViewBoxInfo = (props: {
 
   const removeTag = async (name: string) => {
     const newTags = tags()?.filter((tag) => tag !== name);
-    await deleteTag(props.metadata.id, name);
+    await deleteTag(props.metadata.id, props.path, props.type, name);
     setTags(newTags);
   };
 
@@ -87,7 +97,7 @@ export const ViewBoxInfo = (props: {
         <input
           type="text"
           class="h-[50px] border-none bg-transparent text-3xl outline-none "
-          value={props.metadata.name}
+          value={inputName()}
           autofocus
           onInput={handleNameInput}
         />

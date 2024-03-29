@@ -16,7 +16,6 @@ pub struct MediaRef {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct NoteRef {
-    pub notepath: String,
     pub metapath: String,
     pub metadata: Option<NoteMetadata>,
 }
@@ -29,6 +28,7 @@ pub struct NoteMetadata {
     pub collection: String,
     pub created_at: String,
     pub updated_at: String,
+    pub note_text: String,
     #[serde(default)]
     pub tags: Vec<String>,
 }

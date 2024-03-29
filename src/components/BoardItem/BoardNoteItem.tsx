@@ -1,7 +1,7 @@
 import { Toggle, Toolbar } from 'terracotta';
 import { createEditorTransaction } from 'solid-tiptap';
 import { ControlProps, ToolbarProps } from './BoardItem.types.ts';
-import { JSX, Show, createSignal, onMount } from 'solid-js';
+import { JSX, Show, createSignal } from 'solid-js';
 import { BsTextParagraph } from 'solid-icons/bs';
 import { HiSolidCodeBracket } from 'solid-icons/hi';
 import { VsListOrdered, VsListUnordered } from 'solid-icons/vs';
@@ -17,7 +17,7 @@ import TaskList from '@tiptap/extension-task-list';
 import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
-import { create_note_ref, get_note_content } from '~/lib/helper.ts';
+import { create_note_ref } from '~/lib/helper.ts';
 import { NoteRef } from '~/lib/types.ts';
 import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
@@ -203,35 +203,24 @@ const SaveNote = Extension.create({
 });
 
 export const NoteItem = (props: { noteInfo: NoteRef }) => {
-  const [loading, setLoading] = createSignal(true);
-  const [noteContent, setNoteContent] = createSignal('');
-
-  const content = async () => {
-    const note = await get_note_content(props.noteInfo.notepath);
-    setNoteContent(note);
-    setLoading(false);
-  };
-
-  onMount(() => {
-    content();
-  });
-
   return (
-    <Show when={!loading()}>
-      <Dialog>
-        <DialogTrigger class="w-full">
-          <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border  border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
-            <NoteContent content={noteContent()} />
-          </div>
-          {props.noteInfo.metadata.name === '' ? null : (
-            <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
-              {props.noteInfo.metadata.name}
-            </p>
-          )}
-        </DialogTrigger>
-        <ViewBox source={props.noteInfo} content={noteContent()} type="note" />
-      </Dialog>
-    </Show>
+    <Dialog>
+      <DialogTrigger class="w-full">
+        <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border  border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
+          <NoteContent content={props.noteInfo.metadata.note_text} />
+        </div>
+        {props.noteInfo.metadata.name === '' ? null : (
+          <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
+            {props.noteInfo.metadata.name}
+          </p>
+        )}
+      </DialogTrigger>
+      <ViewBox
+        source={props.noteInfo}
+        content={props.noteInfo.metadata.note_text}
+        type="note"
+      />
+    </Dialog>
   );
 };
 

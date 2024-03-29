@@ -63,7 +63,6 @@ async fn generate_metadata(
 fn generate_note_metadata(
     ref_id: &str,
     collection: &str,
-    note_path: &str,
     note_dir: &str,
     note_content: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
@@ -71,6 +70,7 @@ fn generate_note_metadata(
     let note_metadata = NoteMetadata {
         id: ref_id.to_string(),
         name: String::new(),
+        note_text: note_content.to_string(),
         media_type: "text/md".to_string(),
         collection: collection.to_string(),
         created_at: Local::now().to_string(),
@@ -90,7 +90,6 @@ fn generate_note_metadata(
         .map_err(|_| "Failed to acquire lock on state".to_string())?;
 
     let new_note_ref = NoteRef {
-        notepath: note_path.to_string(),
         metapath: metadata_path.to_str().unwrap().to_string(),
         metadata: Some(note_metadata),
     };
@@ -190,13 +189,13 @@ async fn remove_ref(ref_id: &str, state: State<'_, Mutex<Vec<Ref>>>) -> Result<(
 #[tauri::command]
 async fn add_tag(
     ref_id: &str,
+    path: &str,
     tag: &str,
-    app_handle: tauri::AppHandle,
+    ref_type: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
 ) -> Result<(), String> {
-    // Add tags manually
-    let collections_dir = get_collection_path(&app_handle);
-    utils::add_tag(&collections_dir, ref_id, tag);
+    let location = Path::new(path);
+    utils::add_tag(location, ref_type, tag);
 
     // Update state
     let mut state_guard = state
@@ -248,12 +247,13 @@ async fn add_tag(
 #[tauri::command]
 async fn remove_tag(
     ref_id: &str,
+    path: &str,
     tag: &str,
-    app_handle: tauri::AppHandle,
+    ref_type: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
 ) -> Result<(), String> {
-    let collections_dir = get_collection_path(&app_handle);
-    utils::remove_tag(&collections_dir, ref_id, tag);
+    let location = Path::new(path);
+    utils::remove_tag(location, ref_type, tag);
 
     let mut state_guard = state
         .lock()

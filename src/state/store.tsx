@@ -45,6 +45,38 @@ export const RefService = () => {
     }
   });
 
+  const mutateTag = (id: string, tags: string, type: string) => {
+    console.log('mutation');
+    setRef((prev) => {
+      const newrefs = prev.map((ref) => {
+        if (ref.metadata.id === id) {
+          if (type === 'add') {
+            ref.metadata.tags?.push(tags);
+          } else {
+            ref.metadata.tags = ref?.metadata?.tags?.filter(
+              (tag) => tag !== tags,
+            );
+          }
+        }
+        return ref;
+      });
+      return newrefs;
+    });
+  };
+
+  const mutateName = (id: string, name: string) => {
+    setRef((prev) => {
+      const newrefs = prev.map((ref) => {
+        if (ref.metadata.id === id) {
+          console.log(ref.metadata.name, name);
+          ref.metadata.name = name;
+        }
+        return ref;
+      });
+      return newrefs;
+    });
+  };
+
   const refetchRefs = async () => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
@@ -80,7 +112,7 @@ export const RefService = () => {
     }
   };
 
-  return { ref, refetchRefs };
+  return { ref, refetchRefs, mutateTag, mutateName };
 };
 
 export type RootState = {

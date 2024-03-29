@@ -273,13 +273,13 @@ export function Mason<
         childList: true,
       });
 
-      const gridinterval = setInterval(() => {
-        recalculate();
-      }, 1000);
+      // const gridinterval = setInterval(() => {
+      //   recalculate();
+      // }, 1000);
 
       onCleanup(() => {
         observer.disconnect();
-        clearInterval(gridinterval);
+        // clearInterval(gridinterval);
       });
     }
   });

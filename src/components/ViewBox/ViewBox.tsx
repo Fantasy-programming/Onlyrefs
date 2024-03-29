@@ -87,7 +87,7 @@ export const ViewBox: Component<
           </Show>
         </div>
       </div>
-      <ViewBoxInfo metadata={props.source.metadata} type={props.type} />
+      <ViewBoxInfo metadata={props.source.metadata} path={props.source.metapath} type={props.type} />
     </DialogContent>
   );
 };

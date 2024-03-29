@@ -20,7 +20,6 @@ export interface MediaRef {
 }
 
 export interface NoteRef {
-  notepath: string;
   metapath: string;
   metadata: NoteMetadata;
 }
@@ -29,6 +28,7 @@ export interface NoteMetadata {
   id: string;
   name: string;
   media_type: string;
+  note_text: string;
   collection: string;
   created_at: string;
   updated_at: string;

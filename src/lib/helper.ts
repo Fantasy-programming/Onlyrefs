@@ -48,14 +48,11 @@ export const create_note_ref = async (
 ) => {
   const destDir = await join(await appDataDir(), 'collections');
   const noteID = await generate_id({ lenght: 13, createDir: true });
-
-  const notepath = await join(destDir, noteID, 'note.md');
   const notedir = await join(destDir, noteID);
 
   await invoke('generate_note_metadata', {
     refId: noteID,
     collection: collectionName,
-    notePath: notepath,
     noteDir: notedir,
     noteContent: content,
   });
@@ -137,12 +134,27 @@ export const changeRefName = async (
   await invoke('rename_ref', { refId: refID, newName: newName, refType: type });
 };
 
-export const deleteTag = async (refID: string, tag: string) => {
-  await invoke('remove_tag', { refId: refID, tag: tag });
+export const deleteTag = async (
+  id: string,
+  path: string,
+  type: string,
+  tag: string,
+) => {
+  await invoke('remove_tag', {
+    refId: id,
+    path: path,
+    refType: type,
+    tag: tag,
+  });
 };
 
-export const addTag = async (refID: string, tag: string) => {
-  await invoke('add_tag', { refId: refID, tag: tag });
+export const addTag = async (
+  id: string,
+  path: string,
+  type: string,
+  tag: string,
+) => {
+  await invoke('add_tag', { refId: id, path, refType: type, tag: tag });
 };
 
 export const getBreakpoints = (columns: number) => {

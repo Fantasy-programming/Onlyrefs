@@ -45,7 +45,6 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
         metadata: None,
     };
     let mut note_ref = NoteRef {
-        notepath: String::new(),
         metapath: String::new(),
         metadata: None,
     };
@@ -65,14 +64,6 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
             .starts_with("lower_")
         {
             media_ref.low_res_imagepath = ref_path.to_str().unwrap().to_string();
-        } else if ref_path
-            .extension()
-            .unwrap_or_default()
-            .to_str()
-            .unwrap_or_default()
-            .ends_with("md")
-        {
-            note_ref.notepath = ref_path.to_str().unwrap().to_string();
         } else {
             media_ref.imagepath = ref_path.to_str().unwrap().to_string();
         }
@@ -80,7 +71,7 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
 
     if !media_ref.imagepath.is_empty() {
         Ref::Media(media_ref)
-    } else if !note_ref.notepath.is_empty() {
+    } else if !note_ref.metapath.is_empty() {
         Ref::Note(note_ref)
     } else {
         panic!("Invalid input: neither a media nor a note reference found");
@@ -89,23 +80,14 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
 
 fn parse_metadata(path: &Path) -> Metadata {
     let content = std::fs::read_to_string(path).unwrap();
-
-    let mut metadata: Metadata = serde_json::from_str(&content).unwrap_or_default();
-
-    if metadata.tags.is_empty() {
-        metadata.tags = Vec::new();
-    }
+    let metadata: Metadata = serde_json::from_str(&content).unwrap_or_default();
 
     metadata
 }
 
 fn parse_note_metadata(path: &Path) -> NoteMetadata {
     let content = std::fs::read_to_string(path).unwrap();
-    let mut metadata: NoteMetadata = serde_json::from_str(&content).unwrap_or_default();
-
-    if metadata.tags.is_empty() {
-        metadata.tags = Vec::new();
-    }
+    let metadata: NoteMetadata = serde_json::from_str(&content).unwrap_or_default();
 
     metadata
 }
@@ -117,14 +99,6 @@ pub fn fetch_refs(collections_dir: &Path) -> Mutex<Vec<Ref>> {
             .map(|ref_paths| parse_refs(&ref_paths))
             .collect(),
     )
-}
-
-pub fn add_tag(collections_dir: &Path, ref_id: &str, tag: &str) {
-    let metadata_path = collections_dir.join(ref_id).join("metadata.json");
-    let mut metadata: Metadata = parse_metadata(&metadata_path);
-    metadata.tags.push(tag.to_string());
-    let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
-    fs::write(metadata_path, json_data).expect("Failed to write metadata file");
 }
 
 pub fn change_name(collections_dir: &Path, ref_type: &str, ref_id: &str, name: &str) {
@@ -155,12 +129,60 @@ pub fn change_name(collections_dir: &Path, ref_type: &str, ref_id: &str, name: &
     fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
 }
 
-pub fn remove_tag(collections_dir: &Path, ref_id: &str, tag: &str) {
-    let metadata_path = collections_dir.join(ref_id).join("metadata.json");
-    let mut metadata: Metadata = parse_metadata(&metadata_path);
-    metadata.tags.retain(|t| t != tag);
-    let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
-    fs::write(metadata_path, json_data).expect("Failed to write metadata file");
+pub fn add_tag(metadata_path: &Path, ref_type: &str, tag: &str) {
+    let mut metadata_json =
+        fs::read_to_string(metadata_path).expect("Failed to read metadata file");
+
+    match ref_type {
+        "video" | "image" => {
+            let mut metadata: Metadata =
+                serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
+            metadata.tags.push(tag.to_string());
+            metadata_json =
+                serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+        }
+        "note" => {
+            let mut metadata: NoteMetadata =
+                serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
+            metadata.tags.push(tag.to_string());
+            metadata_json =
+                serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+        }
+        _ => {
+            println!("Unknown ref_type: {}", ref_type);
+            return;
+        }
+    };
+
+    fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
+}
+
+pub fn remove_tag(metadata_path: &Path, ref_type: &str, tag: &str) {
+    let mut metadata_json =
+        fs::read_to_string(metadata_path).expect("Failed to read metadata file");
+
+    match ref_type {
+        "video" | "image" => {
+            let mut metadata: Metadata =
+                serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
+            metadata.tags.retain(|t| t != tag);
+            metadata_json =
+                serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+        }
+        "note" => {
+            let mut metadata: NoteMetadata =
+                serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
+            metadata.tags.retain(|t| t != tag);
+            metadata_json =
+                serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+        }
+        _ => {
+            println!("Unknown ref_type: {}", ref_type);
+            return;
+        }
+    };
+
+    fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
 }
 
 fn human_size(size: u64) -> String {
