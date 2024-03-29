@@ -18,7 +18,7 @@ import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
 import { create_note_ref } from '~/lib/helper.ts';
-import { NoteRef } from '~/lib/types.ts';
+import { NoteMetadata, NoteRef } from '~/lib/types.ts';
 import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 
@@ -206,8 +206,8 @@ export const NoteItem = (props: { noteInfo: NoteRef }) => {
   return (
     <Dialog>
       <DialogTrigger class="w-full">
-        <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border  border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary">
-          <NoteContent content={props.noteInfo.metadata.note_text} />
+        <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border  border-transparent bg-foreground/10 p-6 text-start shadow-md hover:border-secondary">
+          <NoteContent content={props.noteInfo.metadata} />
         </div>
         {props.noteInfo.metadata.name === '' ? null : (
           <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
@@ -215,16 +215,12 @@ export const NoteItem = (props: { noteInfo: NoteRef }) => {
           </p>
         )}
       </DialogTrigger>
-      <ViewBox
-        source={props.noteInfo}
-        content={props.noteInfo.metadata.note_text}
-        type="note"
-      />
+      <ViewBox source={props.noteInfo} type="note" />
     </Dialog>
   );
 };
 
-const NoteContent = (props: { content: string }) => {
+const NoteContent = (props: { content: NoteMetadata }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
 
   createTiptapEditor(() => ({
@@ -243,10 +239,20 @@ const NoteContent = (props: { content: string }) => {
           'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
       },
     },
-    content: props.content,
+    content: props.content.note_text,
   }));
 
-  return <div ref={setContainer} class="h-full overflow-y-scroll text-start" />;
+  return (
+    <div
+      ref={setContainer}
+      classList={{
+        "before:content-['“'] font-serif   after:content-['”'] after:text-3xl before:text-3xl before:leading-[0] after:leading-[0] after:pt-[10px] before:pb-[10px] before:mt-3 after:mt-3 after:block before:block text-2xl text-center":
+          props.content.tags.includes('quote'),
+
+        'h-full overflow-y-scroll ': true,
+      }}
+    />
+  );
 };
 
 export const NewNote = () => {
@@ -305,9 +311,11 @@ export const NewNote = () => {
   );
 };
 
-export const NoteEditor = (props: { source: NoteRef; content: string }) => {
+export const NoteEditor = (props: { source: NoteRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
+
+  console.log(props.source.metadata.note_text);
 
   const editor = createTiptapEditor(() => ({
     element: container()!,
@@ -334,7 +342,7 @@ export const NoteEditor = (props: { source: NoteRef; content: string }) => {
           'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
       },
     },
-    content: props.content,
+    content: props.source.metadata.note_text,
   }));
 
   return (

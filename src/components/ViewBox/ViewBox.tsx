@@ -11,12 +11,12 @@ const isMediaRef = (source: Ref): source is MediaRef => {
 };
 
 const isNoteRef = (source: Ref): source is NoteRef => {
-  return 'notepath' in (source as any);
+  return 'note_text' in (source.metadata as any);
 };
 
-export const ViewBox: Component<
-  ParentProps & { source: Ref; type: string; content?: string }
-> = (props) => {
+export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
+  props,
+) => {
   return (
     <DialogContent
       class={
@@ -53,10 +53,7 @@ export const ViewBox: Component<
             </Match>
 
             <Match when={props.type === 'note' && isNoteRef(props.source)}>
-              <NoteEditor
-                source={props.source as NoteRef}
-                content={props.content ?? ''}
-              />
+              <NoteEditor source={props.source as NoteRef} />
             </Match>
           </Switch>
         </div>
@@ -87,7 +84,11 @@ export const ViewBox: Component<
           </Show>
         </div>
       </div>
-      <ViewBoxInfo metadata={props.source.metadata} path={props.source.metapath} type={props.type} />
+      <ViewBoxInfo
+        metadata={props.source.metadata}
+        path={props.source.metapath}
+        type={props.type}
+      />
     </DialogContent>
   );
 };
