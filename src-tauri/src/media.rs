@@ -10,6 +10,7 @@ use std::path::Path;
 
 use crate::utils::cached_srgba_to_lab;
 
+/// Determine the media type of a file based on its extension
 pub fn determine_media_type(file_name: &str) -> String {
     if let Some(media_type) = from_path(file_name).first() {
         media_type.to_string()
@@ -18,6 +19,16 @@ pub fn determine_media_type(file_name: &str) -> String {
     }
 }
 
+/// Get the dimensions of an image (width, height)
+pub fn analyze_dimensions(file_path: &str) -> Option<(u32, u32)> {
+    if let Ok(image) = image::open(file_path) {
+        Some(image.dimensions())
+    } else {
+        None
+    }
+}
+
+/// Extract the colors from an image
 pub fn extract_colors(file_path: &str) -> Vec<String> {
     let media_type = determine_media_type(file_path);
 
@@ -72,14 +83,7 @@ pub fn extract_colors(file_path: &str) -> Vec<String> {
     hex_colors
 }
 
-pub fn analyze_dimensions(file_path: &str) -> Option<(u32, u32)> {
-    if let Ok(image) = image::open(file_path) {
-        Some(image.dimensions())
-    } else {
-        None
-    }
-}
-
+/// Generate a lower quality image
 pub fn generate_image(
     file_name: &str,
     file_path: &str,
@@ -89,7 +93,6 @@ pub fn generate_image(
     target_size: u32,
 ) {
     // If the file is a gif or video stop the process
-
     let media_type = determine_media_type(file_name);
     if media_type.contains("gif") || media_type.contains("video") {
         return;
@@ -99,21 +102,15 @@ pub fn generate_image(
     let mut image = image::open(file_path).expect("Failed to open image");
     image = image.resize(height, width, image::imageops::FilterType::Lanczos3);
 
-    // lower the quality
-    let lower_quality_image = reduce_quality(image, target_size);
+    // lower the quality of the image
+    let mut rgba_image = RgbaImage::from(image.to_rgba8());
+    reduce_image_quality(&mut rgba_image, target_size);
+    let lower_img = DynamicImage::ImageRgba8(rgba_image);
 
     // Save into filename_lower
     let dest_file_name = format!("lower_{}", file_name);
     let dest_path = Path::new(dest_path).join(dest_file_name);
-    lower_quality_image
-        .save(dest_path)
-        .expect("Failed to save image");
-}
-
-fn reduce_quality(image: DynamicImage, target_size_kb: u32) -> DynamicImage {
-    let mut rgba_image = RgbaImage::from(image.to_rgba8());
-    reduce_image_quality(&mut rgba_image, target_size_kb);
-    DynamicImage::ImageRgba8(rgba_image)
+    lower_img.save(dest_path).expect("Failed to save image");
 }
 
 fn reduce_image_quality(rgba_image: &mut RgbaImage, target_size_kb: u32) {

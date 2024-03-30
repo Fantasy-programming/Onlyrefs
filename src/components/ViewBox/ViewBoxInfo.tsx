@@ -65,10 +65,9 @@ export const ViewBoxInfo = (props: {
       return;
     }
     if (!props.metadata.tags) {
-      // setTags([inputValue()]);
       await addTag(props.metadata.id, props.path, props.type, inputValue());
       root.mutateTag(props.metadata.id, inputValue(), 'add');
-      // setInputValue('');
+      setInputValue('');
       return;
     }
     if (props.metadata.tags) {
@@ -92,6 +91,7 @@ export const ViewBoxInfo = (props: {
           class="h-[50px] border-none bg-transparent text-3xl outline-none "
           autofocus
           onInput={handleNameInput}
+          value={props.metadata.name}
         />
         <span class="text-sm">{elapsedTime(props.metadata.created_at)}</span>
       </header>

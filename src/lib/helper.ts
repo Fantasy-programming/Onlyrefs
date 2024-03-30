@@ -157,6 +157,19 @@ export const addTag = async (
   await invoke('add_tag', { refId: id, path, refType: type, tag: tag });
 };
 
+export const changeNoteContent = async (
+  noteID: string,
+  path: string,
+  content: string,
+) => {
+  await invoke('change_note_content', {
+    refId: noteID,
+    path: path,
+    noteContent: content,
+    refType: 'note',
+  });
+};
+
 export const getBreakpoints = (columns: number) => {
   switch (columns) {
     case 4:

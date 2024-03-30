@@ -17,10 +17,11 @@ import TaskList from '@tiptap/extension-task-list';
 import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
-import { create_note_ref } from '~/lib/helper.ts';
+import { changeNoteContent, create_note_ref } from '~/lib/helper.ts';
 import { NoteMetadata, NoteRef } from '~/lib/types.ts';
 import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
+import { debounce } from '@solid-primitives/scheduled';
 
 function Control(props: ControlProps): JSX.Element {
   const flag = createEditorTransaction(
@@ -320,6 +321,15 @@ export const NewNote = () => {
 export const NoteEditor = (props: { source: NoteRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
+  const root = useRefSelector();
+
+  const debouncedSave = debounce(
+    async (text: string, path: string, id: string) => {
+      await changeNoteContent(id, path, text);
+      root.mutateNote(id, text);
+    },
+    1000,
+  );
 
   const editor = createTiptapEditor(() => ({
     element: container()!,
@@ -347,6 +357,13 @@ export const NoteEditor = (props: { source: NoteRef }) => {
       },
     },
     content: props.source.metadata.note_text,
+    onUpdate({ editor }) {
+      debouncedSave(
+        editor.storage.markdown.getMarkdown(),
+        props.source.metapath,
+        props.source.metadata.id,
+      );
+    },
   }));
 
   return (

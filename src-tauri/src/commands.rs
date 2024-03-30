@@ -11,7 +11,6 @@ use std::path::Path;
 use std::sync::Mutex;
 use tauri::State;
 
-//TODO: Change to add to the state
 #[tauri::command]
 async fn generate_metadata(
     dest_path: &str,
@@ -158,6 +157,40 @@ async fn rename_ref(
     Ok(())
 }
 
+
+#[tauri::command]
+async fn change_note_content(
+    ref_id: &str,
+    path: &str,
+    note_content: &str,
+    ref_type: &str,
+    state: State<'_, Mutex<Vec<Ref>>>,
+) -> Result<(), String> {
+    let location = Path::new(path);
+    utils::mutate_note(location, ref_type, note_content);
+
+    // Now update the state with the new name
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+
+    for ref_instance in state_guard.iter_mut() {
+        match ref_instance {
+            Ref::Note(note_ref)
+                if note_ref.metadata.as_ref().map(|m| m.id.as_str()) == Some(ref_id) =>
+            {
+                if let Some(metadata) = note_ref.metadata.as_mut() {
+                    metadata.note_text = note_content.to_string();
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
+}
+
+
 #[tauri::command]
 async fn remove_ref(ref_id: &str, state: State<'_, Mutex<Vec<Ref>>>) -> Result<(), String> {
     let mut state_guard = state
@@ -301,13 +334,14 @@ async fn remove_tag(
 
 pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
     Box::new(tauri::generate_handler![
-        get_media_refs,
         generate_id,
         generate_metadata,
+        generate_note_metadata,
+        get_media_refs,
+        rename_ref,
         remove_ref,
         add_tag,
-        rename_ref,
         remove_tag,
-        generate_note_metadata
+        change_note_content
     ])
 }

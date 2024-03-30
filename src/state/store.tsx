@@ -10,6 +10,7 @@ interface RootState {
   refetchRefs: () => Promise<void>;
   mutateTag: (id: string, tags: string, type: 'add' | 'remove') => void;
   mutateName: (id: string, name: string) => void;
+  mutateNote: (id: string, note: string) => void;
 }
 
 const Context = createContext<RootState>();
@@ -62,7 +63,10 @@ export const RefProvider: ParentComponent = (props) => {
           tags?.push(tagname);
         }
         if (type === 'remove') {
-          tags = tags?.filter((tag) => tag !== tagname);
+          const index = tags?.indexOf(tagname);
+          if (index !== -1 && index !== undefined) {
+            tags?.splice(index, 1);
+          }
         }
       }),
     );
@@ -70,6 +74,18 @@ export const RefProvider: ParentComponent = (props) => {
 
   const mutateName = (id: string, name: string) => {
     setRef((meta) => meta.metadata.id === id, 'metadata', 'name', name);
+  };
+
+  const mutateNote = (id: string, note: string) => {
+    setRef(
+      (meta) => meta.metadata.id === id,
+      'metadata',
+      produce((metadata) => {
+        if ('note_text' in metadata) {
+          metadata.note_text = note;
+        }
+      }),
+    );
   };
 
   const refetchRefs = async () => {
@@ -114,6 +130,7 @@ export const RefProvider: ParentComponent = (props) => {
     refetchRefs,
     mutateTag,
     mutateName,
+    mutateNote,
   };
 
   return (

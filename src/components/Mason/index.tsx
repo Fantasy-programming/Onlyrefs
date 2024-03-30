@@ -233,7 +233,6 @@ export function Mason<
       };
 
       const recalculate = createRAFDebounce(() => {
-        console.log('recalculating');
         createMason(el, state);
       });
 
