@@ -34,12 +34,8 @@ export const ViewBoxInfo = (props: {
 }) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [inputValue, setInputValue] = createSignal('');
-  const [inputName, setInputName] = createSignal(props.metadata.name);
   const [showAllTags, setShowAllTags] = createSignal(false);
-  const [tags, setTags] = createSignal(props.metadata.tags);
-  const {
-    refService: { mutateTag, mutateName },
-  } = useRefSelector();
+  const root = useRefSelector();
 
   const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
@@ -51,12 +47,11 @@ export const ViewBoxInfo = (props: {
   const handleNameInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
   ) => {
-    setInputName(event.currentTarget.value);
     debouncedSave(
       event.currentTarget.value,
       props.metadata.id,
       props.type,
-      mutateName,
+      root.mutateName,
     );
   };
 
@@ -65,30 +60,28 @@ export const ViewBoxInfo = (props: {
   ) => {
     event.preventDefault();
     if (inputValue() === '') return;
-    if (tags()?.includes(inputValue())) {
+    if (props.metadata.tags?.includes(inputValue())) {
       setInputValue('');
       return;
     }
-    if (!tags()) {
-      setTags([inputValue()]);
+    if (!props.metadata.tags) {
+      // setTags([inputValue()]);
       await addTag(props.metadata.id, props.path, props.type, inputValue());
-      mutateTag(props.metadata.id, inputValue(), 'add');
-      setInputValue('');
+      root.mutateTag(props.metadata.id, inputValue(), 'add');
+      // setInputValue('');
       return;
     }
-    if (tags()) {
-      setTags([...(tags() as string[]), inputValue()]);
+    if (props.metadata.tags) {
       await addTag(props.metadata.id, props.path, props.type, inputValue());
-      mutateTag(props.metadata.id, inputValue(), 'add');
+      root.mutateTag(props.metadata.id, inputValue(), 'add');
       setInputValue('');
       return;
     }
   };
 
   const removeTag = async (name: string) => {
-    const newTags = tags()?.filter((tag) => tag !== name);
     await deleteTag(props.metadata.id, props.path, props.type, name);
-    setTags(newTags);
+    root.mutateTag(props.metadata.id, name, 'remove');
   };
 
   return (
@@ -97,7 +90,6 @@ export const ViewBoxInfo = (props: {
         <input
           type="text"
           class="h-[50px] border-none bg-transparent text-3xl outline-none "
-          value={inputName()}
           autofocus
           onInput={handleNameInput}
         />
@@ -138,8 +130,8 @@ export const ViewBoxInfo = (props: {
             >
               Add Tags
             </Button>
-            <Show when={tags()}>
-              <For each={tags()}>
+            <Show when={props.metadata.tags}>
+              <For each={props.metadata.tags}>
                 {(tag) => (
                   <ViewBoxTag name={tag} removeTag={removeTag}>
                     {tag}

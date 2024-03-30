@@ -24,18 +24,16 @@ import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 import { NewNote } from '../BoardItem/BoardNoteItem';
 
 const Board = (props: BoardProps) => {
-  const [selectFiles, dropFiles, progress] = useFileSelector();
+  const [selectFiles, dropFiles, progress] = useFileSelector;
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [searching, setSearching] = createSignal(false);
-  const [gridSize] = gridSizeHook();
+  const [gridSize] = gridSizeHook;
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
-  const {
-    refService: { refetchRefs },
-  } = useRefSelector();
+  const root = useRefSelector();
 
   createEffect(
     on(progress, async () => {
-      await refetchRefs();
+      await root.refetchRefs();
     }),
   );
 
@@ -91,7 +89,7 @@ const Board = (props: BoardProps) => {
           pre={!searching() ? [NewNote] : []}
           items={boardRefs()}
           gap={20}
-          columns={breakPoints()()}
+          columns={breakPoints()}
         >
           {(item, index) => (
             <Suspense fallback={<BoardItemSkeleton index={index()} />}>

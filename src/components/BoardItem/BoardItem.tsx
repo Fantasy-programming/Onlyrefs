@@ -117,9 +117,7 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
 const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
   props,
 ) => {
-  const {
-    refService: { refetchRefs },
-  } = useRefSelector();
+  const root = useRefSelector();
 
   return (
     <ContextMenu>
@@ -153,7 +151,7 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
                 return;
               }
               await deleteRef(props.refID);
-              await refetchRefs();
+              await root.refetchRefs();
             }}
           >
             <span>Delete Ref</span>

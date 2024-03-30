@@ -2,7 +2,7 @@
 import { Router, Route } from '@solidjs/router';
 import { render } from 'solid-js/web';
 import { ColorModeProvider, localStorageManager } from '@kobalte/core';
-import { RefProvider, RefService } from './state/store';
+import { RefProvider } from './state/store';
 
 import '@fontsource-variable/nunito';
 import '@fontsource/prociono';
@@ -14,12 +14,9 @@ import Home from './pages/Home';
 import Boards from './pages/Boards';
 import Settings from './pages/Settings';
 
-// Initialize all services
-const refService = RefService(); /* once */
-
 render(
   () => (
-    <RefProvider refService={refService}>
+    <RefProvider>
       <ColorModeProvider storageManager={localStorageManager}>
         <Router root={App}>
           <Route path="/" component={Home} />

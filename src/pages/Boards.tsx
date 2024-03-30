@@ -23,9 +23,7 @@ import { Button } from '~/components/ui/button';
 
 const BoardsPage = () => {
   const [boards, setBoards] = createSignal<string[]>([]);
-  const {
-    refService: { ref },
-  } = useRefSelector();
+  const root = useRefSelector();
 
   const { id } = useParams();
   const boardID = decodeURIComponent(id);
@@ -33,7 +31,7 @@ const BoardsPage = () => {
   const getBoards = async () => {
     const boards: string[] = [];
 
-    for (const refs of ref) {
+    for (const refs of root.ref) {
       if (refs.metadata?.collection) {
         if (!boards.includes(refs.metadata.collection)) {
           boards.push(refs.metadata.collection);
@@ -51,7 +49,7 @@ const BoardsPage = () => {
     <>
       <Show
         when={!id}
-        fallback={<Board collection={boardID} home={true} refs={ref} />}
+        fallback={<Board collection={boardID} home={true} refs={root.ref} />}
       >
         <Motion.div animate={{ opacity: [0, 1] }} class="mt-20">
           <header class="flex items-center justify-between">

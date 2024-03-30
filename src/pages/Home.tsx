@@ -4,13 +4,11 @@ import { useRefSelector } from '~/state/store';
 import Board from '~/components/Board/Board';
 
 const Home: Component = () => {
-  const {
-    refService: { ref },
-  } = useRefSelector();
+  const data = useRefSelector();
 
   return (
     <Motion.div animate={{ opacity: [0, 1] }}>
-      <Board collection="all" refs={ref} />
+      <Board collection="all" refs={data.ref} />
     </Motion.div>
   );
 };

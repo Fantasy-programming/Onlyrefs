@@ -1,14 +1,21 @@
 import { onMount, createContext, ParentComponent, useContext } from 'solid-js';
-import { createStore } from 'solid-js/store';
+import { createStore, produce } from 'solid-js/store';
 import { MediaRef, NoteRef, Ref, backendRef } from '~/lib/types';
 import { invoke } from '@tauri-apps/api';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { getUpdatedAtTimestamp } from '~/lib/helper';
 
-const refStore = createStore<Ref[]>([]);
+interface RootState {
+  readonly ref: Ref[];
+  refetchRefs: () => Promise<void>;
+  mutateTag: (id: string, tags: string, type: 'add' | 'remove') => void;
+  mutateName: (id: string, name: string) => void;
+}
 
-export const RefService = () => {
-  const [ref, setRef] = refStore;
+const Context = createContext<RootState>();
+
+export const RefProvider: ParentComponent = (props) => {
+  const [ref, setRef] = createStore<Ref[]>([]);
 
   onMount(async () => {
     try {
@@ -45,36 +52,24 @@ export const RefService = () => {
     }
   });
 
-  const mutateTag = (id: string, tags: string, type: string) => {
-    console.log('mutation');
-    setRef((prev) => {
-      const newrefs = prev.map((ref) => {
-        if (ref.metadata.id === id) {
-          if (type === 'add') {
-            ref.metadata.tags?.push(tags);
-          } else {
-            ref.metadata.tags = ref?.metadata?.tags?.filter(
-              (tag) => tag !== tags,
-            );
-          }
+  const mutateTag = (id: string, tagname: string, type: string) => {
+    setRef(
+      (meta) => meta.metadata.id === id,
+      'metadata',
+      'tags',
+      produce((tags) => {
+        if (type === 'add') {
+          tags?.push(tagname);
         }
-        return ref;
-      });
-      return newrefs;
-    });
+        if (type === 'remove') {
+          tags = tags?.filter((tag) => tag !== tagname);
+        }
+      }),
+    );
   };
 
   const mutateName = (id: string, name: string) => {
-    setRef((prev) => {
-      const newrefs = prev.map((ref) => {
-        if (ref.metadata.id === id) {
-          console.log(ref.metadata.name, name);
-          ref.metadata.name = name;
-        }
-        return ref;
-      });
-      return newrefs;
-    });
+    setRef((meta) => meta.metadata.id === id, 'metadata', 'name', name);
   };
 
   const refetchRefs = async () => {
@@ -112,25 +107,26 @@ export const RefService = () => {
     }
   };
 
-  return { ref, refetchRefs, mutateTag, mutateName };
-};
-
-export type RootState = {
-  refService: ReturnType<typeof RefService>;
-};
-
-const Context = createContext<RootState>({} as RootState);
-
-export const useRefSelector = () => useContext(Context);
-
-export const RefProvider: ParentComponent<{
-  refService: ReturnType<typeof RefService>;
-}> = (props) => {
-  const rootState: RootState = {
-    refService: props.refService,
+  const rootState = {
+    get ref() {
+      return ref;
+    },
+    refetchRefs,
+    mutateTag,
+    mutateName,
   };
 
   return (
     <Context.Provider value={rootState}>{props.children}</Context.Provider>
   );
+};
+
+export const useRefSelector = () => {
+  const refSelector = useContext(Context);
+  if (!refSelector) {
+    throw new Error(
+      'useRefSelectorContext should be called inside its ContextProvider',
+    );
+  }
+  return refSelector;
 };

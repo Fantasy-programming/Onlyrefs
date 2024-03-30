@@ -75,7 +75,7 @@ export const LeftNav = () => {
           )}
         </Toggle>
         <a
-          href="/settings"
+          href="#"
           class={
             gridPressed() === true ? 'pointer-events-none opacity-0' : 'block'
           }
@@ -90,7 +90,7 @@ export const LeftNav = () => {
 };
 
 const SizePicker = () => {
-  const [gridSize, updateGridSize] = gridSizeHook();
+  const [gridSize, updateGridSize] = gridSizeHook;
 
   return (
     <div class="flex flex-col space-y-8 rounded-full bg-foreground  p-3 transition-all ease-in">

@@ -56,7 +56,7 @@ function Separator() {
   );
 }
 
-export function ToolbarContents(props: ToolbarProps): JSX.Element {
+function ToolbarContents(props: ToolbarProps): JSX.Element {
   return (
     <div class="flex space-x-1 p-2">
       <div class="flex space-x-1">
@@ -232,6 +232,11 @@ const NoteContent = (props: { content: NoteMetadata }) => {
         transformPastedText: true,
         transformCopiedText: true,
       }),
+
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
     ],
     editorProps: {
       attributes: {
@@ -258,7 +263,8 @@ const NoteContent = (props: { content: NoteMetadata }) => {
 export const NewNote = () => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
-  const { refService } = useRefSelector();
+  const root = useRefSelector();
+  if (!root) return null;
 
   const editor = createTiptapEditor(() => ({
     element: container()!,
@@ -279,7 +285,7 @@ export const NewNote = () => {
         element: menu()!,
       }),
       SaveNote.configure({
-        refresh: refService.refetchRefs,
+        refresh: root.refetchRefs,
       }),
     ],
     editorProps: {
@@ -314,8 +320,6 @@ export const NewNote = () => {
 export const NoteEditor = (props: { source: NoteRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
-
-  console.log(props.source.metadata.note_text);
 
   const editor = createTiptapEditor(() => ({
     element: container()!,
