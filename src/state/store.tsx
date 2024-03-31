@@ -15,6 +15,7 @@ interface RootState {
 
 const Context = createContext<RootState>();
 
+// A way to do this in hte backend would be cool
 export const RefProvider: ParentComponent = (props) => {
   const [ref, setRef] = createStore<Ref[]>([]);
 
@@ -88,6 +89,7 @@ export const RefProvider: ParentComponent = (props) => {
     );
   };
 
+  // move this to the backend
   const refetchRefs = async () => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');

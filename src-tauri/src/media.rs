@@ -41,7 +41,7 @@ pub fn extract_colors(file_path: &str) -> Vec<String> {
     let mut lab_pixels: Vec<Lab<D65, f32>> = Vec::new();
 
     let img = image::open(file_path).unwrap();
-    img.resize(400, 400, image::imageops::Nearest);
+    img.resize(150, 150, image::imageops::Triangle);
     let raw_img = img.into_rgb8();
     let pixels: &[Srgba<u8>] = raw_img.as_raw().components_as();
 
