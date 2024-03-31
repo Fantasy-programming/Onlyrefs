@@ -41,7 +41,7 @@ pub fn extract_colors(file_path: &str) -> Vec<String> {
     let mut lab_pixels: Vec<Lab<D65, f32>> = Vec::new();
 
     let img = image::open(file_path).unwrap();
-    img.resize(150, 150, image::imageops::Triangle);
+    // img.resize(150, 150, image::imageops::Triangle);
     let raw_img = img.into_rgb8();
     let pixels: &[Srgba<u8>] = raw_img.as_raw().components_as();
 
@@ -53,7 +53,7 @@ pub fn extract_colors(file_path: &str) -> Vec<String> {
     let max_iterations = 20;
     let converge = 5.0;
     let verbose = false;
-    let run = 1;
+    let run = 3;
     let seed: u64 = 0;
 
     for i in 0..run {
@@ -91,11 +91,11 @@ pub fn generate_image(
     height: u32,
     width: u32,
     target_size: u32,
-) {
+) -> bool {
     // If the file is a gif or video stop the process
     let media_type = determine_media_type(file_name);
     if media_type.contains("gif") || media_type.contains("video") {
-        return;
+        return false;
     }
 
     // Open and resize the image
@@ -111,6 +111,8 @@ pub fn generate_image(
     let dest_file_name = format!("lower_{}", file_name);
     let dest_path = Path::new(dest_path).join(dest_file_name);
     lower_img.save(dest_path).expect("Failed to save image");
+
+    true
 }
 
 fn reduce_image_quality(rgba_image: &mut RgbaImage, target_size_kb: u32) {

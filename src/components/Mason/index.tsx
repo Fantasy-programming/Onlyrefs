@@ -11,7 +11,7 @@ import {
 import type { DynamicProps } from 'solid-js/web';
 import { Dynamic } from 'solid-js/web';
 import { omitProps } from 'solid-use/props';
-import { debounce } from '@solid-primitives/scheduled';
+// import { debounce } from '@solid-primitives/scheduled';
 
 type OmitAndMerge<T, U> = T & Omit<U, keyof T>;
 

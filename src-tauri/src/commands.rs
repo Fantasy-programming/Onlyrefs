@@ -40,7 +40,12 @@ async fn generate_metadata(
     fs::write(metadata_path.clone(), json_data).expect("Failed to write metadata file");
 
     // Generate lower image
-    media::generate_image(file_name, dest_file, dest_path, 500, 500, 500);
+    let generated = media::generate_image(file_name, dest_file, dest_path, 500, 500, 500);
+    let mut low_res_imagepath = dest_path.to_string();
+    if generated {
+        low_res_imagepath.push_str("/lower_");
+        low_res_imagepath.push_str(file_name);
+    }
 
     // Store into state
     let mut state_guard = state
@@ -49,7 +54,7 @@ async fn generate_metadata(
 
     let new_ref = MediaRef {
         imagepath: dest_file.to_string(),
-        low_res_imagepath: dest_path.to_string() + "/lower_" + file_name,
+        low_res_imagepath,
         metapath: metadata_path.to_str().unwrap().to_string(),
         metadata: Some(metadata),
     };
@@ -157,7 +162,6 @@ async fn rename_ref(
     Ok(())
 }
 
-
 #[tauri::command]
 async fn change_note_content(
     ref_id: &str,
@@ -189,7 +193,6 @@ async fn change_note_content(
 
     Ok(())
 }
-
 
 #[tauri::command]
 async fn remove_ref(ref_id: &str, state: State<'_, Mutex<Vec<Ref>>>) -> Result<(), String> {
