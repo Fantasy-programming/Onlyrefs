@@ -23,24 +23,25 @@ export const RefProvider: ParentComponent = (props) => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
 
-      let parsedData: Ref[] = data.map((ref) => {
+      let parsedData: Ref[] = [];
+      for (let i = 0; i < data.length; i++) {
+        const ref = data[i];
         if ('Media' in ref) {
           const mediaref = ref.Media as MediaRef;
-          return {
+          const parsedRef: MediaRef = {
             ...mediaref,
             imagepath: convertFileSrc(mediaref.imagepath),
-            low_res_imagepath:
-              mediaref.low_res_imagepath === ''
-                ? convertFileSrc(mediaref.imagepath)
-                : convertFileSrc(mediaref.low_res_imagepath),
-          } as MediaRef;
+            low_res_imagepath: !Boolean(mediaref.low_res_imagepath)
+              ? convertFileSrc(mediaref.imagepath)
+              : convertFileSrc(mediaref.low_res_imagepath),
+          };
+          parsedData.push(parsedRef);
         } else {
           const noteref = ref.Note as NoteRef;
-          return {
-            ...noteref,
-          } as NoteRef;
+          const parsedRef: NoteRef = { ...noteref };
+          parsedData.push(parsedRef);
         }
-      });
+      }
 
       parsedData = parsedData.sort((a, b) => {
         const aUpdatedAt = getUpdatedAtTimestamp(a);
@@ -94,24 +95,25 @@ export const RefProvider: ParentComponent = (props) => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
 
-      let parsedData: Ref[] = data.map((ref) => {
+      let parsedData: Ref[] = [];
+      for (let i = 0; i < data.length; i++) {
+        const ref = data[i];
         if ('Media' in ref) {
           const mediaref = ref.Media as MediaRef;
-          return {
+          const parsedRef: MediaRef = {
             ...mediaref,
             imagepath: convertFileSrc(mediaref.imagepath),
-            low_res_imagepath:
-              mediaref.low_res_imagepath === ''
-                ? convertFileSrc(mediaref.imagepath)
-                : convertFileSrc(mediaref.low_res_imagepath),
-          } as MediaRef;
+            low_res_imagepath: !Boolean(mediaref.low_res_imagepath)
+              ? convertFileSrc(mediaref.imagepath)
+              : convertFileSrc(mediaref.low_res_imagepath),
+          };
+          parsedData.push(parsedRef);
         } else {
           const noteref = ref.Note as NoteRef;
-          return {
-            ...noteref,
-          } as NoteRef;
+          const parsedRef: NoteRef = { ...noteref };
+          parsedData.push(parsedRef);
         }
-      });
+      }
 
       parsedData = parsedData.sort((a, b) => {
         const aUpdatedAt = getUpdatedAtTimestamp(a);

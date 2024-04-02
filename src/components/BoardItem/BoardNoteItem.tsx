@@ -22,6 +22,7 @@ import { NoteMetadata, NoteRef } from '~/lib/types.ts';
 import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { debounce } from '@solid-primitives/scheduled';
+import { Motion, Presence } from 'solid-motionone';
 
 function Control(props: ControlProps): JSX.Element {
   const flag = createEditorTransaction(
@@ -264,6 +265,7 @@ const NoteContent = (props: { content: NoteMetadata }) => {
 export const NewNote = () => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
+  const [helper, setHelper] = createSignal<boolean>(false);
   const root = useRefSelector();
   if (!root) return null;
 
@@ -296,6 +298,16 @@ export const NewNote = () => {
       },
     },
     content: ``,
+    onFocus() {
+      if (!helper()) {
+        setHelper(true);
+      }
+    },
+    onBlur() {
+      if (helper()) {
+        setHelper(false);
+      }
+    },
   }));
 
   return (
@@ -314,6 +326,17 @@ export const NewNote = () => {
         </Show>
       </Toolbar>
       <div ref={setContainer} class="h-full overflow-y-scroll" />
+      <Presence>
+        <Show when={helper()}>
+          <Motion.div
+            animate={{ opacity: [0, 1] }}
+            exit={{ opacity: [1, 0] }}
+            class="absolute bottom-0 left-0 w-full rounded-b-xl bg-secondary p-1 text-center text-secondary-foreground"
+          >
+            <p>Press Ctrl + Enter to save note</p>
+          </Motion.div>
+        </Show>
+      </Presence>
     </div>
   );
 };

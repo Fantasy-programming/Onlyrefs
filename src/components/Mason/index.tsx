@@ -11,7 +11,6 @@ import {
 import type { DynamicProps } from 'solid-js/web';
 import { Dynamic } from 'solid-js/web';
 import { omitProps } from 'solid-use/props';
-// import { debounce } from '@solid-primitives/scheduled';
 
 type OmitAndMerge<T, U> = T & Omit<U, keyof T>;
 
@@ -218,20 +217,6 @@ export function Mason<
   const [ref, setRef] = createSignal<HTMLElement>();
   const [columns, setColumns] = createSignal(props.columns);
 
-  function observeElementsForResize(
-    node: HTMLElement,
-    callback: ResizeObserverCallback,
-  ): void {
-    const resizeObserver = new ResizeObserver(callback);
-    resizeObserver.observe(node);
-
-    node.childNodes.forEach((child) => {
-      if (child instanceof HTMLElement) {
-        observeElementsForResize(child, callback);
-      }
-    });
-  }
-
   createEffect(() => {
     const el = ref();
     if (el) {
@@ -252,8 +237,6 @@ export function Mason<
         createMason(el, state);
       });
 
-      // const debounceRecalculate = debounce(recalculate, 200);
-
       createMemo(
         on(
           () => props.items,
@@ -271,8 +254,6 @@ export function Mason<
           },
         ),
       );
-
-      observeElementsForResize(el, recalculate);
 
       // Track window resize
       window.addEventListener('resize', recalculate, { passive: true });

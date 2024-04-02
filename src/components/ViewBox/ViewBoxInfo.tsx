@@ -13,6 +13,7 @@ import {
   elapsedTime,
 } from '../../lib/helper';
 import { useRefSelector } from '~/state/store';
+import { Motion, Presence } from 'solid-motionone';
 
 const debouncedSave = debounce(
   async (
@@ -84,7 +85,7 @@ export const ViewBoxInfo = (props: {
   };
 
   return (
-    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl bg-background md:absolute md:my-2 md:mr-2 md:h-[calc(100%-(0.5rem*2))] md:w-[400px]  md:rounded-xl">
+    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl  bg-foreground/5 md:absolute md:my-2 md:mr-2  md:h-[calc(100%-(0.5rem*2))] md:w-[400px] md:rounded-xl">
       <header class="flex flex-col gap-3 rounded-t-xl bg-gradient-to-tr from-primary/80 to-primary/40  p-7 ">
         <input
           type="text"
@@ -97,26 +98,31 @@ export const ViewBoxInfo = (props: {
       </header>
       <div class="p-4">
         <h4 class="text-lg uppercase">Tags</h4>
-        <div class="my-3">
-          <form
-            class="pb-5  transition-all duration-500 animate-in"
-            classList={{ hidden: !openTagsAdder() }}
-            onSubmit={handleSubmit}
-          >
-            <div class="flex">
-              <Input
-                type="text"
-                class="h-[50px] w-full rounded-r-none border-none bg-foreground/10 text-lg"
-                value={inputValue()}
-                onInput={handleInputChange}
-              />
-              <Button class="h-auto rounded-l-none rounded-r-sm text-lg">
-                <VsAdd />
-              </Button>
-            </div>
-          </form>
+        <div class="my-3 transition-all">
+          <Presence>
+            <Show when={openTagsAdder()}>
+              <Motion.form
+                animate={{ opacity: [0, 1], y: [-10, 0] }}
+                exit={{ opacity: [1, 0] }}
+                class="pb-5"
+                onSubmit={handleSubmit}
+              >
+                <div class="flex">
+                  <Input
+                    type="text"
+                    class="h-[50px] w-full rounded-r-none border-none bg-foreground/10 text-lg"
+                    value={inputValue()}
+                    onInput={handleInputChange}
+                  />
+                  <Button class="h-auto rounded-l-none rounded-r-sm text-lg">
+                    <VsAdd />
+                  </Button>
+                </div>
+              </Motion.form>
+            </Show>
+          </Presence>
           <div
-            class="relative flex max-h-36 flex-row flex-wrap overflow-hidden  py-3"
+            class="relative flex max-h-36 flex-row flex-wrap overflow-hidden py-3  transition-all"
             classList={{
               'max-h-none': showAllTags(),
               'overflow-auto': showAllTags(),
@@ -141,25 +147,50 @@ export const ViewBoxInfo = (props: {
             </Show>
           </div>
         </div>
-        <h4 class="text-lg uppercase">Info</h4>
-        <div class="my-3">
-          <Switch>
-            <Match when={props.type === 'image'}>
-              <ViewBoxInfoImage
-                dimensions={(props.metadata as Metadata).dimensions}
-                file_size={(props.metadata as Metadata).file_size}
-                media_type={(props.metadata as Metadata).media_type}
-              />
-            </Match>
-            <Match when={props.type === 'video'}>
-              <div>video here</div>
-            </Match>
-          </Switch>
-        </div>
-        <h4 class="uppercase">Notes</h4>
-        <div class="my-3"></div>
+        <Show when={props.type === 'image' || props.type === 'video'}>
+          <h4 class="text-lg uppercase underline decoration-wavy underline-offset-[6px]">
+            Info
+          </h4>
+          <div class="my-3">
+            <Switch>
+              <Match when={props.type === 'image'}>
+                <ViewBoxInfoImage
+                  dimensions={(props.metadata as Metadata).dimensions}
+                  file_size={(props.metadata as Metadata).file_size}
+                  media_type={(props.metadata as Metadata).media_type}
+                />
+              </Match>
+              <Match when={props.type === 'video'}>
+                <div>video here</div>
+              </Match>
+            </Switch>
+          </div>
+          <h4 class="text-lg uppercase underline decoration-wavy underline-offset-[6px]">
+            Notes
+          </h4>
+          <div class="my-3"></div>
+        </Show>
       </div>
-      <div class="actions absolute bottom-0 z-30 w-full px-4 pb-4"></div>
+      <div class="absolute bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4">
+        <button
+          class="h-12 w-12 rounded-full bg-primary text-white"
+          aria-label="save ref to pc"
+        >
+          S
+        </button>
+        <button
+          class="h-12 w-12 rounded-full bg-primary text-white"
+          aria-label="add to board"
+        >
+          A
+        </button>
+        <button
+          class="h-12 w-12 rounded-full bg-primary text-white"
+          aria-label="delete ref"
+        >
+          D
+        </button>
+      </div>
     </div>
   );
 };

@@ -51,10 +51,10 @@ pub fn extract_colors(file_path: &str) -> Vec<String> {
     let mut result = Kmeans::new();
     let colors_amount = 10;
     let max_iterations = 20;
-    let converge = 5.0;
+    let converge = 0.0;
     let verbose = false;
     let run = 3;
-    let seed: u64 = 0;
+    let seed: u64 = 1;
 
     for i in 0..run {
         let run_result = get_kmeans_hamerly(

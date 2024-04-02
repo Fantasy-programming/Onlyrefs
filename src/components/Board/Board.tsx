@@ -18,18 +18,20 @@ import { BoardProps } from './Board.types';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Mason } from '../Mason';
-import Logo from '~/assets/logo-bw.svg';
 import { Progress, ProgressValueLabel } from '../ui/progress';
 import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 import { NewNote } from '../BoardItem/BoardNoteItem';
+import Logo from '~/assets/logo-bw.svg';
 
 const Board = (props: BoardProps) => {
-  const [selectFiles, dropFiles, progress] = useFileSelector;
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [searching, setSearching] = createSignal(false);
+
+  const [selectFiles, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
-  const breakPoints = createMemo(() => getBreakpoints(gridSize()));
   const root = useRefSelector();
+
+  const breakPoints = createMemo(() => getBreakpoints(gridSize()));
 
   createEffect(
     on(progress, async () => {
@@ -62,7 +64,7 @@ const Board = (props: BoardProps) => {
           class="border-none font-serif text-3xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-4xl"
           oninput={(e) => {
             const value = e.target.value;
-            if (value === '') {
+            if (!Boolean(value)) {
               setBoardRefs(props.refs);
               setSearching(false);
               return;
@@ -89,7 +91,7 @@ const Board = (props: BoardProps) => {
           pre={!searching() ? [NewNote] : []}
           items={boardRefs()}
           gap={20}
-          columns={breakPoints()}
+          columns={breakPoints()()}
         >
           {(item, index) => (
             <Suspense fallback={<BoardItemSkeleton index={index()} />}>

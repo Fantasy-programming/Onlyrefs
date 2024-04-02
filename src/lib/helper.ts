@@ -56,8 +56,6 @@ export const create_note_ref = async (
     noteDir: notedir,
     noteContent: content,
   });
-
-  console.log('Note created');
 };
 
 export const get_note_content = async (notepath: string) => {

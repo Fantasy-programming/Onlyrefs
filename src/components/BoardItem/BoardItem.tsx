@@ -18,11 +18,6 @@ import { Skeleton } from '../ui/skeleton';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { NoteItem } from './BoardNoteItem.tsx';
 
-const refHeigts = ['440px', '300px', '400px', '500px', '350px'];
-const getRandomHeight = (array: string[]) => {
-  return array[Math.floor(Math.random() * array.length)];
-};
-
 export const BoardItem = (props: BoardItemProps) => {
   const type = props.refItem?.metadata?.media_type?.split('/')[0];
   const isVideo = type === 'video';
@@ -91,7 +86,7 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
         <div
           class="relative cursor-pointer overflow-hidden rounded-xl border border-transparent shadow-md hover:border-primary"
           style={{
-            height: getRandomHeight(refHeigts),
+            height: '400px',
           }}
         >
           <video

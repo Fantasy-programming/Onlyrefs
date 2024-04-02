@@ -18,7 +18,12 @@ export const useFileSelector = createRoot(() => {
   let waitForFiles: Promise<() => void>;
 
   const processQueue = async () => {
-    if (isProcessing() || fileOperationQueue.length === 0) {
+    if (isProcessing()) {
+      return;
+    }
+
+    if (fileOperationQueue.length === 0) {
+      setProgress({ total: 0, completed: 0 });
       return;
     }
 
