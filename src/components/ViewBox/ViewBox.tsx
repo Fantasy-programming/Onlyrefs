@@ -33,7 +33,7 @@ export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
           <Switch>
             <Match when={props.type === 'video' && isMediaRef(props.source)}>
               <video
-                class="h-auto w-auto rounded-xl"
+                class="aspect-video h-auto w-auto rounded-xl"
                 src={(props.source as MediaRef).imagepath}
                 preload="auto"
                 autoplay

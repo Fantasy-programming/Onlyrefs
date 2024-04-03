@@ -5,6 +5,9 @@ import { Metadata, NoteMetadata } from '../../lib/types';
 import { ViewBoxTag } from './ViewBoxTags';
 import { debounce } from '@solid-primitives/scheduled';
 import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
+import { RiSystemDeleteBin6Line } from 'solid-icons/ri';
+import { OcShare3 } from 'solid-icons/oc';
+import { TbLayoutDashboard } from 'solid-icons/tb';
 
 import {
   addTag,
@@ -85,7 +88,7 @@ export const ViewBoxInfo = (props: {
   };
 
   return (
-    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl  bg-foreground/5 md:absolute md:my-2 md:mr-2  md:h-[calc(100%-(0.5rem*2))] md:w-[400px] md:rounded-xl">
+    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl  bg-background md:absolute md:my-2 md:mr-2  md:h-[calc(100%-(0.5rem*2))] md:w-[400px] md:rounded-xl">
       <header class="flex flex-col gap-3 rounded-t-xl bg-gradient-to-tr from-primary/80 to-primary/40  p-7 ">
         <input
           type="text"
@@ -171,24 +174,24 @@ export const ViewBoxInfo = (props: {
           <div class="my-3"></div>
         </Show>
       </div>
-      <div class="absolute bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4">
+      <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 md:absolute">
         <button
-          class="h-12 w-12 rounded-full bg-primary text-white"
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white"
           aria-label="save ref to pc"
         >
-          S
+          <OcShare3 class="h-6 w-6" />
         </button>
         <button
-          class="h-12 w-12 rounded-full bg-primary text-white"
+          class="h-12 w-12 rounded-full flex items-center justify-center bg-primary text-white"
           aria-label="add to board"
         >
-          A
+          <TbLayoutDashboard class="h-6 w-6" />
         </button>
         <button
-          class="h-12 w-12 rounded-full bg-primary text-white"
+          class="h-12 w-12 rounded-full flex items-center justify-center bg-primary text-white"
           aria-label="delete ref"
         >
-          D
+          <RiSystemDeleteBin6Line class="h-6 w-6" />
         </button>
       </div>
     </div>

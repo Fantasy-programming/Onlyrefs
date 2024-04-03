@@ -111,7 +111,7 @@ const Board = (props: BoardProps) => {
               class="space-y-1 p-4"
               minValue={0}
               getValueLabel={() => 'Processing...'}
-              value={progress().total - progress().completed}
+              value={progress().completed}
               maxValue={progress().total}
             >
               <ProgressValueLabel class="text-black" />
