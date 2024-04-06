@@ -11,6 +11,7 @@ tauri-build = { version = "1.5.1", features = [] }
 
 [dependencies]
 tauri = { version = "1.6.1", features = [
+  "updater",
   "clipboard-write-text",
   "window-set-title",
   "window-unminimize",
@@ -40,6 +41,7 @@ palette = "0.7.5"
 fxhash = "0.2.1"
 log = "^0.4"
 tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
