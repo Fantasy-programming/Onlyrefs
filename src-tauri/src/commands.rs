@@ -29,6 +29,7 @@ async fn generate_metadata(
         file_size: utils::analyze_file_size(dest_file),
         collection: collection.to_string(),
         colors: media::extract_colors(dest_file),
+        note_text: String::new(),
         created_at: Local::now().to_string(),
         updated_at: Local::now().to_string(),
         tags: Vec::new(),

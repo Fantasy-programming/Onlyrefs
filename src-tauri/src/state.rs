@@ -29,7 +29,6 @@ pub struct NoteMetadata {
     pub created_at: String,
     pub updated_at: String,
     pub note_text: String,
-    #[serde(default)]
     pub tags: Vec<String>,
 }
 
@@ -46,6 +45,8 @@ pub struct Metadata {
     pub colors: Vec<String>,
     pub created_at: String,
     pub updated_at: String,
+    #[serde(default)]
+    pub note_text: String,
     #[serde(default)]
     pub tags: Vec<String>,
 }

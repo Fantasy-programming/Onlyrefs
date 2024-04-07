@@ -27,6 +27,8 @@
     "@tiptap/extension-task-list": "^2.2.4",
     "@tiptap/pm": "^2.2.4",
     "@tiptap/starter-kit": "^2.2.4",
+    "@zoom-image/core": "^0.34.0",
+    "@zoom-image/solid": "^0.2.10",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",

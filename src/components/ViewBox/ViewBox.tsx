@@ -5,13 +5,10 @@ import { DialogContent } from '../ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { ViewBoxInfo } from './ViewBoxInfo';
 import { NoteEditor } from '../BoardItem/BoardNoteItem';
+import { ViewBoxZoom } from './ViewBoxZoom';
 
 const isMediaRef = (source: Ref): source is MediaRef => {
   return 'colors' in (source.metadata as any);
-};
-
-const isNoteRef = (source: Ref): source is NoteRef => {
-  return 'note_text' in (source.metadata as any);
 };
 
 export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
@@ -31,28 +28,32 @@ export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
       <div class="relative flex flex-grow flex-col items-center  justify-center p-0 py-2 pl-2 md:w-full md:pr-[calc((0.5rem*2)+400px)]">
         <div class="flex h-full w-full items-center justify-center overflow-clip rounded-xl p-7">
           <Switch>
-            <Match when={props.type === 'video' && isMediaRef(props.source)}>
-              <video
-                class="aspect-video h-auto w-auto rounded-xl"
-                src={(props.source as MediaRef).imagepath}
-                preload="auto"
-                autoplay
-                loop
-              ></video>
+            <Match when={props.type === 'video'}>
+              <ViewBoxZoom>
+                <video
+                  class="aspect-video h-auto w-auto rounded-xl"
+                  src={(props.source as MediaRef).imagepath}
+                  preload="auto"
+                  autoplay
+                  loop
+                ></video>
+              </ViewBoxZoom>
             </Match>
             <Match when={props.type === 'image'}>
-              <img
-                src={(props.source as MediaRef).imagepath}
-                loading="lazy"
-                class="h-auto w-auto rounded-xl"
-                style={{
-                  'max-width': `min(100%, ${(props.source as MediaRef).metadata.dimensions[0]}px )`,
-                  'max-height': `min(100%, ${(props.source as MediaRef).metadata.dimensions[1]}px )`,
-                }}
-              />
+              <ViewBoxZoom>
+                <img
+                  src={(props.source as MediaRef).imagepath}
+                  loading="lazy"
+                  class="h-auto w-auto rounded-xl"
+                  style={{
+                    'max-width': `min(100%, ${(props.source as MediaRef).metadata.dimensions[0]}px )`,
+                    'max-height': `min(100%, ${(props.source as MediaRef).metadata.dimensions[1]}px )`,
+                  }}
+                />
+              </ViewBoxZoom>
             </Match>
 
-            <Match when={props.type === 'note' && isNoteRef(props.source)}>
+            <Match when={props.type === 'note'}>
               <NoteEditor source={props.source as NoteRef} />
             </Match>
           </Switch>

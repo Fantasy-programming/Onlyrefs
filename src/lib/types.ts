@@ -9,6 +9,7 @@ export interface Metadata {
   colors: string[];
   created_at: string;
   updated_at: string;
+  note_text: string;
   tags?: string[];
 }
 
