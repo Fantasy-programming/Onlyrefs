@@ -108,6 +108,19 @@ ul[data-type='taskList'] {
   }
 }
 
+div[role='dialog'] {
+  ul[data-type='taskList'] {
+    li {
+      > label {
+        > input:checked + span {
+          top: 55%;
+          left: 50%;
+        }
+      }
+    }
+  }
+}
+
 .tiptap p.is-editor-empty:first-child::before {
   color: #adb5bd;
   content: attr(data-placeholder);

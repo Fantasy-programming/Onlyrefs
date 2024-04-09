@@ -20,6 +20,8 @@ import {
 } from '../../lib/helper';
 import { useRefSelector } from '~/state/store';
 import { Motion, Presence } from 'solid-motionone';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { As } from '@kobalte/core';
 
 const debouncedSave = debounce(
   async (
@@ -115,10 +117,10 @@ export const ViewBoxInfo = (props: {
                 class="pb-5"
                 onSubmit={handleSubmit}
               >
-                <div class="flex rounded-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                <div class="focus-within:ring-offset-3 flex rounded-sm ring-offset-foreground/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring">
                   <Input
                     type="text"
-                    class="h-[50px] w-full rounded-r-none border-none  bg-foreground/10 text-lg focus-visible:ring-0"
+                    class="h-[50px] w-full rounded-r-none border-none  bg-foreground/10 text-lg ring-offset-current focus-visible:ring-offset-0"
                     value={inputValue()}
                     onInput={handleInputChange}
                   />
@@ -180,40 +182,71 @@ export const ViewBoxInfo = (props: {
         </Show>
       </div>
       <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 lg:absolute">
-        <Button
-          size="round"
-          class="flex h-12 w-12 items-center justify-center  text-white"
-          aria-label="save ref to pc"
-          onClick={() => {
-            if (isMedia_Metadata(props.metadata)) {
-              saveMediaToDisk(
-                props.metadata.id,
-                (props.metadata as Metadata).file_name,
-              );
-            }
-          }}
-        >
-          <OcShare3 class="h-6 w-6" />
-        </Button>
-        <Button
-          class="flex h-12 w-12 items-center justify-center  text-white"
-          size="round"
-          aria-label="add to board"
-        >
-          <TbLayoutDashboard class="h-6 w-6" />
-        </Button>
-        <Button
-          variant="destructive"
-          class="flex h-12 w-12 items-center justify-center  text-white"
-          aria-label="delete ref"
-          size="round"
-          onClick={() => {
-            deleteRef(props.metadata.id);
-            root.deleteRef(props.metadata.id);
-          }}
-        >
-          <RiSystemDeleteBin6Line class="h-6 w-6" />
-        </Button>
+        <Tooltip placement="top" openDelay={50}>
+          <TooltipTrigger
+            class="transition-all delay-200"
+            asChild
+            onClick={() => {
+              if (isMedia_Metadata(props.metadata)) {
+                saveMediaToDisk(
+                  props.metadata.id,
+                  (props.metadata as Metadata).file_name,
+                );
+              }
+            }}
+          >
+            <As
+              component={Button}
+              size="round"
+              class="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
+              aria-label="save ref to pc"
+            >
+              <OcShare3 class="h-6 w-6" />
+            </As>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Save to Disk</p>
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip placement="top" openDelay={50}>
+          <TooltipTrigger class="transition-all delay-200" asChild>
+            <As
+              component={Button}
+              size="round"
+              class="flex h-12 w-12 items-center justify-center text-white hover:text-white/80"
+              aria-label="add to board"
+            >
+              <TbLayoutDashboard class="h-6 w-6" />
+            </As>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Add To Board</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip placement="top" openDelay={50}>
+          <TooltipTrigger
+            class="transition-all delay-100"
+            asChild
+            onClick={() => {
+              deleteRef(props.metadata.id);
+              root.deleteRef(props.metadata.id);
+            }}
+          >
+            <As
+              component={Button}
+              variant="destructive"
+              size="round"
+              class="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
+              aria-label="save ref to pc"
+            >
+              <RiSystemDeleteBin6Line class="h-6 w-6 " />
+            </As>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Delete Ref</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

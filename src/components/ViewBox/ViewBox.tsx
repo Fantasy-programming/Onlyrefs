@@ -78,7 +78,7 @@ export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
                         class="transition-all delay-200"
                         onClick={async () => {
                           copied(true);
-                          setTimeout(() => copied(false), 2000);
+                          setTimeout(() => copied(false), 800);
                           await writeText(color);
                         }}
                         as="div"
