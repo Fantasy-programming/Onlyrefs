@@ -27,8 +27,7 @@
 
     --secondary: 16 99% 34%;
     --secondary-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 72.8% 40.6%;
     --destructive-foreground: 0 0% 98%;
 
     --info: 204 94% 94%;
@@ -74,9 +73,9 @@
     --primary-foreground: 0 0% 98%;
 
     --accent: 35 98% 59%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 30.2%;
     --destructive-foreground: 0 0% 98%;
 
     --info: 204 94% 94%;

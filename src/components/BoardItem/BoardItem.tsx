@@ -145,8 +145,8 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
               if (props.refID === undefined) {
                 return;
               }
-              await deleteRef(props.refID);
-              await root.refetchRefs();
+              deleteRef(props.refID);
+              root.deleteRef(props.refID);
             }}
           >
             <span>Delete Ref</span>

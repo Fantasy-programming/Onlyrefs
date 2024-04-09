@@ -52,7 +52,7 @@ const Board = (props: BoardProps) => {
           </h1>
         </Show>
         <Button
-          variant="default"
+          variant="primary"
           size="lg"
           onclick={() => selectFiles(props.collection)}
           class="hidden md:inline-flex"

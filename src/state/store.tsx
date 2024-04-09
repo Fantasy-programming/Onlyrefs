@@ -8,6 +8,7 @@ import { getUpdatedAtTimestamp } from '~/lib/helper';
 interface RootState {
   readonly ref: Ref[];
   refetchRefs: () => Promise<void>;
+  deleteRef: (id: string) => void;
   mutateTag: (id: string, tags: string, type: 'add' | 'remove') => void;
   mutateName: (id: string, name: string) => void;
   mutateNote: (id: string, note: string) => void;
@@ -78,6 +79,17 @@ export const RefProvider: ParentComponent = (props) => {
     setRef((meta) => meta.metadata.id === id, 'metadata', 'name', name);
   };
 
+  const deleteRef = (id: string) => {
+    setRef(
+      produce((ref) => {
+        const index = ref.findIndex((ref) => ref.metadata.id == id);
+        if (index !== -1 && index !== undefined) {
+          ref.splice(index, 1);
+        }
+      }),
+    );
+  };
+
   const mutateNote = (id: string, note: string) => {
     setRef(
       (meta) => meta.metadata.id === id,
@@ -132,6 +144,7 @@ export const RefProvider: ParentComponent = (props) => {
       return ref;
     },
     refetchRefs,
+    deleteRef,
     mutateTag,
     mutateName,
     mutateNote,

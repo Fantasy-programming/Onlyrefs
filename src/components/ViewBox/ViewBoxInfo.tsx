@@ -12,8 +12,11 @@ import { TbLayoutDashboard } from 'solid-icons/tb';
 import {
   addTag,
   changeRefName,
+  deleteRef,
   deleteTag,
   elapsedTime,
+  isMedia_Metadata,
+  saveMediaToDisk,
 } from '../../lib/helper';
 import { useRefSelector } from '~/state/store';
 import { Motion, Presence } from 'solid-motionone';
@@ -22,10 +25,11 @@ const debouncedSave = debounce(
   async (
     value: string,
     id: string,
+    path: string,
     type: string,
     more: (id: string, value: string) => void,
   ) => {
-    await changeRefName(id, value, type);
+    await changeRefName(id, value, path, type);
     more(id, value);
   },
   1000,
@@ -54,6 +58,7 @@ export const ViewBoxInfo = (props: {
     debouncedSave(
       event.currentTarget.value,
       props.metadata.id,
+      props.path,
       props.type,
       root.mutateName,
     );
@@ -88,7 +93,7 @@ export const ViewBoxInfo = (props: {
   };
 
   return (
-    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl  bg-background md:absolute md:my-2 md:mr-2  md:h-[calc(100%-(0.5rem*2))] md:w-[400px] md:rounded-xl">
+    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl  bg-background md:rounded-xl lg:absolute lg:my-2  lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
       <header class="flex flex-col gap-3 rounded-t-xl bg-gradient-to-tr from-primary/80 to-primary/40  p-7 ">
         <input
           type="text"
@@ -110,10 +115,10 @@ export const ViewBoxInfo = (props: {
                 class="pb-5"
                 onSubmit={handleSubmit}
               >
-                <div class="flex">
+                <div class="flex rounded-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <Input
                     type="text"
-                    class="h-[50px] w-full rounded-r-none border-none bg-foreground/10 text-lg"
+                    class="h-[50px] w-full rounded-r-none border-none  bg-foreground/10 text-lg focus-visible:ring-0"
                     value={inputValue()}
                     onInput={handleInputChange}
                   />
@@ -174,25 +179,41 @@ export const ViewBoxInfo = (props: {
           <div class="my-3"></div>
         </Show>
       </div>
-      <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 md:absolute">
-        <button
-          class="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white"
+      <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 lg:absolute">
+        <Button
+          size="round"
+          class="flex h-12 w-12 items-center justify-center  text-white"
           aria-label="save ref to pc"
+          onClick={() => {
+            if (isMedia_Metadata(props.metadata)) {
+              saveMediaToDisk(
+                props.metadata.id,
+                (props.metadata as Metadata).file_name,
+              );
+            }
+          }}
         >
           <OcShare3 class="h-6 w-6" />
-        </button>
-        <button
-          class="h-12 w-12 rounded-full flex items-center justify-center bg-primary text-white"
+        </Button>
+        <Button
+          class="flex h-12 w-12 items-center justify-center  text-white"
+          size="round"
           aria-label="add to board"
         >
           <TbLayoutDashboard class="h-6 w-6" />
-        </button>
-        <button
-          class="h-12 w-12 rounded-full flex items-center justify-center bg-primary text-white"
+        </Button>
+        <Button
+          variant="destructive"
+          class="flex h-12 w-12 items-center justify-center  text-white"
           aria-label="delete ref"
+          size="round"
+          onClick={() => {
+            deleteRef(props.metadata.id);
+            root.deleteRef(props.metadata.id);
+          }}
         >
           <RiSystemDeleteBin6Line class="h-6 w-6" />
-        </button>
+        </Button>
       </div>
     </div>
   );

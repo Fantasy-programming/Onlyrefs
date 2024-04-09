@@ -104,28 +104,23 @@ pub fn fetch_refs(collections_dir: &Path) -> Mutex<Vec<Ref>> {
     )
 }
 
-pub fn change_name(collections_dir: &Path, ref_type: &str, ref_id: &str, name: &str) {
-    let metadata_path;
-    let mut metadata_json;
+/// Change name of a ref
+pub fn change_name(metadata_path: &Path, ref_type: &str, new_name: &str) {
+    let mut metadata_json =
+        fs::read_to_string(metadata_path).expect("Failed to read metadata file");
 
     match ref_type {
         "video" | "image" => {
-            metadata_path = collections_dir.join(ref_id).join("metadata.json");
-            metadata_json =
-                fs::read_to_string(&metadata_path).expect("Failed to read metadata file");
             let mut metadata: Metadata =
                 serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
-            metadata.name = name.to_string();
+            metadata.name = new_name.to_string();
             metadata_json =
                 serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
         }
         "note" => {
-            metadata_path = collections_dir.join(ref_id).join("metadata.note.json");
-            metadata_json =
-                fs::read_to_string(&metadata_path).expect("Failed to read metadata file");
             let mut metadata: NoteMetadata =
                 serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
-            metadata.name = name.to_string();
+            metadata.name = new_name.to_string();
             metadata_json =
                 serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
         }
@@ -138,6 +133,7 @@ pub fn change_name(collections_dir: &Path, ref_type: &str, ref_id: &str, name: &
     fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
 }
 
+/// Add tags to a ref
 pub fn add_tag(metadata_path: &Path, ref_type: &str, tag: &str) {
     let mut metadata_json =
         fs::read_to_string(metadata_path).expect("Failed to read metadata file");
@@ -166,32 +162,7 @@ pub fn add_tag(metadata_path: &Path, ref_type: &str, tag: &str) {
     fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
 }
 
-
-
-pub fn mutate_note(metadata_path: &Path, ref_type: &str, note_content: &str) {
-    let mut metadata_json =
-        fs::read_to_string(metadata_path).expect("Failed to read metadata file");
-
-    match ref_type {
-        "note" => {
-            let mut metadata: NoteMetadata =
-                serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
-            metadata.note_text = note_content.to_string();
-            metadata_json =
-                serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
-        }
-        _ => {
-            println!("Unknown ref_type: {}", ref_type);
-            return;
-        }
-    };
-
-    fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
-}
-
-
-
-
+/// Remove tags from a ref
 pub fn remove_tag(metadata_path: &Path, ref_type: &str, tag: &str) {
     let mut metadata_json =
         fs::read_to_string(metadata_path).expect("Failed to read metadata file");
@@ -208,6 +179,28 @@ pub fn remove_tag(metadata_path: &Path, ref_type: &str, tag: &str) {
             let mut metadata: NoteMetadata =
                 serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
             metadata.tags.retain(|t| t != tag);
+            metadata_json =
+                serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+        }
+        _ => {
+            println!("Unknown ref_type: {}", ref_type);
+            return;
+        }
+    };
+
+    fs::write(metadata_path, metadata_json).expect("Failed to write metadata file");
+}
+
+/// Mutate note component from a ref
+pub fn mutate_note(metadata_path: &Path, ref_type: &str, note_content: &str) {
+    let mut metadata_json =
+        fs::read_to_string(metadata_path).expect("Failed to read metadata file");
+
+    match ref_type {
+        "note" => {
+            let mut metadata: NoteMetadata =
+                serde_json::from_str(&metadata_json).expect("Failed to parse metadata");
+            metadata.note_text = note_content.to_string();
             metadata_json =
                 serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
         }
@@ -270,5 +263,156 @@ where
         Value::String(s) => Ok(s),
         Value::Number(n) => Ok(human_size(n.as_u64().unwrap())),
         _ => Err(D::Error::custom("Invalid file_size value")),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use std::fs;
+    use std::path::{Path, PathBuf};
+    const MEDIA_METADATA_PATH: &str = "resources/metadata.json";
+    const NOTE_METADATA_PATH: &str = "resources/metadata.note.json";
+
+    #[test]
+    fn test_analyze_file_size() {
+        let file_path = "test_file.txt";
+        fs::write(file_path, "This is a test file.").expect("Failed to create test file");
+        let file_size = analyze_file_size(file_path);
+        assert_eq!(file_size, "20B");
+        fs::remove_file(file_path).expect("Failed to delete test file");
+    }
+
+    #[test]
+    fn test_get_all_refs() {
+        let collections_dir = Path::new("test_all_refs");
+        fs::create_dir_all(collections_dir).expect("Failed to create test collections directory");
+        fs::create_dir(collections_dir.join("dir1")).expect("Failed to create test directory");
+        fs::create_dir(collections_dir.join("dir2")).expect("Failed to create test directory");
+
+        let refs = get_all_refs(collections_dir);
+        assert_eq!(refs.len(), 2);
+        assert_eq!(refs[0].len(), 0);
+        assert_eq!(refs[1].len(), 0);
+
+        fs::remove_dir_all(collections_dir).expect("Failed to delete test collections directory");
+    }
+
+    #[test]
+    fn test_change_name() {
+        // Setup the environment
+        let temp_dir = Path::new("test_name_location");
+        let new_name = "good ref";
+        fs::create_dir_all(temp_dir).expect("Failed to create test collections directory");
+
+        let media_metadata_path = temp_dir.join("metadata.json");
+        fs::copy(MEDIA_METADATA_PATH, media_metadata_path.clone())
+            .expect("Failed to copy media metadata file");
+
+        let note_metadata_path = temp_dir.join("metadata.note.json");
+        fs::copy(NOTE_METADATA_PATH, note_metadata_path.clone())
+            .expect("Failed to copy note metadata file");
+
+        // Test changing the name of a media reference
+        change_name(&media_metadata_path, "image", new_name);
+
+        let updated_metadata: Metadata = serde_json::from_str(
+            &fs::read_to_string(media_metadata_path).expect("Failed to read media metadata file"),
+        )
+        .expect("Failed to parse media metadata");
+
+        assert_eq!(updated_metadata.name, new_name);
+
+        // Test changing the name of a note reference
+        change_name(&note_metadata_path, "note", new_name);
+        let updated_note_metadata: NoteMetadata = serde_json::from_str(
+            &fs::read_to_string(note_metadata_path).expect("Failed to read note metadata file"),
+        )
+        .expect("Failed to parse note metadata");
+
+        assert_eq!(updated_note_metadata.name, new_name);
+
+        // cleanup the environment
+        fs::remove_dir_all(temp_dir).expect("failed to delete test collections directory");
+    }
+
+    #[test]
+    fn test_add_remove_tags() {
+        // Setup the environment
+        let temp_dir = Path::new("test_tags_location");
+        let tag_name = "testor";
+        fs::create_dir_all(temp_dir).expect("Failed to create test collections directory");
+
+        let media_metadata_path = temp_dir.join("metadata.json");
+        fs::copy(MEDIA_METADATA_PATH, media_metadata_path.clone())
+            .expect("Failed to copy media metadata file");
+
+        let note_metadata_path = temp_dir.join("metadata.note.json");
+        fs::copy(NOTE_METADATA_PATH, note_metadata_path.clone())
+            .expect("Failed to copy note metadata file");
+
+        // Test adding a tag to a media reference
+        add_tag(&media_metadata_path, "image", tag_name);
+        let updated_metadata: Metadata = serde_json::from_str(
+            &fs::read_to_string(media_metadata_path.clone())
+                .expect("Failed to read media metadata file"),
+        )
+        .expect("Failed to parse media metadata");
+        assert!(updated_metadata.tags.contains(&tag_name.to_string()));
+
+        // Test removing a tag from a media reference
+        remove_tag(&media_metadata_path, "image", tag_name);
+        let updated_metadata: Metadata = serde_json::from_str(
+            &fs::read_to_string(media_metadata_path.clone())
+                .expect("Failed to read media metadata file"),
+        )
+        .expect("Failed to parse media metadata");
+        assert!(!updated_metadata.tags.contains(&tag_name.to_string()));
+
+        // Test adding a tag to a note reference
+        add_tag(&note_metadata_path, "note", tag_name);
+        let updated_note_metadata: NoteMetadata = serde_json::from_str(
+            &fs::read_to_string(note_metadata_path.clone())
+                .expect("Failed to read note metadata file"),
+        )
+        .expect("Failed to parse note metadata");
+        assert!(updated_note_metadata.tags.contains(&tag_name.to_string()));
+
+        // Test removing a tag from a note reference
+        remove_tag(&note_metadata_path, "note", tag_name);
+        let updated_note_metadata: NoteMetadata = serde_json::from_str(
+            &fs::read_to_string(note_metadata_path).expect("Failed to read note metadata file"),
+        )
+        .expect("Failed to parse note metadata");
+        assert!(!updated_note_metadata.tags.contains(&tag_name.to_string()));
+
+        // cleanup the environment
+        fs::remove_dir_all(temp_dir).expect("failed to delete test collections directory");
+    }
+
+    #[test]
+    fn test_mutate_note() {
+        // Setup the environment
+        let temp_dir = Path::new("test_mutate_note_location");
+        fs::create_dir_all(temp_dir).expect("Failed to create test collections directory");
+
+        let note_metadata_path = temp_dir.join("metadata.note.json");
+        fs::copy(NOTE_METADATA_PATH, note_metadata_path.clone())
+            .expect("Failed to copy note metadata file");
+
+        // Test mutating the note content
+        let new_note_content = "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.";
+
+        mutate_note(&note_metadata_path, "note", new_note_content);
+
+        let updated_note_metadata: NoteMetadata = serde_json::from_str(
+            &fs::read_to_string(note_metadata_path).expect("Failed to read note metadata file"),
+        )
+        .expect("Failed to parse note metadata");
+        assert_eq!(updated_note_metadata.note_text, new_note_content);
+
+        // Cleanup the environment
+        fs::remove_dir_all(temp_dir).expect("Failed to delete test collections directory");
     }
 }

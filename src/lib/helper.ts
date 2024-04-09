@@ -1,4 +1,10 @@
-import { exists, createDir, removeDir, readTextFile } from '@tauri-apps/api/fs';
+import {
+  exists,
+  createDir,
+  removeDir,
+  readTextFile,
+  copyFile,
+} from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 import { differenceInSeconds, parse } from 'date-fns';
 
@@ -9,8 +15,9 @@ import {
   breakpoints_5,
   breakpoints_6,
 } from './config';
-import { Ref } from './types';
-import { appDataDir, join } from '@tauri-apps/api/path';
+import { MediaRef, Metadata, NoteMetadata, Ref } from './types';
+import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
+import { open } from '@tauri-apps/api/dialog';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
@@ -127,9 +134,15 @@ function containsCharsInOrder(str: string, searchStr: string) {
 export const changeRefName = async (
   refID: string,
   newName: string,
+  path: string,
   type: string,
 ) => {
-  await invoke('rename_ref', { refId: refID, newName: newName, refType: type });
+  await invoke('rename_ref', {
+    refId: refID,
+    path,
+    newName: newName,
+    refType: type,
+  });
 };
 
 export const deleteTag = async (
@@ -211,4 +224,33 @@ export const elapsedTime = (createdAt: string) => {
     const days = Math.floor(elapsedTimeInSeconds / 86400);
     return `${days}d ago`;
   }
+};
+
+export const isMediaRef = (source: Ref): source is MediaRef => {
+  return 'colors' in (source.metadata as any);
+};
+
+export const isMedia_Metadata = (
+  source: Metadata | NoteMetadata,
+): source is Metadata => {
+  return 'colors' in (source as any);
+};
+
+export const saveMediaToDisk = async (id: string, file_name: string) => {
+  const destDir = await open({
+    directory: true,
+    defaultPath: await downloadDir(),
+  });
+
+  if (!destDir || Array.isArray(destDir)) return;
+
+  const destFile = await join(destDir, file_name);
+  const fileLocation = await join(
+    await appDataDir(),
+    'collections',
+    id,
+    file_name,
+  );
+
+  await copyFile(fileLocation, destFile);
 };

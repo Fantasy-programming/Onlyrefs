@@ -27,3 +27,14 @@ export const breakpoints_6 = createMasonryBreakpoints(() => [
   { query: '(min-width: 768px) and (max-width: 1024px)', columns: 3 },
   { query: '(max-width: 768px)', columns: 2 },
 ]);
+
+export const SUPPORTED_FILES = [
+  {
+    name: 'Image',
+    extensions: ['png', 'jpeg', 'webm', 'gif'],
+  },
+  {
+    name: 'video',
+    extensions: ['mp4', 'avi', 'webm'],
+  },
+];

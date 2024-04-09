@@ -128,12 +128,12 @@ async fn get_media_refs(state: State<'_, Mutex<Vec<Ref>>>) -> Result<Vec<Ref>, S
 async fn rename_ref(
     ref_id: &str,
     new_name: &str,
+    path: &str,
     ref_type: &str,
-    app_handle: tauri::AppHandle,
     state: State<'_, Mutex<Vec<Ref>>>,
 ) -> Result<(), String> {
-    let collections_dir = get_collection_path(&app_handle);
-    utils::change_name(&collections_dir, ref_type, ref_id, new_name);
+    let location = Path::new(path);
+    utils::change_name(location, ref_type, new_name);
 
     // Now update the state with the new name
     let mut state_guard = state

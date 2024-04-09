@@ -73,7 +73,7 @@ ul[data-type='taskList'] {
       > input:checked + span {
         content: '';
         position: absolute;
-        top: 50%;
+        top: 52%;
         left: 50%;
         width: 0.9em;
         height: 0.9em;

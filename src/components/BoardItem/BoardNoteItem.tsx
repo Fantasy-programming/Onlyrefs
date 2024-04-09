@@ -18,7 +18,7 @@ import { Markdown } from 'tiptap-markdown';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Extension } from '@tiptap/core';
 import { changeNoteContent, create_note_ref } from '~/lib/helper.ts';
-import { NoteMetadata, NoteRef } from '~/lib/types.ts';
+import { MediaRef, NoteMetadata, NoteRef } from '~/lib/types.ts';
 import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { debounce } from '@solid-primitives/scheduled';
@@ -256,7 +256,7 @@ const NoteContent = (props: { content: NoteMetadata }) => {
         "before:content-['“'] font-serif   after:content-['”'] after:text-3xl before:text-3xl before:leading-[0] after:leading-[0] after:pt-[10px] before:pb-[10px] before:mt-3 after:mt-3 after:block before:block text-2xl text-center":
           props.content.tags.includes('quote'),
 
-        'h-full overflow-y-scroll ': true,
+        'h-full overflow-y-hidden': true,
       }}
     />
   );
@@ -341,7 +341,7 @@ export const NewNote = () => {
   );
 };
 
-export const NoteEditor = (props: { source: NoteRef }) => {
+export const NoteEditor = (props: { source: NoteRef | MediaRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
   const root = useRefSelector();

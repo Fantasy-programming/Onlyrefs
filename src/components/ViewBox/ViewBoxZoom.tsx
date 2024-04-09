@@ -12,7 +12,7 @@ export function ViewBoxZoom(props: IProps) {
 
   onMount(() => {
     createZoomImage(container, {
-      wheelZoomRatio: 0.5,
+      wheelZoomRatio: 0.3,
     });
   });
 

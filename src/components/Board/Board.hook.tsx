@@ -6,6 +6,7 @@ import { onCleanup, createSignal, createRoot } from 'solid-js';
 import { generate_id } from '~/lib/helper';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
 import { invoke } from '@tauri-apps/api';
+import { SUPPORTED_FILES } from '~/lib/config';
 
 export const useFileSelector = createRoot(() => {
   const [isProcessing, setIsProcessing] = createSignal(false);
@@ -68,6 +69,7 @@ export const useFileSelector = createRoot(() => {
   const selectFiles = async (collection: string) => {
     const files = await open({
       multiple: true,
+      filters: SUPPORTED_FILES,
     });
 
     if (!files || !Array.isArray(files)) {

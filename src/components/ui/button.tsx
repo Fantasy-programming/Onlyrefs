@@ -3,7 +3,6 @@ import { splitProps } from 'solid-js';
 
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
-
 import { cn } from '~/lib/utils';
 
 const buttonVariants = cva(
@@ -11,15 +10,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground',
-        primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        primary:
+          'bg-primary text-primary-foreground hover:bg-primary/80 transition active:scale-95',
         destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90 transition active:scale-95',
         outline:
-          'border border-input hover:bg-accent hover:text-accent-foreground',
+          'border border-input hover:bg-accent/60 hover:text-accent-foreground',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80 transition active:scale-95',
+        ghost: 'hover:bg-accent/70 hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
@@ -27,10 +26,11 @@ const buttonVariants = cva(
         sm: 'h-9 px-3',
         lg: 'h-11  px-8',
         icon: 'size-10',
+        round: 'rounded-full',
       },
     },
     defaultVariants: {
-      variant: 'default',
+      variant: 'primary',
       size: 'default',
     },
   },
