@@ -1,17 +1,31 @@
+html,
+body {
+  user-select: none;
+}
+
 html {
   scrollbar-width: none;
   -ms-overflow-style: none;
-  font-family: system-ui, sans-serif;
+  font-family: caption, system-ui, sans-serif;
   font-weight: normal;
 }
 
 body {
-  user-select: none;
+  font-variant-ligatures: none;
+  -webkit-font-variant-ligatures: none;
+  font-synthesis-weight: none;
+  text-shadow: rgba(0, 0, 0, 0.01) 0 0 1px;
+  -webkit-text-stroke: 0.45px rgba(0, 0, 0, 0.1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased;
+
   overflow: hidden;
-  position: fixed;
   width: 100vw;
   height: 100vh;
-  font-synthesis-weight: none;
 }
 
 ::-webkit-scrollbar {

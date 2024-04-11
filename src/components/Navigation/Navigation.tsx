@@ -8,39 +8,18 @@ import { Show } from 'solid-js';
 import { gridSizeHook } from '../../state/hook';
 import Logo from '~/assets/logo-simple.svg';
 
-export const Navigation = () => {
-  return (
-    <nav class="">
-      <div class="flex items-center  justify-end">
-        <div class="menu">
-          <ul class="flex gap-6 font-sans text-xl font-semibold text-foreground">
-            <li>
-              <a href="/" class="">
-                Home
-              </a>
-            </li>
-            <li>
-              <a href="/boards">Boards</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-  );
-};
-
-export const LeftNav = () => {
+export const SideNavigation = () => {
   const { toggleColorMode, colorMode } = useColorMode();
   const [gridPressed, setGridPressed] = createSignal(false);
 
   return (
-    <nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end bg-transparent opacity-100 md:flex md:w-20  ">
-      <div class="logo absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
+    <nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
+      <div class="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
         <div class="flex items-center gap-4 text-3xl">
           <Logo class="h-8 w-8" />
           <span>
-            <span class="opacity-9 text-foreground ">Only</span>
-            <span class="opacity-9 text-accent">Ref</span>
+            <span class="opacity-9 text-foreground">Only</span>
+            <span class="opacity-9 text-accent/80">Ref</span>
           </span>
         </div>
       </div>
@@ -75,7 +54,7 @@ export const LeftNav = () => {
           )}
         </Toggle>
         <a
-          href="#"
+          href="/settings"
           class={
             gridPressed() === true ? 'pointer-events-none opacity-0' : 'block'
           }

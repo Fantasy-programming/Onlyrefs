@@ -11,6 +11,7 @@ import {
 import type { DynamicProps } from 'solid-js/web';
 import { Dynamic } from 'solid-js/web';
 import { omitProps } from 'solid-use/props';
+import { createVirtualizer } from '@tanstack/solid-virtual';
 
 type OmitAndMerge<T, U> = T & Omit<U, keyof T>;
 
@@ -281,6 +282,12 @@ export function Mason<
 
   createEffect(() => {
     setColumns(props.columns);
+  });
+
+  createVirtualizer({
+    count: (props.items?.length ?? 0) + (props.pre?.length ?? 0),
+    estimateSize: () => 10,
+    getScrollElement: () => ref()!,
   });
 
   return Dynamic<T>(

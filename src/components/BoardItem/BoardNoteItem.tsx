@@ -7,7 +7,7 @@ import { HiSolidCodeBracket } from 'solid-icons/hi';
 import { VsListOrdered, VsListUnordered } from 'solid-icons/vs';
 import { TbBlockquote } from 'solid-icons/tb';
 import { OcCodesquare2 } from 'solid-icons/oc';
-import { useRefSelector } from '~/state/store';
+import { useRefSelector } from '~/state/refstore.tsx';
 
 import { createTiptapEditor } from 'solid-tiptap';
 import StarterKit from '@tiptap/starter-kit';
@@ -207,8 +207,11 @@ const SaveNote = Extension.create({
 export const NoteItem = (props: { noteInfo: NoteRef }) => {
   return (
     <Dialog>
-      <DialogTrigger class="w-full">
-        <div class="max-h-[500px] min-h-[50px] w-full overflow-hidden rounded-xl border  border-transparent bg-foreground/10 p-6 text-start shadow-md hover:border-secondary">
+      <DialogTrigger as="div" class="w-full" tabIndex="-1">
+        <div
+          class="max-h-[500px] min-h-[50px] w-full cursor-pointer overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 text-start shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20 focus-visible:border-primary focus-visible:outline-none"
+          tabindex="0"
+        >
           <NoteContent content={props.noteInfo.metadata} />
         </div>
         {props.noteInfo.metadata.name === '' ? null : (
@@ -313,7 +316,7 @@ export const NewNote = () => {
   return (
     <div
       id="editor"
-      class="h-[400px] overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 shadow-md hover:border-secondary"
+      class="h-[400px] overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 shadow-md focus-within:border-secondary hover:border-secondary focus-visible:border-secondary"
     >
       <h4 class="mb-2 text-lg text-secondary">ADD NEW NOTE</h4>
       <Toolbar

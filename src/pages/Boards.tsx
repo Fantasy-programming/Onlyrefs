@@ -1,7 +1,7 @@
 import { Motion } from 'solid-motionone';
 import { useParams } from '@solidjs/router';
 import { JSX, Setter, Show, createSignal, onMount } from 'solid-js';
-import { useRefSelector } from '~/state/store';
+import { useRefSelector } from '~/state/refstore';
 
 import Board from '~/components/Board/Board';
 

@@ -2,7 +2,7 @@
 import { Router, Route } from '@solidjs/router';
 import { render } from 'solid-js/web';
 import { ColorModeProvider, localStorageManager } from '@kobalte/core';
-import { RefProvider } from './state/store';
+import { RefProvider } from './state/refstore.tsx';
 
 import '@fontsource-variable/nunito';
 import '@fontsource/prociono';

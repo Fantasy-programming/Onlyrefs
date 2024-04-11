@@ -1,6 +1,6 @@
 import { Component, ParentProps, Switch, Match } from 'solid-js';
 import { deleteRef } from '~/lib/helper.ts';
-import { useRefSelector } from '~/state/store';
+import { useRefSelector } from '~/state/refstore';
 import { BoardItemProps, RefContextMenuProps } from './BoardItem.types.ts';
 import { MediaRef, NoteRef } from '~/lib/types.ts';
 
@@ -59,13 +59,14 @@ export const BoardItem = (props: BoardItemProps) => {
 const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
   return (
     <Dialog>
-      <DialogTrigger class="w-full rounded-xl">
+      <DialogTrigger as="div" class="w-full rounded-xl" tabIndex="-1">
         <div
-          class={`cursor-pointer  rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20`}
+          class={`cursor-pointer rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20 focus-visible:border-primary focus-visible:outline-none `}
           style={{
             'aspect-ratio': `${props?.mediaInfo?.metadata?.dimensions[0]}/${props?.mediaInfo?.metadata?.dimensions[1]}`,
             'background-image': `url(${props?.mediaInfo?.low_res_imagepath})`,
           }}
+          tabindex="0"
         />
         {props.mediaInfo.metadata.name === '' ? null : (
           <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
@@ -82,12 +83,10 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
 const VideoItem = (props: { mediaInfo: MediaRef }) => {
   return (
     <Dialog>
-      <DialogTrigger class="w-full rounded-xl">
+      <DialogTrigger as="div" class="w-full rounded-xl" tabIndex="-1">
         <div
-          class="relative cursor-pointer overflow-hidden rounded-xl border border-transparent shadow-md hover:border-primary"
-          style={{
-            height: '400px',
-          }}
+          class="relative cursor-pointer overflow-hidden rounded-xl h-[400px] border border-transparent shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20 focus-visible:border-primary focus-visible:outline-none"
+          tabindex="0"
         >
           <video
             class="absolute h-full w-full rounded-xl object-cover"
@@ -121,26 +120,7 @@ const RefContextMenu: Component<ParentProps & RefContextMenuProps> = (
       </ContextMenuTrigger>
       <ContextMenuPortal>
         <ContextMenuContent class="w-48">
-          {/* <ContextMenuSub overlap> */}
-          {/*   <ContextMenuSubTrigger>Add to Board</ContextMenuSubTrigger> */}
-          {/*   <ContextMenuPortal> */}
-          {/*     <ContextMenuSubContent> */}
-          {/*       <ContextMenuRadioGroup */}
-          {/*         value={board()} */}
-          {/*         onChange={moveToCollection} */}
-          {/*       > */}
-          {/* <For each={props.collections()}> */}
-          {/*   {(collection) => ( */}
-          {/*     <ContextMenuRadioItem value={collection.name ?? "all"}> */}
-          {/*       {collection.name} */}
-          {/*     </ContextMenuRadioItem> */}
-          {/*   )} */}
-          {/* </For> */}
-          {/*       </ContextMenuRadioGroup> */}
-          {/*     </ContextMenuSubContent> */}
-          {/*   </ContextMenuPortal> */}
-          {/* </ContextMenuSub> */}
-          <ContextMenuItem
+          <ContextMenuItem class='focus:bg-destructive focus:text-destructive-foreground'
             onSelect={async () => {
               if (props.refID === undefined) {
                 return;

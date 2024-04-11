@@ -11,7 +11,7 @@ import { Portal } from 'solid-js/web';
 
 import { useFileSelector } from './Board.hook';
 import { gridSizeHook } from '~/state/hook';
-import { useRefSelector } from '~/state/store';
+import { useRefSelector } from '~/state/refstore';
 import { getBreakpoints, searchByText } from '~/lib/helper';
 import { BoardProps } from './Board.types';
 
@@ -29,9 +29,9 @@ const Board = (props: BoardProps) => {
 
   const [selectFiles, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
-  const root = useRefSelector();
 
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
+  const root = useRefSelector();
 
   createEffect(
     on(progress, async () => {
@@ -44,7 +44,7 @@ const Board = (props: BoardProps) => {
   });
 
   return (
-    <main class="h-screen w-full pt-10">
+    <main class="h-full w-full pt-10">
       <div class="mb-12 flex justify-between">
         <Show when={props.home}>
           <h1 class="text-4xl uppercase italic text-primary-foreground">
@@ -77,17 +77,19 @@ const Board = (props: BoardProps) => {
       <Show
         when={props.refs.length !== 0}
         fallback={
-          <div class="flex h-3/4  w-full  flex-col items-center justify-center gap-5 text-center font-serif text-2xl text-muted/50 md:text-4xl">
-            <Logo class="h-36 w-36 opacity-40 dark:opacity-10 md:h-64 md:w-64 " />
-            <span class="opacity-80 dark:opacity-30">
-              Drop or Save Reference file here to start
-            </span>
+          <div class="relative h-full w-full">
+            <div class="absolute left-1/2 top-1/3 flex -translate-x-1/2  -translate-y-1/2 flex-col items-center justify-center gap-5 text-center font-serif text-2xl text-muted/80 md:text-3xl">
+              <Logo class="h-36 w-36 stroke-transparent stroke-0 opacity-40 outline-0 dark:opacity-20 md:h-64 md:w-64" />
+              <span class="opacity-80 dark:opacity-30">
+                Drop or Save Reference file here to start
+              </span>
+            </div>
           </div>
         }
       >
         <Mason
           as="section"
-          class="relative h-full w-full"
+          class="h-full"
           pre={!searching() ? [NewNote] : []}
           items={boardRefs()}
           gap={20}
