@@ -14,9 +14,11 @@ export const SideNavigation = () => {
 
   return (
     <nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
+      <div class="absolute left-1/2 top-[5%] -translate-x-1/2 -translate-y-1/2">
+        <Logo class="h-9 w-9" />
+      </div>
       <div class="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
         <div class="flex items-center gap-4 text-3xl">
-          <Logo class="h-8 w-8" />
           <span>
             <span class="opacity-9 text-foreground">Only</span>
             <span class="opacity-9 text-accent/80">Ref</span>

@@ -15,7 +15,6 @@ import { useRefSelector } from '~/state/refstore';
 import { getBreakpoints, searchByText } from '~/lib/helper';
 import { BoardProps } from './Board.types';
 
-import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Mason } from '../Mason';
 import { Progress, ProgressValueLabel } from '../ui/progress';
@@ -27,7 +26,7 @@ const Board = (props: BoardProps) => {
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [searching, setSearching] = createSignal(false);
 
-  const [selectFiles, dropFiles, progress] = useFileSelector;
+  const [_, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
 
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
@@ -44,21 +43,13 @@ const Board = (props: BoardProps) => {
   });
 
   return (
-    <main class="h-full w-full pt-10">
+    <main class="h-full py-10 pe-10 ps-4 md:p-10">
       <div class="mb-12 flex justify-between">
         <Show when={props.home}>
           <h1 class="text-4xl uppercase italic text-primary-foreground">
             {props.collection}
           </h1>
         </Show>
-        <Button
-          variant="primary"
-          size="lg"
-          onclick={() => selectFiles(props.collection)}
-          class="hidden md:inline-flex"
-        >
-          Save
-        </Button>
         <Input
           placeholder="Search your refs..."
           class="border-none font-serif text-3xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-4xl"
@@ -88,8 +79,13 @@ const Board = (props: BoardProps) => {
         }
       >
         <Mason
-          as="section"
-          class="h-full"
+          classList={{
+            'h-full': true,
+            'p-6': breakPoints()() === 3,
+            'p-8': breakPoints()() === 4,
+            'p-10': breakPoints()() === 5,
+            'p-12': breakPoints()() === 6,
+          }}
           pre={!searching() ? [NewNote] : []}
           items={boardRefs()}
           gap={20}

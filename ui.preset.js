@@ -107,6 +107,10 @@ module.exports = {
       boxShadow: {
         subtleBtn:
           '0 2px 2px rgba(0, 0, 0, 0.19), 0 2px 2px rgba(0, 0, 0, 0.23), inset 2px 2px 2px 0 rgba(255, 255, 255, 0.05)',
+        cardShadow:
+          '0 6px 12px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23), inset 1px 1px 1px 0 rgba(255, 255, 255, 0.05), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.05)',
+        cardShadowLight:
+          '0 6px 12px rgba(0, 0, 0, 0.1), 0 6px 6px rgba(0, 0, 0, 0.15), inset 1px 1px 1px 0 rgba(0, 0, 0, 0.05), inset -1px -1px 1px 0 rgba(0, 0, 0, 0.05)',
       },
     },
   },

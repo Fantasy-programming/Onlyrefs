@@ -51,13 +51,13 @@
   }
 
   [data-kb-theme='dark'] {
-    --background: 0 0% 5%;
+    --background: 0 0% 7%;
     --foreground: 0 10% 90%;
 
     --primary: 219 58% 27%;
     --primary-foreground: 0 0% 98%;
-
-    --secondary: 16 99% 44%;
+    /* hsl(9, 80%, 52%) */
+    --secondary: 9 80% 52%;
     --primary-foreground: 0 0% 98%;
 
     --accent: 35 98% 59%;

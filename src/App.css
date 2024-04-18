@@ -36,7 +36,7 @@ body {
 .onlyrefNoise {
   position: relative;
   background-image: url('/noise.png');
-  background-size: 80px 80px;
+  background-size: 40px 40px;
 }
 
 /* App specific */
