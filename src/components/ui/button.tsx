@@ -12,6 +12,8 @@ const buttonVariants = cva(
       variant: {
         primary:
           'bg-primary text-primary-foreground hover:bg-primary/80 transition active:scale-95',
+        tertiary:
+          'bg-tertiary text-tertiary-foreground transition active:scale-95',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90 transition active:scale-95',
         outline:

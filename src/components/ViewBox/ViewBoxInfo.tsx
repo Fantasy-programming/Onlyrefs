@@ -22,6 +22,7 @@ import { useRefSelector } from '~/state/refstore';
 import { Motion, Presence } from 'solid-motionone';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { As } from '@kobalte/core';
+import toast from 'solid-toast';
 
 const debouncedSave = debounce(
   async (
@@ -199,6 +200,7 @@ export const ViewBoxInfo = (props: {
               <As
                 component={Button}
                 size="round"
+                variant="tertiary"
                 class="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
                 aria-label="save ref to pc"
               >
@@ -215,6 +217,7 @@ export const ViewBoxInfo = (props: {
               <As
                 component={Button}
                 size="round"
+                variant="tertiary"
                 class="flex h-12 w-12 items-center justify-center text-white hover:text-white/80"
                 aria-label="add to board"
               >
@@ -232,6 +235,7 @@ export const ViewBoxInfo = (props: {
               onClick={() => {
                 deleteRef(props.metadata.id);
                 root.deleteRef(props.metadata.id);
+                toast.success('Ref deleted');
               }}
             >
               <As

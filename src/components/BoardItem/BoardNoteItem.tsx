@@ -246,7 +246,7 @@ const NoteContent = (props: { content: NoteMetadata }) => {
     editorProps: {
       attributes: {
         class:
-          'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
+          'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full',
       },
     },
     content: props.content.note_text,

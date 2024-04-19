@@ -13,6 +13,9 @@
     --secondary: 16 99% 34%;
     --secondary-foreground: 0 0% 98%;
 
+    --tertiary: 0, 0%, 14%;
+    --tertiary-foreground: 0, 0%, 41%;
+
     --accent: 35 98% 39%;
     --accent-foreground: 0 0% 98%;
 
@@ -52,13 +55,16 @@
 
   [data-kb-theme='dark'] {
     --background: 0 0% 7%;
-    --foreground: 0 10% 90%;
+    --foreground: 0 0% 81%;
 
     --primary: 219 58% 27%;
     --primary-foreground: 0 0% 98%;
-    /* hsl(9, 80%, 52%) */
+
     --secondary: 9 80% 52%;
-    --primary-foreground: 0 0% 98%;
+    --secondary-foreground: 0 0% 98%;
+
+    --tertiary: 0, 0%, 14%;
+    --tertiary-foreground: 0, 0%, 41%;
 
     --accent: 35 98% 59%;
     --accent-foreground: 0 0% 98%;

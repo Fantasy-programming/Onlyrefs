@@ -74,7 +74,7 @@ const SizePicker = () => {
   const [gridSize, updateGridSize] = gridSizeHook;
 
   return (
-    <div class="flex flex-col space-y-8 rounded-full bg-foreground  p-3 transition-all ease-in">
+    <div class="flex flex-col space-y-6 rounded-full bg-foreground  p-3 transition-all ease-in">
       <div
         class={gridSize() === 4 ? '' : 'opacity-50'}
         onclick={() => updateGridSize(4)}

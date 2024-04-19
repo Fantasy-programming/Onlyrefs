@@ -15,7 +15,7 @@ const App = (props: RouteSectionProps) => {
             {props.children}
           </div>
         </section>
-        <Toaster position="top-right" gutter={8} />
+        <Toaster position="bottom-right" gutter={8} />
       </div>
     </>
   );

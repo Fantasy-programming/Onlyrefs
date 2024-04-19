@@ -27,6 +27,10 @@ module.exports = {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
+        tertiary: {
+          DEFAULT: 'hsl(var(--tertiary))',
+          foreground: 'hsl(var(--tertiary-foreground))',
+        },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
@@ -111,6 +115,57 @@ module.exports = {
           '0 6px 12px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23), inset 1px 1px 1px 0 rgba(255, 255, 255, 0.05), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.05)',
         cardShadowLight:
           '0 6px 12px rgba(0, 0, 0, 0.1), 0 6px 6px rgba(0, 0, 0, 0.15), inset 1px 1px 1px 0 rgba(0, 0, 0, 0.05), inset -1px -1px 1px 0 rgba(0, 0, 0, 0.05)',
+      },
+      typography: {
+        xl: {
+          css: {
+            p: {
+              marginTop: '0.5em',
+              marginBottom: '0.5rem',
+            },
+            h1: {
+              fontSize: '2em',
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+            h2: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+            h3: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+            h4: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+            h5: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+            h6: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+            ul: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+              li: {
+                marginTop: '0.5em',
+                marginBottom: '0.5rem',
+                p: {
+                  marginTop: '0.5em',
+                  marginBottom: '0.5rem',
+                },
+              },
+            },
+            ol: {
+              marginTop: '0.9em',
+              marginBottom: '0.9rem',
+            },
+          },
+        },
       },
     },
   },
