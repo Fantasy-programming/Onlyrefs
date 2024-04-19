@@ -10,32 +10,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+import { RiArrowsArrowGoBackLine } from 'solid-icons/ri';
 
 const Settings = () => {
   return (
-    <Motion.div class="flex flex-col">
+    <Motion.div class="flex h-full flex-col py-10 pe-10 ps-4 md:p-10">
       <div class="flex-1">
         <div class="container flex flex-col gap-4">
           <div class="flex items-center gap-4">
-            <Button class="shrink-0" size="icon" variant="ghost">
-              <a href="/">
-                <ChevronLeftIcon className="h-4 w-4" />
+            <a href="/">
+              <Button class="size-12 shrink-0" size="icon" variant="primary">
+                <RiArrowsArrowGoBackLine class="h-5 w-5" />
                 <span class="sr-only">Back</span>
-              </a>
-            </Button>
-            <h1 class="text-2xl font-semibold">Settings</h1>
+              </Button>
+            </a>
+            <h1 class="text-3xl font-semibold">Settings</h1>
           </div>
           <div class="grid gap-4">
             <Card>
               <CardHeader class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-                <div class="text-2xl font-semibold">Appearance</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-3xl font-semibold uppercase">Appearance</div>
+                <div class="text-md text-gray-500 dark:text-gray-400">
                   Customize the appearance
                 </div>
               </CardHeader>
               <CardContent class="grid gap-4">
                 <div class="flex items-center gap-4">
-                  <Label for="dark-mode">Dark mode</Label>
+                  <Label for="dark-mode">Show Media Info</Label>
                   <Switch defaultChecked id="dark-mode" />
                 </div>
                 <div class="flex items-center gap-4">
@@ -46,8 +47,8 @@ const Settings = () => {
             </Card>
             <Card>
               <CardHeader class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-                <div class="text-2xl font-semibold">Behavior</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-3xl font-semibold uppercase">Behavior</div>
+                <div class="text-md text-gray-500 dark:text-gray-400">
                   Manage the behavior of the app
                 </div>
               </CardHeader>
@@ -86,24 +87,5 @@ const Settings = () => {
     </Motion.div>
   );
 };
-
-function ChevronLeftIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
 
 export default Settings;

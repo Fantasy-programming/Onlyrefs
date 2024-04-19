@@ -125,8 +125,8 @@ module.exports = {
             },
             h1: {
               fontSize: '2em',
-              marginTop: '0.9em',
-              marginBottom: '0.9rem',
+              marginTop: '1em',
+              marginBottom: '1rem',
             },
             h2: {
               marginTop: '0.9em',

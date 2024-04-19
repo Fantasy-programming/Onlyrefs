@@ -2,9 +2,7 @@ import { Toggle, Toolbar } from 'terracotta';
 import { createEditorTransaction } from 'solid-tiptap';
 import { ControlProps, ToolbarProps } from './BoardItem.types.ts';
 import { JSX, Show, createSignal } from 'solid-js';
-import { BsTextParagraph } from 'solid-icons/bs';
-import { HiSolidCodeBracket } from 'solid-icons/hi';
-import { VsListOrdered, VsListUnordered } from 'solid-icons/vs';
+import { VsListUnordered } from 'solid-icons/vs';
 import { TbBlockquote } from 'solid-icons/tb';
 import { OcCodesquare2 } from 'solid-icons/oc';
 import { useRefSelector } from '~/state/refstore.tsx';
@@ -63,15 +61,6 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
     <div class="flex space-x-1 p-2">
       <div class="flex space-x-1">
         <Control
-          key="paragraph"
-          class="font-bold"
-          editor={props.editor}
-          onChange={() => props.editor.chain().focus().setParagraph().run()}
-          title="Paragraph"
-        >
-          <BsTextParagraph title="Paragraph" class="m-1 h-full w-full" />
-        </Control>
-        <Control
           key="heading-1"
           class="font-bold"
           editor={props.editor}
@@ -82,18 +71,6 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
           title="Heading 1"
         >
           H1
-        </Control>
-        <Control
-          key="heading-2"
-          class="font-bold"
-          editor={props.editor}
-          onChange={() =>
-            props.editor.chain().focus().setHeading({ level: 2 }).run()
-          }
-          isActive={(editor) => editor.isActive('heading', { level: 2 })}
-          title="Heading 2"
-        >
-          H2
         </Control>
       </div>
       <Separator />
@@ -107,33 +84,6 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
         >
           B
         </Control>
-        <Control
-          key="italic"
-          class="italic"
-          editor={props.editor}
-          onChange={() => props.editor.chain().focus().toggleItalic().run()}
-          title="Italic"
-        >
-          I
-        </Control>
-        <Control
-          key="strike"
-          class="line-through"
-          editor={props.editor}
-          onChange={() => props.editor.chain().focus().toggleStrike().run()}
-          title="Strike Through"
-        >
-          S
-        </Control>
-        <Control
-          key="code"
-          class=""
-          editor={props.editor}
-          onChange={() => props.editor.chain().focus().toggleCode().run()}
-          title="Code"
-        >
-          <HiSolidCodeBracket title="Code" class="m-1 h-full w-full" />
-        </Control>
       </div>
       <Separator />
       <div class="flex space-x-1">
@@ -145,17 +95,6 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
           title="Bullet List"
         >
           <VsListUnordered title="Unordered List" class="m-1 h-full w-full" />
-        </Control>
-        <Control
-          key="orderedList"
-          class=""
-          editor={props.editor}
-          onChange={() =>
-            props.editor.chain().focus().toggleOrderedList().run()
-          }
-          title="Ordered List"
-        >
-          <VsListOrdered title="Ordered List" class="m-1 h-full w-full" />
         </Control>
         <Control
           key="blockquote"
@@ -321,7 +260,7 @@ export const NewNote = () => {
       <h4 class="mb-2 text-lg text-secondary">ADD NEW NOTE</h4>
       <Toolbar
         ref={setMenu}
-        class="dynamic-shadow rounded-lg bg-gradient-to-bl from-primary to-primary/50 text-white"
+        class="dynamic-shadow  rounded-lg bg-gradient-to-bl from-primary/80 to-tertiary text-white"
         horizontal
       >
         <Show when={editor()} keyed>

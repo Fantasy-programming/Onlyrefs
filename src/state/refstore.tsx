@@ -16,7 +16,7 @@ interface RootState {
 
 const Context = createContext<RootState>();
 
-// A way to do this in hte backend would be cool
+//TODO: A way to do this in the backend would be cool
 export const RefProvider: ParentComponent = (props) => {
   const [ref, setRef] = createStore<Ref[]>([]);
 
