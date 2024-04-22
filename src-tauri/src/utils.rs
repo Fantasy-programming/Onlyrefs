@@ -69,6 +69,10 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
         }
     }
 
+    if media_ref.low_res_imagepath.is_empty() {
+        media_ref.low_res_imagepath = media_ref.imagepath.clone();
+    }
+
     if !media_ref.imagepath.is_empty() {
         Ref::Media(media_ref)
     } else if !note_ref.metapath.is_empty() {
@@ -271,7 +275,7 @@ pub fn convert_file_src(file_path: &str) -> String {
     let encoded_path = urlencoding::encode(file_path).into_owned();
     let os_name = get_os_name();
     if os_name == "windows" || os_name == "android" {
-        format!("http://{}.localhost/{}", protocol, encoded_path)
+        format!("https://{}.localhost/{}", protocol, encoded_path)
     } else {
         format!("{}://localhost/{}", protocol, encoded_path)
     }

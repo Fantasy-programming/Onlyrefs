@@ -12,6 +12,7 @@ import type { DynamicProps } from 'solid-js/web';
 import { Dynamic } from 'solid-js/web';
 import { omitProps } from 'solid-use/props';
 import { createVirtualizer } from '@tanstack/solid-virtual';
+import { listen } from '@tauri-apps/api/event';
 
 type OmitAndMerge<T, U> = T & Omit<U, keyof T>;
 
@@ -108,10 +109,13 @@ function createMason(el: HTMLElement, state: MasonState): void {
   while (node) {
     if (node instanceof HTMLElement) {
       const targetColumn = getShortestColumn(newColumns);
+
       // Set the width of the node
       node.style.width = `${widthPerColumn}px`;
+
       // Set the position
       node.style.position = 'absolute';
+
       // Set the top/left
       const currentColumnHeight = newColumns[targetColumn];
       node.style.top = `${currentColumnHeight}px`;
@@ -120,19 +124,18 @@ function createMason(el: HTMLElement, state: MasonState): void {
       // Set height to auto for dynamic sizing
       node.style.height = 'auto';
 
-      if (isContainerWidthDirty || state.elements[nodeIndex] !== node) {
+      const nodeHeight = node.offsetHeight;
+
+      if (
+        isContainerWidthDirty ||
+        state.elements[nodeIndex] !== node ||
+        state.heights[nodeIndex] !== nodeHeight
+      ) {
         state.elements[nodeIndex] = node;
-        const nodeHeight = node.offsetHeight;
         state.heights[nodeIndex] = nodeHeight;
         newColumns[targetColumn] = currentColumnHeight + nodeHeight + state.gap;
       } else {
-        const nodeHeight = node.offsetHeight;
-        if (nodeHeight !== state.heights[nodeIndex]) {
-          state.heights[nodeIndex] = nodeHeight;
-          newColumns[targetColumn] += nodeHeight - state.heights[nodeIndex];
-        } else {
-          newColumns[targetColumn] += state.heights[nodeIndex] + state.gap;
-        }
+        newColumns[targetColumn] += state.heights[nodeIndex] + state.gap;
       }
       nodeIndex += 1;
     }
@@ -258,6 +261,22 @@ export function Mason<
 
       // Track window resize
       window.addEventListener('resize', recalculate, { passive: true });
+
+      listen('ref_name_changed', () => {
+        recalculate();
+      });
+
+      listen('tag_added', () => {
+        recalculate();
+      });
+
+      listen('tag_removed', () => {
+        recalculate();
+      });
+
+      listen('note_changed', () => {
+        recalculate();
+      });
 
       onCleanup(() => {
         window.removeEventListener('resize', recalculate);

@@ -48,6 +48,8 @@ async fn generate_metadata(
         low_res_imagepath.push_str("/lower_");
         low_res_imagepath.push_str(file_name);
         low_res_imagepath = convert_file_src(&low_res_imagepath);
+    } else {
+        low_res_imagepath = convert_file_src(dest_file);
     }
 
     // Store into state

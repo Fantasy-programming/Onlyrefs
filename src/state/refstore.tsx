@@ -66,7 +66,7 @@ export const RefProvider: ParentComponent = (props) => {
   };
 
   const addRef = (ref: MediaRef | NoteRef) => {
-    setRef(produce((refs) => refs.push(ref)));
+    setRef(produce((refs) => refs.unshift(ref)));
   };
 
   const mutateName = (id: string, name: string) => {
