@@ -63,9 +63,9 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
             .unwrap()
             .starts_with("lower_")
         {
-            media_ref.low_res_imagepath = ref_path.to_str().unwrap().to_string();
+            media_ref.low_res_imagepath = convert_file_src(ref_path.to_str().unwrap());
         } else {
-            media_ref.imagepath = ref_path.to_str().unwrap().to_string();
+            media_ref.imagepath = convert_file_src(ref_path.to_str().unwrap());
         }
     }
 
@@ -263,6 +263,26 @@ where
         Value::String(s) => Ok(s),
         Value::Number(n) => Ok(human_size(n.as_u64().unwrap())),
         _ => Err(D::Error::custom("Invalid file_size value")),
+    }
+}
+
+pub fn convert_file_src(file_path: &str) -> String {
+    let protocol = "asset";
+    let encoded_path = urlencoding::encode(file_path).into_owned();
+    let os_name = get_os_name();
+    if os_name == "windows" || os_name == "android" {
+        format!("http://{}.localhost/{}", protocol, encoded_path)
+    } else {
+        format!("{}://localhost/{}", protocol, encoded_path)
+    }
+}
+
+fn get_os_name() -> String {
+    let os_name = std::env::consts::OS;
+    if os_name == "macos" {
+        "darwin".to_string()
+    } else {
+        os_name.to_string()
     }
 }
 

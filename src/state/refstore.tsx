@@ -2,11 +2,11 @@ import { onMount, createContext, ParentComponent, useContext } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 import { MediaRef, NoteRef, Ref, backendRef } from '~/lib/types';
 import { invoke } from '@tauri-apps/api';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { getUpdatedAtTimestamp } from '~/lib/helper';
 
-interface RootState {
+export interface RootState {
   readonly ref: Ref[];
+  addRef: (ref: Ref) => void;
   refetchRefs: () => Promise<void>;
   deleteRef: (id: string) => void;
   mutateTag: (id: string, tags: string, type: 'add' | 'remove') => void;
@@ -16,31 +16,21 @@ interface RootState {
 
 const Context = createContext<RootState>();
 
-//TODO: A way to do this in the backend would be cool
 export const RefProvider: ParentComponent = (props) => {
   const [ref, setRef] = createStore<Ref[]>([]);
 
   onMount(async () => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
-
       let parsedData: Ref[] = [];
+
       for (let i = 0; i < data.length; i++) {
         const ref = data[i];
+
         if ('Media' in ref) {
-          const mediaref = ref.Media as MediaRef;
-          const parsedRef: MediaRef = {
-            ...mediaref,
-            imagepath: convertFileSrc(mediaref.imagepath),
-            low_res_imagepath: !Boolean(mediaref.low_res_imagepath)
-              ? convertFileSrc(mediaref.imagepath)
-              : convertFileSrc(mediaref.low_res_imagepath),
-          };
-          parsedData.push(parsedRef);
+          parsedData.push(ref.Media as MediaRef);
         } else {
-          const noteref = ref.Note as NoteRef;
-          const parsedRef: NoteRef = { ...noteref };
-          parsedData.push(parsedRef);
+          parsedData.push(ref.Note as NoteRef);
         }
       }
 
@@ -75,6 +65,10 @@ export const RefProvider: ParentComponent = (props) => {
     );
   };
 
+  const addRef = (ref: MediaRef | NoteRef) => {
+    setRef(produce((refs) => refs.push(ref)));
+  };
+
   const mutateName = (id: string, name: string) => {
     setRef((meta) => meta.metadata.id === id, 'metadata', 'name', name);
   };
@@ -102,28 +96,18 @@ export const RefProvider: ParentComponent = (props) => {
     );
   };
 
-  // move this to the backend
   const refetchRefs = async () => {
     try {
       let data: backendRef[] = await invoke('get_media_refs');
-
       let parsedData: Ref[] = [];
+
       for (let i = 0; i < data.length; i++) {
         const ref = data[i];
+
         if ('Media' in ref) {
-          const mediaref = ref.Media as MediaRef;
-          const parsedRef: MediaRef = {
-            ...mediaref,
-            imagepath: convertFileSrc(mediaref.imagepath),
-            low_res_imagepath: !Boolean(mediaref.low_res_imagepath)
-              ? convertFileSrc(mediaref.imagepath)
-              : convertFileSrc(mediaref.low_res_imagepath),
-          };
-          parsedData.push(parsedRef);
+          parsedData.push(ref.Media as MediaRef);
         } else {
-          const noteref = ref.Note as NoteRef;
-          const parsedRef: NoteRef = { ...noteref };
-          parsedData.push(parsedRef);
+          parsedData.push(ref.Note as NoteRef);
         }
       }
 
@@ -143,6 +127,7 @@ export const RefProvider: ParentComponent = (props) => {
     get ref() {
       return ref;
     },
+    addRef,
     refetchRefs,
     deleteRef,
     mutateTag,

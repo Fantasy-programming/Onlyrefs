@@ -1,7 +1,7 @@
 use crate::config::get_collection_path;
 use crate::media;
 use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref};
-use crate::utils;
+use crate::utils::{self, convert_file_src};
 use chrono::Local;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,7 @@ async fn generate_metadata(
     file_name: &str,
     collection: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
-) -> Result<(), String> {
+) -> Result<MediaRef, String> {
     let metadata = Metadata {
         id: ref_id.to_string(),
         name: String::new(),
@@ -43,9 +43,11 @@ async fn generate_metadata(
     // Generate lower image
     let generated = media::generate_image(file_name, dest_file, dest_path, 500, 500, 500);
     let mut low_res_imagepath = dest_path.to_string();
+
     if generated {
         low_res_imagepath.push_str("/lower_");
         low_res_imagepath.push_str(file_name);
+        low_res_imagepath = convert_file_src(&low_res_imagepath);
     }
 
     // Store into state
@@ -54,14 +56,14 @@ async fn generate_metadata(
         .map_err(|_| "Failed to acquire lock on state".to_string())?;
 
     let new_ref = MediaRef {
-        imagepath: dest_file.to_string(),
+        imagepath: convert_file_src(dest_file),
         low_res_imagepath,
         metapath: metadata_path.to_str().unwrap().to_string(),
         metadata: Some(metadata),
     };
 
-    state_guard.push(Ref::Media(new_ref));
-    Ok(())
+    state_guard.push(Ref::Media(new_ref.clone()));
+    Ok(new_ref)
 }
 
 #[tauri::command]
@@ -71,7 +73,7 @@ fn generate_note_metadata(
     note_dir: &str,
     note_content: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
-) -> Result<(), String> {
+) -> Result<NoteRef, String> {
     let note_metadata = NoteMetadata {
         id: ref_id.to_string(),
         name: String::new(),
@@ -97,8 +99,8 @@ fn generate_note_metadata(
         metadata: Some(note_metadata),
     };
 
-    state_guard.push(Ref::Note(new_note_ref));
-    Ok(())
+    state_guard.push(Ref::Note(new_note_ref.clone()));
+    Ok(new_note_ref)
 }
 
 #[tauri::command]
