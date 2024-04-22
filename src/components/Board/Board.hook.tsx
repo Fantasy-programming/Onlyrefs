@@ -1,4 +1,4 @@
-import { listen } from '@tauri-apps/api/event';
+import { emit, listen } from '@tauri-apps/api/event';
 import { copyFile } from '@tauri-apps/api/fs';
 import { appDataDir, join, sep } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
@@ -7,6 +7,7 @@ import { generate_id } from '~/lib/helper';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
 import { invoke } from '@tauri-apps/api';
 import { SUPPORTED_FILES } from '~/lib/config';
+import { MediaRef } from '~/lib/types';
 
 export const useFileSelector = createRoot(() => {
   const [isProcessing, setIsProcessing] = createSignal(false);
@@ -47,13 +48,17 @@ export const useFileSelector = createRoot(() => {
         const newPath = await join(destDir, randomID, filename);
         await copyFile(image, newPath);
 
-        await invoke('generate_metadata', {
+        const data: MediaRef = await invoke('generate_metadata', {
           destPath: destinationFolder,
           destFile: newPath,
           refId: randomID,
           fileName: filename,
           collection: collection,
         });
+
+        if (data) {
+          emit('ref_added', data);
+        }
 
         setProgress({
           total: progress().total,

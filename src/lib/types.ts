@@ -1,3 +1,5 @@
+import { ContextMenu } from 'tauri-plugin-context-menu';
+
 export interface Metadata {
   id: string;
   file_name: string;
@@ -41,4 +43,26 @@ export type backendRef = {
   Note?: NoteRef;
 };
 
+export type contextItemType = ContextMenu.Item[];
+
 export type Ref = MediaRef | NoteRef;
+
+export interface tagEvent {
+  id: string;
+  path: string;
+  type: string;
+  tag: string;
+}
+
+export interface changeNameEvent {
+  id: string;
+  name: string;
+  type: string;
+  path: string;
+}
+
+export interface changeNoteEvent {
+  id: string;
+  content: string;
+  path: string;
+}

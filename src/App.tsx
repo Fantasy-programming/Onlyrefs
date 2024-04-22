@@ -2,9 +2,16 @@ import { WindowDecoration } from './components/WindowDecoration';
 import { SideNavigation } from './components/Navigation/Navigation';
 import { RouteSectionProps } from '@solidjs/router';
 import { Toaster } from 'solid-toast';
+
 import './App.css';
 
+import { setupListeners } from './lib/utils';
+import { useRefSelector } from './state/refstore';
+
 const App = (props: RouteSectionProps) => {
+  const root = useRefSelector();
+  setupListeners(root);
+
   return (
     <>
       <div class="h-screen">

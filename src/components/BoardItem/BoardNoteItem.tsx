@@ -1,26 +1,44 @@
-import { Toggle, Toolbar } from 'terracotta';
-import { createEditorTransaction } from 'solid-tiptap';
-import { ControlProps, ToolbarProps } from './BoardItem.types.ts';
 import { JSX, Show, createSignal } from 'solid-js';
-import { VsListUnordered } from 'solid-icons/vs';
-import { TbBlockquote } from 'solid-icons/tb';
-import { OcCodesquare2 } from 'solid-icons/oc';
-import { useRefSelector } from '~/state/refstore.tsx';
+import { debounce } from '@solid-primitives/scheduled';
+import {  create_note_ref } from '~/lib/helper.ts';
+import { createTiptapEditor, createEditorTransaction } from 'solid-tiptap';
 
-import { createTiptapEditor } from 'solid-tiptap';
 import StarterKit from '@tiptap/starter-kit';
+import { Extension } from '@tiptap/core';
 import BubbleMenu from '@tiptap/extension-bubble-menu';
+import Placeholder from '@tiptap/extension-placeholder';
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
 import { Markdown } from 'tiptap-markdown';
-import Placeholder from '@tiptap/extension-placeholder';
-import { Extension } from '@tiptap/core';
-import { changeNoteContent, create_note_ref } from '~/lib/helper.ts';
+
+import { ControlProps, ToolbarProps } from './BoardItem.types.ts';
 import { MediaRef, NoteMetadata, NoteRef } from '~/lib/types.ts';
-import { Dialog, DialogTrigger } from '../ui/dialog.tsx';
-import { ViewBox } from '../ViewBox/ViewBox.tsx';
-import { debounce } from '@solid-primitives/scheduled';
+
 import { Motion, Presence } from 'solid-motionone';
+import { Toggle, Toolbar } from 'terracotta';
+import { VsListUnordered } from 'solid-icons/vs';
+import { TbBlockquote } from 'solid-icons/tb';
+import { OcCodesquare2 } from 'solid-icons/oc';
+import { emit } from '@tauri-apps/api/event';
+
+const SaveNote = Extension.create({
+  addKeyboardShortcuts() {
+    return {
+      'Ctrl-Enter': ({ editor }) => {
+        const text: string = editor.storage.markdown.getMarkdown();
+        if (text.trim() === '') {
+          return false;
+        }
+
+        create_note_ref('all', text).then(() => {
+          editor.commands.clearContent();
+        });
+
+        return true;
+      },
+    };
+  },
+});
 
 function Control(props: ControlProps): JSX.Element {
   const flag = createEditorTransaction(
@@ -119,52 +137,7 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
   );
 }
 
-const SaveNote = Extension.create({
-  addKeyboardShortcuts() {
-    const { options } = this;
-
-    return {
-      'Ctrl-Enter': ({ editor }) => {
-        const text: string = editor.storage.markdown.getMarkdown();
-        if (text.trim() === '') {
-          return false;
-        }
-
-        create_note_ref('all', text).then(() => {
-          editor.commands.clearContent();
-          if (typeof options.refresh === 'function') {
-            options.refresh();
-          }
-        });
-
-        return true;
-      },
-    };
-  },
-});
-
-export const NoteItem = (props: { noteInfo: NoteRef }) => {
-  return (
-    <Dialog>
-      <DialogTrigger as="div" class="w-full" tabIndex="-1">
-        <div
-          class="max-h-[500px] min-h-[50px] w-full cursor-pointer overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 text-start shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20 focus-visible:border-primary focus-visible:outline-none"
-          tabindex="0"
-        >
-          <NoteContent content={props.noteInfo.metadata} />
-        </div>
-        {props.noteInfo.metadata.name === '' ? null : (
-          <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
-            {props.noteInfo.metadata.name}
-          </p>
-        )}
-      </DialogTrigger>
-      <ViewBox source={props.noteInfo} type="note" />
-    </Dialog>
-  );
-};
-
-const NoteContent = (props: { content: NoteMetadata }) => {
+export const NoteContent = (props: { content: NoteMetadata }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
 
   createTiptapEditor(() => ({
@@ -208,8 +181,6 @@ export const NewNote = () => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
   const [helper, setHelper] = createSignal<boolean>(false);
-  const root = useRefSelector();
-  if (!root) return null;
 
   const editor = createTiptapEditor(() => ({
     element: container()!,
@@ -229,9 +200,7 @@ export const NewNote = () => {
       BubbleMenu.configure({
         element: menu()!,
       }),
-      SaveNote.configure({
-        refresh: root.refetchRefs,
-      }),
+      SaveNote,
     ],
     editorProps: {
       attributes: {
@@ -286,12 +255,14 @@ export const NewNote = () => {
 export const NoteEditor = (props: { source: NoteRef | MediaRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
-  const root = useRefSelector();
 
   const debouncedSave = debounce(
     async (text: string, path: string, id: string) => {
-      await changeNoteContent(id, path, text);
-      root.mutateNote(id, text);
+      emit('note_changed', {
+        id: id,
+        path: path,
+        content: text
+      });
     },
     1000,
   );

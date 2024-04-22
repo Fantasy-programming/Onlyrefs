@@ -19,6 +19,7 @@ fn main() {
                 .build(),
         )
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_context_menu::init())
         .setup(|app| {
             let handle = app.handle();
             config::init(handle);

@@ -75,7 +75,7 @@ export const ViewBox: Component<ParentProps & { source: Ref; type: string }> = (
                       open={copy() ? true : undefined}
                     >
                       <TooltipTrigger
-                        class="transition-all delay-200"
+                        class="rounded-full transition-all delay-200"
                         onClick={async () => {
                           copied(true);
                           setTimeout(() => copied(false), 800);

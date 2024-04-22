@@ -1,11 +1,12 @@
-import { createSignal } from 'solid-js';
+import { Show, createSignal } from 'solid-js';
 import { useColorMode } from '@kobalte/core';
+import { gridSizeHook } from '../../state/hook';
+
 import { FiSettings, FiSun, FiMoon, FiGrid } from 'solid-icons/fi';
 import { BsGrid3x3Gap } from 'solid-icons/bs';
 import { TbGridDots } from 'solid-icons/tb';
 import { Toggle } from '../ui/toggle';
-import { Show } from 'solid-js';
-import { gridSizeHook } from '../../state/hook';
+
 import Logo from '~/assets/logo-simple.svg';
 
 export const SideNavigation = () => {

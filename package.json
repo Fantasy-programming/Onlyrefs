@@ -42,6 +42,7 @@
     "solid-use": "^0.8.0",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
+    "tauri-plugin-context-menu": "^0.7.0",
     "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#v1",
     "terracotta": "^1.0.5",
     "tiptap-markdown": "^0.8.10"

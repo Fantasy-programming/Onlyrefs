@@ -1,102 +1,99 @@
+import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
+import { Motion, Presence } from 'solid-motionone';
+import { As } from '@kobalte/core';
+import { debounce } from '@solid-primitives/scheduled';
+import { emit } from '@tauri-apps/api/event';
+import toast from 'solid-toast';
+
+import { Metadata } from '../../lib/types';
+import { ViewBoxInfoProps } from './ViewBox.types';
+
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { VsAdd } from 'solid-icons/vs';
-import { Metadata, NoteMetadata } from '../../lib/types';
-import { ViewBoxTag } from './ViewBoxTags';
-import { debounce } from '@solid-primitives/scheduled';
-import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
+
 import { RiSystemDeleteBin6Line } from 'solid-icons/ri';
-import { OcShare3 } from 'solid-icons/oc';
 import { TbLayoutDashboard } from 'solid-icons/tb';
+import { OcShare3 } from 'solid-icons/oc';
+import { VsAdd } from 'solid-icons/vs';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { ViewBoxTag } from './ViewBoxTags';
 
 import {
-  addTag,
-  changeRefName,
-  deleteRef,
-  deleteTag,
   elapsedTime,
   isMedia_Metadata,
   saveMediaToDisk,
 } from '../../lib/helper';
-import { useRefSelector } from '~/state/refstore';
-import { Motion, Presence } from 'solid-motionone';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-import { As } from '@kobalte/core';
-import toast from 'solid-toast';
 
-const debouncedSave = debounce(
-  async (
-    value: string,
-    id: string,
-    path: string,
-    type: string,
-    more: (id: string, value: string) => void,
-  ) => {
-    await changeRefName(id, value, path, type);
-    more(id, value);
-  },
-  1000,
-);
-
-export const ViewBoxInfo = (props: {
-  metadata: Metadata | NoteMetadata;
-  path: string;
-  type: string;
-}) => {
+export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
-  const [inputValue, setInputValue] = createSignal('');
   const [showAllTags, setShowAllTags] = createSignal(false);
-  const root = useRefSelector();
 
-  const handleInputChange: JSX.EventHandler<HTMLInputElement, InputEvent> = (
+  const [inputValue, setInputValue] = createSignal('');
+
+  const handleTagInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
   ) => {
     setInputValue(event.currentTarget.value);
   };
 
-  // debounce getting the input value
+  const debouncedSave = debounce(
+    async (id: string, value: string, path: string, type: string) => {
+      emit('ref_name_changed', {
+        id: id,
+        name: value,
+        path: path,
+        type: type,
+      });
+    },
+    1000,
+  );
+
   const handleNameInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
   ) => {
     debouncedSave(
-      event.currentTarget.value,
       props.metadata.id,
+      event.currentTarget.value,
       props.path,
       props.type,
-      root.mutateName,
     );
   };
 
-  const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (
-    event,
-  ) => {
+  const handleTagSubmit: JSX.EventHandler<
+    HTMLFormElement,
+    SubmitEvent
+  > = async (event) => {
     event.preventDefault();
+
     if (inputValue() === '') return;
+
     if (props.metadata.tags?.includes(inputValue())) {
       setInputValue('');
       return;
     }
-    if (!props.metadata.tags) {
-      await addTag(props.metadata.id, props.path, props.type, inputValue());
-      root.mutateTag(props.metadata.id, inputValue(), 'add');
-      setInputValue('');
-      return;
-    }
-    if (props.metadata.tags) {
-      await addTag(props.metadata.id, props.path, props.type, inputValue());
-      root.mutateTag(props.metadata.id, inputValue(), 'add');
-      setInputValue('');
-      return;
-    }
+
+    emit('tag_added', {
+      id: props.metadata.id,
+      tag: inputValue(),
+      path: props.path,
+      type: props.type,
+    });
+
+    setInputValue('');
   };
 
   const removeTag = async (name: string) => {
-    await deleteTag(props.metadata.id, props.path, props.type, name);
-    root.mutateTag(props.metadata.id, name, 'remove');
+    emit('tag_removed', {
+      id: props.metadata.id,
+      tag: name,
+      path: props.path,
+      type: props.type,
+    });
   };
 
   return (
-    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl   border-gray-900/50 bg-background shadow-cardShadowLight dark:border-gray-100/50  dark:shadow-cardShadow md:rounded-xl lg:absolute    lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
+    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight dark:border-gray-100/50  dark:shadow-cardShadow md:rounded-xl lg:absolute    lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
       <div class="onlyrefNoise h-full">
         <header class="onlyrefNoise flex flex-col gap-3 rounded-t-xl bg-foreground/5  p-7">
           <input
@@ -117,14 +114,14 @@ export const ViewBoxInfo = (props: {
                   animate={{ opacity: [0, 1], y: [-10, 0] }}
                   exit={{ opacity: [1, 0] }}
                   class="pb-5"
-                  onSubmit={handleSubmit}
+                  onSubmit={handleTagSubmit}
                 >
                   <div class="focus-within:ring-offset-3 flex rounded-sm ring-offset-foreground/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring">
                     <Input
                       type="text"
                       class="h-[50px] w-full rounded-r-none border-none  bg-foreground/10 text-lg ring-offset-current focus-visible:ring-offset-0"
                       value={inputValue()}
-                      onInput={handleInputChange}
+                      onInput={handleTagInput}
                     />
                     <Button class="h-auto rounded-l-none rounded-r-sm text-lg">
                       <VsAdd />
@@ -233,8 +230,7 @@ export const ViewBoxInfo = (props: {
               class="transition-all delay-100"
               asChild
               onClick={() => {
-                deleteRef(props.metadata.id);
-                root.deleteRef(props.metadata.id);
+                emit('deleteRef', props.metadata.id);
                 toast.success('Ref deleted');
               }}
             >

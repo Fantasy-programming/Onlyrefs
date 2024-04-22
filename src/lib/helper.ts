@@ -15,9 +15,17 @@ import {
   breakpoints_5,
   breakpoints_6,
 } from './config';
-import { MediaRef, Metadata, NoteMetadata, Ref } from './types';
+import {
+  MediaRef,
+  Metadata,
+  NoteMetadata,
+  NoteRef,
+  Ref,
+  contextItemType,
+} from './types';
 import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
+import { emit } from '@tauri-apps/api/event';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
@@ -57,12 +65,16 @@ export const create_note_ref = async (
   const noteID = await generate_id({ lenght: 13, createDir: true });
   const notedir = await join(destDir, noteID);
 
-  await invoke('generate_note_metadata', {
+  const data: NoteRef = await invoke('generate_note_metadata', {
     refId: noteID,
     collection: collectionName,
     noteDir: notedir,
     noteContent: content,
   });
+
+  if (data) {
+    emit('ref_added', data);
+  }
 };
 
 export const get_note_content = async (notepath: string) => {
@@ -253,4 +265,20 @@ export const saveMediaToDisk = async (id: string, file_name: string) => {
   );
 
   await copyFile(fileLocation, destFile);
+};
+
+export const createItems = (key: string, payload: string): contextItemType => {
+  switch (key) {
+    case 'imagebase':
+      return [
+        {
+          event: 'deleteRef',
+          label: 'Delete Reference',
+          payload: payload,
+          shortcut: 'cmd_or_ctrl+d',
+        },
+      ];
+    default:
+      return [];
+  }
 };
