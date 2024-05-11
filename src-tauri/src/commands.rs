@@ -1,68 +1,80 @@
+use chrono::Local;
+use rand::Rng;
+use serde::{Deserialize, Serialize};
+use std::{default::Default, fs, path::Path, sync::Mutex, thread};
+use tauri::{AppHandle, Manager, State, WindowBuilder, WindowUrl};
+
 use crate::config::get_collection_path;
 use crate::media;
 use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref};
 use crate::utils::{self, convert_file_src};
-use chrono::Local;
-use rand::Rng;
-use serde::{Deserialize, Serialize};
-use std::default::Default;
-use std::fs;
-use std::path::Path;
-use std::sync::Mutex;
-use tauri::State;
 
 #[tauri::command]
-async fn generate_metadata(
-    dest_path: &str,
-    dest_file: &str,
-    ref_id: &str,
+async fn generate_media_metadata(
+    ref_id: String,
     file_name: &str,
     collection: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
+    handle: AppHandle,
 ) -> Result<MediaRef, String> {
-    let metadata = Metadata {
-        id: ref_id.to_string(),
-        name: String::new(),
-        file_name: file_name.to_string(),
-        media_type: media::determine_media_type(file_name),
-        dimensions: media::analyze_dimensions(dest_file),
-        file_size: utils::analyze_file_size(dest_file),
-        collection: collection.to_string(),
-        colors: media::extract_colors(dest_file),
-        note_text: String::new(),
-        created_at: Local::now().to_string(),
-        updated_at: Local::now().to_string(),
-        tags: Vec::new(),
+    // Get setup paths
+    let base_path = get_collection_path(&handle).join(&ref_id);
+    let media_path = base_path.join(file_name);
+    let meta_path = base_path.join("metadata.json");
+    let low_res_media_path = base_path.join("lower_".to_string() + file_name);
+
+    let metadata = Metadata::new(ref_id.clone(), file_name, &media_path, collection)?;
+
+    let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
+    fs::write(meta_path.clone(), json_data).expect("Failed to write metadata file");
+
+    let low_res_imagepath = if media::generate_image(file_name, &base_path, 500, 500, 500) {
+        convert_file_src(&low_res_media_path)
+    } else {
+        convert_file_src(&media_path)
     };
 
-    // Write Json metadata file
-    let json_data = serde_json::to_string_pretty(&metadata).expect("Failed to serialize metadata");
-    let metadata_path = Path::new(dest_path).join("metadata.json");
-    fs::write(metadata_path.clone(), json_data).expect("Failed to write metadata file");
+    let new_ref = MediaRef::new(&media_path, low_res_imagepath, &meta_path, metadata)?;
 
-    // Generate lower image
-    let generated = media::generate_image(file_name, dest_file, dest_path, 500, 500, 500);
-    let mut low_res_imagepath = dest_path.to_string();
+    let new_rf_thread = new_ref.clone();
+    let ref_id_thread = ref_id.clone();
 
-    if generated {
-        low_res_imagepath.push_str("/lower_");
-        low_res_imagepath.push_str(file_name);
-        low_res_imagepath = convert_file_src(&low_res_imagepath);
-    } else {
-        low_res_imagepath = convert_file_src(dest_file);
-    }
-
-    // Store into state
     let mut state_guard = state
         .lock()
         .map_err(|_| "Failed to acquire lock on state".to_string())?;
 
-    let new_ref = MediaRef {
-        imagepath: convert_file_src(dest_file),
-        low_res_imagepath,
-        metapath: metadata_path.to_str().unwrap().to_string(),
-        metadata: Some(metadata),
-    };
+    // Handle colors in a separate thread
+    thread::spawn(move || -> Result<(), String> {
+        // extract colors
+        let colors = media::extract_colors(&media_path);
+        let mut metadata = new_rf_thread.metadata.as_ref().unwrap().clone();
+        metadata.colors = colors.clone();
+
+        let json_data = serde_json::to_string_pretty(&metadata).unwrap();
+        fs::write(meta_path, json_data).expect("Failed to write metadata file");
+
+        let state_mutex = handle.state::<Mutex<Vec<Ref>>>();
+        let state = state_mutex
+            .lock()
+            .map_err(|_| "Failed to acquire lock on state".to_string())?;
+
+        // find the reference in the state and update the colors
+        state.iter().find(|ref_instance| match ref_instance {
+            Ref::Media(media_ref) => {
+                if let Some(metadata) = &media_ref.metadata {
+                    metadata.id == ref_id_thread
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        });
+
+        //emit color extracted event
+        handle.emit_all("colors-added", Some(colors)).unwrap();
+
+        Ok(())
+    });
 
     state_guard.push(Ref::Media(new_ref.clone()));
     Ok(new_ref)
@@ -72,24 +84,18 @@ async fn generate_metadata(
 fn generate_note_metadata(
     ref_id: &str,
     collection: &str,
-    note_dir: &str,
     note_content: &str,
     state: State<'_, Mutex<Vec<Ref>>>,
+    handle: AppHandle,
 ) -> Result<NoteRef, String> {
-    let note_metadata = NoteMetadata {
-        id: ref_id.to_string(),
-        name: String::new(),
-        note_text: note_content.to_string(),
-        media_type: "text/md".to_string(),
-        collection: collection.to_string(),
-        created_at: Local::now().to_string(),
-        updated_at: Local::now().to_string(),
-        tags: Vec::new(),
-    };
+    let meta_path = get_collection_path(&handle)
+        .join(ref_id)
+        .join("metadata.note.json");
 
-    let json_metadata = serde_json::to_string_pretty(&note_metadata).unwrap();
-    let metadata_path = Path::new(note_dir).join("metadata.note.json");
-    fs::write(metadata_path.clone(), json_metadata).expect("Failed to write metadata file");
+    let note_metadata = NoteMetadata::new(ref_id, note_content, collection)?;
+    let json_data = serde_json::to_string_pretty(&note_metadata).unwrap();
+
+    fs::write(&meta_path, json_data).expect("Failed to write metadata file");
 
     // Store into state
     let mut state_guard = state
@@ -97,7 +103,7 @@ fn generate_note_metadata(
         .map_err(|_| "Failed to acquire lock on state".to_string())?;
 
     let new_note_ref = NoteRef {
-        metapath: metadata_path.to_str().unwrap().to_string(),
+        metapath: meta_path.to_str().unwrap().to_string(),
         metadata: Some(note_metadata),
     };
 
@@ -340,16 +346,51 @@ async fn remove_tag(
     }
 }
 
+// #[tauri::command]
+// async fn add_link(url: &str, handle: AppHandle) -> Result<(), String> {
+//     let window_builder = WindowBuilder::new(
+//         &handle,
+//         "capture",
+//         WindowUrl::External(url.parse().unwrap()),
+//     )
+//     .visible(false);
+//
+//     let window = window_builder.build().unwrap();
+//     window.with_webview(|webview| {
+//         webview.inner().;
+//     });
+//     let _ = window.eval(
+//         r#"
+//             new Promise((resolve, reject) => {
+//                 const canvas = document.createElement('canvas');
+//                 const context = canvas.getContext('2d');
+//                 const rect = document.body.getBoundingClientRect();
+//                 canvas.width = rect.width;
+//                 canvas.height = rect.height;
+//                 context.drawWindow(window, rect.left, rect.top, rect.width, rect.height, "rgb(255,255,255)");
+//                 canvas.toBlob(blob => {
+//                     const reader = new FileReader();
+//                     reader.readAsDataURL(blob);
+//                     reader.onloadend = () => resolve(reader.result);
+//                 }, 'image/png', 1.0);
+//             })
+//         "#,
+//     ).map_err(|err| err.to_string())?;
+//
+//     // let screen_shot = screen_shot_data.split(",").last().unwrap().to_string();
+//     Ok(())
+// }
+
 pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
     Box::new(tauri::generate_handler![
         generate_id,
-        generate_metadata,
+        generate_media_metadata,
         generate_note_metadata,
         get_media_refs,
         rename_ref,
         remove_ref,
         add_tag,
         remove_tag,
-        change_note_content
+        change_note_content,
     ])
 }

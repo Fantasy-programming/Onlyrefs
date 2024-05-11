@@ -1,16 +1,15 @@
-use palette::white_point::D65;
-use palette::{IntoColor, Lab, Srgba};
-use serde::de::Error;
-use serde::{Deserialize, Deserializer};
+use palette::{white_point::D65, IntoColor, Lab, Srgba};
+use serde::{de::Error, Deserialize, Deserializer};
 use serde_json::Value;
+use std::{fs, path::Path, path::PathBuf, sync::Mutex};
 
 use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref};
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 
 /// Return the size of a file in human readable format
-pub fn analyze_file_size(file_path: &str) -> String {
+pub fn analyze_file_size<P>(file_path: P) -> String
+where
+    P: AsRef<Path>,
+{
     let size = fs::metadata(file_path).map(|meta| meta.len()).unwrap_or(0);
     human_size(size)
 }
@@ -38,24 +37,33 @@ fn get_all_refs(collections_dir: &Path) -> Vec<Vec<PathBuf>> {
 
 /// Parse a pathbuffer array into a Ref struct
 fn parse_refs(refs: &[PathBuf]) -> Ref {
-    let mut media_ref = MediaRef {
-        imagepath: String::new(),
-        low_res_imagepath: String::new(),
-        metapath: String::new(),
-        metadata: None,
-    };
-    let mut note_ref = NoteRef {
-        metapath: String::new(),
-        metadata: None,
-    };
+    // if a reference has a metadata.json in its array, it is a media reference
+    if refs
+        .iter()
+        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.json")
+    {
+        return parse_media_ref(refs);
+    }
+
+    // if a reference has a metadata.note.json in its array, it is a note reference
+    if refs
+        .iter()
+        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.note.json")
+    {
+        return parse_note_ref(refs);
+    }
+
+    panic!("Invalid input: neither a media nor a note reference found");
+}
+
+/// Parse a media reference
+fn parse_media_ref(refs: &[PathBuf]) -> Ref {
+    let mut media_ref = MediaRef::default();
 
     for ref_path in refs {
         if ref_path.file_name().unwrap() == "metadata.json" {
             media_ref.metapath = ref_path.to_str().unwrap().to_string();
             media_ref.metadata = Some(parse_metadata(ref_path));
-        } else if ref_path.file_name().unwrap() == "metadata.note.json" {
-            note_ref.metapath = ref_path.to_str().unwrap().to_string();
-            note_ref.metadata = Some(parse_note_metadata(ref_path));
         } else if ref_path
             .file_name()
             .unwrap()
@@ -63,9 +71,9 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
             .unwrap()
             .starts_with("lower_")
         {
-            media_ref.low_res_imagepath = convert_file_src(ref_path.to_str().unwrap());
+            media_ref.low_res_imagepath = convert_file_src(ref_path);
         } else {
-            media_ref.imagepath = convert_file_src(ref_path.to_str().unwrap());
+            media_ref.imagepath = convert_file_src(ref_path);
         }
     }
 
@@ -73,13 +81,21 @@ fn parse_refs(refs: &[PathBuf]) -> Ref {
         media_ref.low_res_imagepath = media_ref.imagepath.clone();
     }
 
-    if !media_ref.imagepath.is_empty() {
-        Ref::Media(media_ref)
-    } else if !note_ref.metapath.is_empty() {
-        Ref::Note(note_ref)
-    } else {
-        panic!("Invalid input: neither a media nor a note reference found");
+    Ref::Media(media_ref)
+}
+
+/// Parse a note reference
+fn parse_note_ref(refs: &[PathBuf]) -> Ref {
+    let mut note_ref = NoteRef::default();
+
+    for ref_path in refs {
+        if ref_path.file_name().unwrap() == "metadata.note.json" {
+            note_ref.metapath = ref_path.to_str().unwrap().to_string();
+            note_ref.metadata = Some(parse_note_metadata(ref_path));
+        }
     }
+
+    Ref::Note(note_ref)
 }
 
 /// parse a media metadata file
@@ -270,9 +286,9 @@ where
     }
 }
 
-pub fn convert_file_src(file_path: &str) -> String {
+pub fn convert_file_src(file_path: &Path) -> String {
     let protocol = "asset";
-    let encoded_path = urlencoding::encode(file_path).into_owned();
+    let encoded_path = urlencoding::encode(file_path.to_str().unwrap()).into_owned();
     let os_name = get_os_name();
     if os_name == "windows" || os_name == "android" {
         format!("https://{}.localhost/{}", protocol, encoded_path)
@@ -296,12 +312,13 @@ mod tests {
     use super::*;
     use std::fs;
     use std::path::{Path, PathBuf};
+
     const MEDIA_METADATA_PATH: &str = "resources/metadata.json";
     const NOTE_METADATA_PATH: &str = "resources/metadata.note.json";
 
     #[test]
     fn test_analyze_file_size() {
-        let file_path = "test_file.txt";
+        let file_path = Path::new("test_file.txt");
         fs::write(file_path, "This is a test file.").expect("Failed to create test file");
         let file_size = analyze_file_size(file_path);
         assert_eq!(file_size, "20B");
