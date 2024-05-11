@@ -1,11 +1,14 @@
 {
   "name": "only-refs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "type": "module",
   "scripts": {
     "start": "vite",
     "dev": "vite",
+    "release:patch": "npx tauri-version patch",
+    "release:minor": "npx tauri-version minor",
+    "release:major": "npx tauri-version major",
     "prettier": "prettier --write ./src/**/*.{html,js,jsx,md,mdx,ts,tsx}",
     "test": "vitest",
     "build": "vite build",
@@ -34,6 +37,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
+    "fuse.js": "^7.0.0",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.7.8",
     "solid-motionone": "^1.0.0",

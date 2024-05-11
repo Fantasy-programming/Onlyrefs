@@ -3,7 +3,7 @@ import { Portal } from 'solid-js/web';
 
 import { useFileSelector } from './Board.hook';
 import { gridSizeHook } from '~/state/hook';
-import { getBreakpoints, searchByText } from '~/lib/helper';
+import { getBreakpoints, searchExtended } from '~/lib/helper';
 import { BoardProps } from './Board.types';
 
 import { Input } from '../ui/input';
@@ -11,7 +11,6 @@ import { Mason } from '../Mason';
 import { Progress, ProgressValueLabel } from '../ui/progress';
 import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 import { NewNote } from '../BoardItem/BoardNoteItem';
-import { Button } from '../ui/button';
 
 import Logo from '~/assets/logo-bw.svg';
 
@@ -19,7 +18,7 @@ const Board = (props: BoardProps) => {
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [searching, setSearching] = createSignal(false);
 
-  const [selectFile, dropFiles, progress] = useFileSelector;
+  const [, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
 
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
@@ -36,7 +35,6 @@ const Board = (props: BoardProps) => {
             {props.collection}
           </h1>
         </Show>
-        <Button onClick={() => selectFile(props.collection)}>Save</Button>
         <Input
           placeholder="Search your refs..."
           class="border-none font-serif text-3xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-4xl"
@@ -47,7 +45,7 @@ const Board = (props: BoardProps) => {
               setSearching(false);
               return;
             }
-            setBoardRefs(searchByText(props.refs, value));
+            setBoardRefs(searchExtended(props.refs, value));
             if (!searching()) setSearching(true);
           }}
         />

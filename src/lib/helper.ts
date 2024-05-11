@@ -7,6 +7,7 @@ import {
 } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/tauri';
 import { differenceInSeconds, parse } from 'date-fns';
+import Fuse, { IFuseOptions } from 'fuse.js';
 
 import {
   COLLECTIONS_DIR,
@@ -102,45 +103,16 @@ export const generate_id = async ({
   return randomID;
 };
 
-export function searchByText(refs: Ref[], searchText: string) {
-  // Convert searchText to lowercase
-  const lowercaseSearchText = searchText.toLowerCase();
+export function searchExtended(refs: Ref[], searchText: string) {
+  const fuseOpt: IFuseOptions<Ref> = {
+    keys: ['metadata.name', 'metadata.tags'],
+    threshold: 0.5,
+  };
 
-  // Use filter to find objects that have matching text in name or tags
-  const results = refs.filter((ref) => {
-    // Convert object name to lowercase
-    // TODO: Fix the search
-    const lowercaseObjectName = ref.metadata.name.toLowerCase();
-    const lowercaseObjectTags = ref.metadata.tags?.map((tag) =>
-      tag.toLowerCase(),
-    );
+  const fuse = new Fuse(refs, fuseOpt);
+  const results = fuse.search(searchText);
 
-    // Check if searchText characters are present in the same order in the object name or any tag
-    const matchesName = containsCharsInOrder(
-      lowercaseObjectName,
-      lowercaseSearchText,
-    );
-    const matchesTags = lowercaseObjectTags?.some((tag) =>
-      containsCharsInOrder(tag, lowercaseSearchText),
-    );
-
-    return matchesName || matchesTags;
-  });
-
-  return results;
-}
-
-function containsCharsInOrder(str: string, searchStr: string) {
-  let searchIndex = 0;
-  for (let i = 0; i < str.length; i++) {
-    if (str[i] === searchStr[searchIndex]) {
-      searchIndex++;
-    }
-    if (searchIndex === searchStr.length) {
-      return true;
-    }
-  }
-  return false;
+  return results.map((result) => result.item);
 }
 
 export const changeRefName = async (
