@@ -10,6 +10,9 @@ import { SUPPORTED_FILES } from '~/lib/config';
 import { MediaRef } from '~/lib/types';
 
 export const useFileSelector = createRoot(() => {
+  const [status, setStatus] = createSignal<
+    'pending' | 'fulfilled' | 'rejected' | null
+  >(null);
   const [isProcessing, setIsProcessing] = createSignal(false);
   const [progress, setProgress] = createSignal<ProgressionProps>({
     total: 0,
@@ -26,6 +29,7 @@ export const useFileSelector = createRoot(() => {
 
     if (fileOperationQueue.length === 0) {
       setProgress({ total: 0, completed: 0 });
+      setStatus('fulfilled');
       return;
     }
 
@@ -44,13 +48,10 @@ export const useFileSelector = createRoot(() => {
 
         const segments = image.split(sep);
         const filename = segments[segments.length - 1];
-        const destinationFolder = await join(destDir, randomID);
         const newPath = await join(destDir, randomID, filename);
         await copyFile(image, newPath);
 
-        const data: MediaRef = await invoke('generate_metadata', {
-          destPath: destinationFolder,
-          destFile: newPath,
+        const data: MediaRef = await invoke('generate_media_metadata', {
           refId: randomID,
           fileName: filename,
           collection: collection,
@@ -86,6 +87,7 @@ export const useFileSelector = createRoot(() => {
       collection: collection,
     });
 
+    setStatus('pending');
     setProgress((prev) => {
       return {
         total: prev.total + files.length,
@@ -105,6 +107,7 @@ export const useFileSelector = createRoot(() => {
         collection: collection,
       });
 
+      setStatus('pending');
       setProgress((prev) => {
         return {
           total: prev.total + files.length,
@@ -119,7 +122,13 @@ export const useFileSelector = createRoot(() => {
   onCleanup(() => {
     waitForFiles.then((f) => f());
     setProgress({ total: 0, completed: 0 });
+    setStatus(null);
   });
 
-  return [selectFiles, dropFiles, progress] as useFileSelectorReturnType;
+  return [
+    selectFiles,
+    dropFiles,
+    progress,
+    status(),
+  ] as useFileSelectorReturnType;
 });

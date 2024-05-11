@@ -62,14 +62,11 @@ export const create_note_ref = async (
   collectionName: string,
   content: string,
 ) => {
-  const destDir = await join(await appDataDir(), 'collections');
   const noteID = await generate_id({ lenght: 13, createDir: true });
-  const notedir = await join(destDir, noteID);
 
   const data: NoteRef = await invoke('generate_note_metadata', {
     refId: noteID,
     collection: collectionName,
-    noteDir: notedir,
     noteContent: content,
   });
 
