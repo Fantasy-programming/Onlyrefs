@@ -7,10 +7,16 @@ import './App.css';
 
 import { setupListeners } from './lib/utils';
 import { useRefSelector } from './state/refstore';
+import { onCleanup } from 'solid-js';
 
 const App = (props: RouteSectionProps) => {
   const root = useRefSelector();
-  setupListeners(root);
+  const unlisteners = setupListeners(root);
+
+  onCleanup(async () => {
+    const unlistener = await unlisteners;
+    unlistener.forEach((unlistener) => unlistener());
+  });
 
   return (
     <>

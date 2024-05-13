@@ -24,10 +24,12 @@ import {
   isMedia_Metadata,
   saveMediaToDisk,
 } from '../../lib/helper';
+import { useSettingsSelector } from '~/state/settingsStore';
 
 export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [showAllTags, setShowAllTags] = createSignal(false);
+  const { settings } = useSettingsSelector();
 
   const [inputValue, setInputValue] = createSignal('');
 
@@ -156,7 +158,12 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
               </Show>
             </div>
           </div>
-          <Show when={props.type === 'image' || props.type === 'video'}>
+          <Show
+            when={
+              (props.type === 'image' || props.type === 'video') &&
+              settings.appearance.show_media_info
+            }
+          >
             <h4 class="text-lg uppercase underline decoration-wavy underline-offset-[6px]">
               Info
             </h4>

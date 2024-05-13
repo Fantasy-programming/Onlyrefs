@@ -1,13 +1,9 @@
-import { emit, listen } from '@tauri-apps/api/event';
-import { copyFile } from '@tauri-apps/api/fs';
-import { appDataDir, join, sep } from '@tauri-apps/api/path';
+import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/api/dialog';
 import { onCleanup, createSignal, createRoot } from 'solid-js';
-import { generate_id } from '~/lib/helper';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
-import { invoke } from '@tauri-apps/api';
 import { SUPPORTED_FILES } from '~/lib/config';
-import { MediaRef } from '~/lib/types';
+import { createMediaRef } from '~/lib/commands';
 
 export const useFileSelector = createRoot(() => {
   const [isProcessing, setIsProcessing] = createSignal(false);
@@ -34,28 +30,8 @@ export const useFileSelector = createRoot(() => {
     setIsProcessing(true);
 
     try {
-      const destDir = await join(await appDataDir(), 'collections');
-
       for (const image of files) {
-        const randomID = await generate_id({
-          lenght: 13,
-          createDir: true,
-        });
-
-        const segments = image.split(sep);
-        const filename = segments[segments.length - 1];
-        const newPath = await join(destDir, randomID, filename);
-        await copyFile(image, newPath);
-
-        const data: MediaRef = await invoke('generate_media_metadata', {
-          refId: randomID,
-          fileName: filename,
-          collection: collection,
-        });
-
-        if (data) {
-          emit('ref_added', data);
-        }
+        await createMediaRef(image, collection);
 
         setProgress({
           total: progress().total,

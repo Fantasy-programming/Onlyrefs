@@ -1,17 +1,17 @@
 import {
   exists,
   createDir,
-  removeDir,
   readTextFile,
   copyFile,
+  removeDir,
 } from '@tauri-apps/api/fs';
-import { invoke } from '@tauri-apps/api/tauri';
 import { differenceInSeconds, parse } from 'date-fns';
 import Fuse, { IFuseOptions } from 'fuse.js';
 
 import {
   COLLECTIONS_DIR,
   DATA_DIR,
+  SUPPORTED_FILES,
   breakpoints_4,
   breakpoints_5,
   breakpoints_6,
@@ -20,86 +20,69 @@ import {
   MediaRef,
   Metadata,
   NoteMetadata,
-  NoteRef,
   Ref,
   contextItemType,
 } from './types';
 import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
-import { emit } from '@tauri-apps/api/event';
+import { error } from 'tauri-plugin-log-api';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
-  return exists(`${COLLECTIONS_DIR}/${collectionName}`, {
-    dir: DATA_DIR,
-  });
+  try {
+    return exists(`${COLLECTIONS_DIR}/${collectionName}`, {
+      dir: DATA_DIR,
+    });
+  } catch (error) {
+    return false;
+  }
 };
 
-// Create a new ref directory
+/// Create a ref directory
 export const createRefDir = async (collectionName: string) => {
-  await createDir(`${COLLECTIONS_DIR}/${collectionName}`, {
-    dir: DATA_DIR,
-    recursive: true,
-  });
-};
-
-// Delete a ref with its metadata
-export const deleteRef = async (collectionID: string) => {
-  await invoke('remove_ref', { refId: collectionID });
-
-  await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
-    dir: DATA_DIR,
-    recursive: true,
-  });
-};
-
-interface GenerateID {
-  lenght: number;
-  createDir?: boolean;
-}
-
-export const create_note_ref = async (
-  collectionName: string,
-  content: string,
-) => {
-  const noteID = await generate_id({ lenght: 13, createDir: true });
-
-  const data: NoteRef = await invoke('generate_note_metadata', {
-    refId: noteID,
-    collection: collectionName,
-    noteContent: content,
-  });
-
-  if (data) {
-    emit('ref_added', data);
+  try {
+    await createDir(`${COLLECTIONS_DIR}/${collectionName}`, {
+      dir: DATA_DIR,
+      recursive: true,
+    });
+  } catch (e) {
+    console.error(e);
+    error(`Error: Couln't create ${collectionName} directory`);
   }
 };
 
+/// Delete a ref directory
+export const deleteRefDir = async (collectionID: string) => {
+  try {
+    await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
+      dir: DATA_DIR,
+      recursive: true,
+    });
+  } catch (e) {
+    console.error(e);
+    error(`Error: Couldn't delete ${collectionID} directory`);
+  }
+};
+
+/// Returns the text of a file
 export const get_note_content = async (notepath: string) => {
-  const content = await readTextFile(notepath);
-  return content;
-};
-
-export const generate_id = async ({
-  lenght,
-  createDir = false,
-}: GenerateID) => {
-  let randomID: string = '';
-
-  while (true) {
-    randomID = await invoke('generate_id', { lenght: lenght });
-    const exist = await refExist(randomID);
-
-    if (!exist) {
-      if (createDir) {
-        await createRefDir(randomID);
-      }
-      break;
-    }
+  try {
+    const content = await readTextFile(notepath);
+    return content;
+  } catch (e) {
+    console.error(e);
+    error(`Error: Failed to read the file at ${notepath}`);
+    return 'Something went wrong';
   }
-  return randomID;
 };
 
+export const verifyExtension = async (extension: string) => {
+  return (
+    extension.toLowerCase() in SUPPORTED_FILES.map((file) => file.extensions)
+  );
+};
+
+/// Search for Refs
 export function searchExtended(refs: Ref[], searchText: string) {
   const fuseOpt: IFuseOptions<Ref> = {
     keys: ['metadata.name', 'metadata.tags'],
@@ -112,56 +95,7 @@ export function searchExtended(refs: Ref[], searchText: string) {
   return results.map((result) => result.item);
 }
 
-export const changeRefName = async (
-  refID: string,
-  newName: string,
-  path: string,
-  type: string,
-) => {
-  await invoke('rename_ref', {
-    refId: refID,
-    path,
-    newName: newName,
-    refType: type,
-  });
-};
-
-export const deleteTag = async (
-  id: string,
-  path: string,
-  type: string,
-  tag: string,
-) => {
-  await invoke('remove_tag', {
-    refId: id,
-    path: path,
-    refType: type,
-    tag: tag,
-  });
-};
-
-export const addTag = async (
-  id: string,
-  path: string,
-  type: string,
-  tag: string,
-) => {
-  await invoke('add_tag', { refId: id, path, refType: type, tag: tag });
-};
-
-export const changeNoteContent = async (
-  noteID: string,
-  path: string,
-  content: string,
-) => {
-  await invoke('change_note_content', {
-    refId: noteID,
-    path: path,
-    noteContent: content,
-    refType: 'note',
-  });
-};
-
+/// Get Breakpoints for the masonry
 export const getBreakpoints = (columns: number) => {
   switch (columns) {
     case 4:
@@ -228,7 +162,7 @@ export const saveMediaToDisk = async (id: string, file_name: string) => {
   const destFile = await join(destDir, file_name);
   const fileLocation = await join(
     await appDataDir(),
-    'collections',
+    COLLECTIONS_DIR,
     id,
     file_name,
   );
@@ -236,6 +170,7 @@ export const saveMediaToDisk = async (id: string, file_name: string) => {
   await copyFile(fileLocation, destFile);
 };
 
+// Create a context menu
 export const createItems = (key: string, payload: string): contextItemType => {
   switch (key) {
     case 'imagebase':

@@ -1,5 +1,12 @@
 import { ContextMenu } from 'tauri-plugin-context-menu';
 
+export interface GenerateID {
+  lenght: number;
+  createDir?: boolean;
+}
+
+export type Reftype = 'video' | 'image' | 'note';
+
 export interface Metadata {
   id: string;
   file_name: string;
@@ -50,14 +57,14 @@ export type Ref = MediaRef | NoteRef;
 export interface tagEvent {
   id: string;
   path: string;
-  type: string;
+  type: Reftype;
   tag: string;
 }
 
 export interface changeNameEvent {
   id: string;
   name: string;
-  type: string;
+  type: Reftype;
   path: string;
 }
 

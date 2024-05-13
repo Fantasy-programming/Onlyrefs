@@ -7,7 +7,6 @@ import { VsChromeMinimize, VsChromeMaximize } from 'solid-icons/vs';
 
 export interface WindowProps extends ComponentProps<'div'> {}
 
-//TODO: Different based on platform & different close behavior
 export const WindowDecoration: Component<WindowProps> = (props) => {
   const [, rest] = splitProps(props, []);
 
