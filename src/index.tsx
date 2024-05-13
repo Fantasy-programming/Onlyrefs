@@ -14,21 +14,24 @@ import App from './App';
 import Home from './pages/Home';
 import Boards from './pages/Boards';
 import Settings from './pages/Settings';
+import { SettingsProvider } from './state/settingsStore.tsx';
 
 disableMenu();
 
 render(
   () => (
-    <RefProvider>
-      <ColorModeProvider storageManager={localStorageManager}>
-        <Router root={App}>
-          <Route path="/" component={Home} />
-          <Route path="/boards" component={Boards} />
-          <Route path="/boards/:id" component={Boards} />
-          <Route path="/settings" component={Settings} />
-        </Router>
-      </ColorModeProvider>
-    </RefProvider>
+    <SettingsProvider>
+      <RefProvider>
+        <ColorModeProvider storageManager={localStorageManager}>
+          <Router root={App}>
+            <Route path="/" component={Home} />
+            <Route path="/boards" component={Boards} />
+            <Route path="/boards/:id" component={Boards} />
+            <Route path="/settings" component={Settings} />
+          </Router>
+        </ColorModeProvider>
+      </RefProvider>
+    </SettingsProvider>
   ),
   document.getElementById('root') as HTMLElement,
 );

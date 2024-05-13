@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager, State, WindowBuilder, WindowUrl};
 
 use crate::config::get_collection_path;
 use crate::media;
-use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref};
+use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref, Settings};
 use crate::utils::{self, convert_file_src};
 
 #[tauri::command]
@@ -128,6 +128,14 @@ fn generate_id(lenght: usize) -> String {
 
 #[tauri::command]
 async fn get_media_refs(state: State<'_, Mutex<Vec<Ref>>>) -> Result<Vec<Ref>, String> {
+    let state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+    Ok(state_guard.clone())
+}
+
+#[tauri::command]
+async fn get_settings(state: State<'_, Mutex<Settings>>) -> Result<Settings, String> {
     let state_guard = state
         .lock()
         .map_err(|_| "Failed to acquire lock on state".to_string())?;
@@ -387,6 +395,7 @@ pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
         generate_media_metadata,
         generate_note_metadata,
         get_media_refs,
+        get_settings,
         rename_ref,
         remove_ref,
         add_tag,

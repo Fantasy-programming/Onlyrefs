@@ -20,7 +20,7 @@ export const BoardItem = (props: BoardItemProps) => {
       <Match when={type === 'video'}>
         <VideoItem mediaInfo={props.refItem as MediaRef} />
       </Match>
-      <Match when={type === 'text'}>
+      <Match when={type === 'text' || 'note'}>
         <NoteItem noteInfo={props.refItem as NoteRef} />
       </Match>
     </Switch>
@@ -66,7 +66,6 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
 
 // Render a video into the board
 const VideoItem = (props: { mediaInfo: MediaRef }) => {
-  // TODO: Refactor those context
   const showcontext = async (e: MouseEvent) => {
     e.preventDefault();
     showMenu({
@@ -107,6 +106,7 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
   );
 };
 
+// Render a note into the board
 const NoteItem = (props: { noteInfo: NoteRef }) => {
   const showcontext = async (e: MouseEvent) => {
     e.preventDefault();

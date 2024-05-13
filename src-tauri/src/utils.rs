@@ -3,7 +3,7 @@ use serde::{de::Error, Deserialize, Deserializer};
 use serde_json::Value;
 use std::{fs, path::Path, path::PathBuf, sync::Mutex};
 
-use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref};
+use crate::state::{MediaRef, Metadata, NoteMetadata, NoteRef, Ref, Settings};
 
 /// Return the size of a file in human readable format
 pub fn analyze_file_size<P>(file_path: P) -> String
@@ -122,6 +122,11 @@ pub fn fetch_refs(collections_dir: &Path) -> Mutex<Vec<Ref>> {
             .map(|ref_paths| parse_refs(&ref_paths))
             .collect(),
     )
+}
+
+pub fn fetch_settings(settings_path: &Path) -> Mutex<Settings> {
+    let settings = fs::read_to_string(settings_path).unwrap_or_default();
+    Mutex::new(serde_json::from_str(&settings).unwrap_or_else(|_| Settings::default()))
 }
 
 /// Change name of a ref

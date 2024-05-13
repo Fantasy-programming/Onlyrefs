@@ -66,3 +66,22 @@ export interface changeNoteEvent {
   content: string;
   path: string;
 }
+
+export interface AppSettings {
+  appearance: AppearanceSettings;
+  behavior: BehaviorSettings;
+}
+
+interface AppearanceSettings {
+  show_media_info: boolean;
+  compact_mode: boolean;
+}
+
+interface BehaviorSettings {
+  sort_by: BehaviorSettingsSortBy;
+}
+
+enum BehaviorSettingsSortBy {
+  creation_time,
+  modification_time,
+}

@@ -25,6 +25,7 @@ fn main() {
             config::init(handle);
 
             app.manage(state::init_media_ref(app.handle()));
+            app.manage(state::init_settings(app.handle()));
 
             // Set window shadow (macos & windows only)
             #[cfg(any(windows, target_os = "macos"))]

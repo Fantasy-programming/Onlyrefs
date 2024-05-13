@@ -1,4 +1,4 @@
-use crate::config::get_collection_path;
+use crate::config::{get_collection_path, get_settings_path};
 use crate::utils::convert_file_src;
 use crate::{media, utils};
 use chrono::Local;
@@ -116,7 +116,36 @@ pub enum Ref {
     Note(NoteRef),
 }
 
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct Settings {
+    pub appearance: AppearanceSettings,
+    pub behavior: BehaviorSettings,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct AppearanceSettings {
+    pub show_media_info: bool,
+    pub compact_mode: bool,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct BehaviorSettings {
+    pub sort_by: SortBy,
+}
+
+#[derive(Clone, Serialize, Default, Deserialize, Debug)]
+pub enum SortBy {
+    #[default]
+    CreationTime,
+    ModificationTime,
+}
+
 pub fn init_media_ref(app_handle: AppHandle) -> Mutex<Vec<Ref>> {
     let collections_dir = get_collection_path(&app_handle);
     utils::fetch_refs(&collections_dir)
+}
+
+pub fn init_settings(app_handle: AppHandle) -> Mutex<Settings> {
+    let settings = get_settings_path(&app_handle);
+    utils::fetch_settings(&settings)
 }
