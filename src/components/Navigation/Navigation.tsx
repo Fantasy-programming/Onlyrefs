@@ -1,3 +1,4 @@
+import { Motion } from 'solid-motionone';
 import { Show, createSignal } from 'solid-js';
 import { useColorMode } from '@kobalte/core';
 import { gridSizeHook } from '../../state/hook';
@@ -14,7 +15,7 @@ export const SideNavigation = () => {
   const [gridPressed, setGridPressed] = createSignal(false);
 
   return (
-    <nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
+    <Motion.nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
       <div class="absolute left-1/2 top-[5%] -translate-x-1/2 -translate-y-1/2">
         <Logo class="h-9 w-9" />
       </div>
@@ -67,7 +68,7 @@ export const SideNavigation = () => {
           </span>
         </a>
       </div>
-    </nav>
+    </Motion.nav>
   );
 };
 

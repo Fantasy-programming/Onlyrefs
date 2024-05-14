@@ -11,78 +11,83 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { RiArrowsArrowGoBackLine } from 'solid-icons/ri';
+import { useSettingsSelector } from '~/state/settingsStore';
 
 const Settings = () => {
+  const { settings } = useSettingsSelector();
+
   return (
     <Motion.div class="flex h-full flex-col py-10 pe-10 ps-4 md:p-10">
-      <div class="flex-1">
-        <div class="container flex flex-col gap-4">
-          <div class="flex items-center gap-4">
-            <a href="/">
-              <Button class="size-12 shrink-0" size="icon" variant="primary">
-                <RiArrowsArrowGoBackLine class="h-5 w-5" />
-                <span class="sr-only">Back</span>
-              </Button>
-            </a>
-            <h1 class="text-3xl font-semibold">Settings</h1>
-          </div>
-          <div class="grid gap-4">
-            <Card>
-              <CardHeader class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-                <div class="text-3xl font-semibold uppercase">Appearance</div>
-                <div class="text-md text-gray-500 dark:text-gray-400">
-                  Customize the appearance
-                </div>
-              </CardHeader>
-              <CardContent class="grid gap-4">
-                <div class="flex items-center gap-4">
-                  <Label for="dark-mode">Show Media Info</Label>
-                  <Switch defaultChecked id="dark-mode" />
-                </div>
-                <div class="flex items-center gap-4">
-                  <Label for="compact-mode">Compact mode</Label>
-                  <Switch id="compact-mode" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader class="flex flex-col items-start gap-2 md:flex-row md:items-center">
-                <div class="text-3xl font-semibold uppercase">Behavior</div>
-                <div class="text-md text-gray-500 dark:text-gray-400">
-                  Manage the behavior of the app
-                </div>
-              </CardHeader>
-              <CardContent class="grid gap-4">
-                <div class="flex items-center gap-4">
-                  <Label for="sort-by">Sort items by</Label>
-                  <Select
-                    id="sort-by"
-                    options={['Creation_Time', 'Last_Modified']}
-                    placeholder="Sort By ..."
-                    itemComponent={(props) => (
-                      <SelectItem item={props.item}>
-                        {props.item.rawValue}
-                      </SelectItem>
-                    )}
-                  >
-                    <SelectTrigger
-                      aria-label="select notifications"
-                      class="w-[180px]"
-                    >
-                      <SelectValue<string>>
-                        {(state) => state.selectedOption()}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent />
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+      <div class="container flex flex-col gap-4">
+        <div class="flex items-center gap-4">
+          <a href="/">
+            <Button class="size-10 shrink-0" size="icon" variant="primary">
+              <RiArrowsArrowGoBackLine class="h-4 w-4" />
+              <span class="sr-only">Back</span>
+            </Button>
+          </a>
+          <h1 class="text-3xl font-semibold">Settings</h1>
         </div>
-      </div>
-      <div class="flex h-16 w-full items-center justify-center">
-        <Button class="ml-auto">Save changes</Button>
+        <div class="grid gap-4">
+          <Card>
+            <CardHeader class="flex flex-col items-start gap-2 md:flex-row md:items-center">
+              <div class="text-3xl font-semibold uppercase">Appearance</div>
+              <div class="text-md text-gray-500 dark:text-gray-400">
+                Customize the appearance
+              </div>
+            </CardHeader>
+            <CardContent class="grid gap-4">
+              <div class="flex items-center gap-4">
+                <Label for="dark-mode">Show Media Info</Label>
+                <Switch
+                  checked={settings.appearance.show_media_info}
+                  id="dark-mode"
+                />
+              </div>
+              <div class="flex items-center gap-4">
+                <Label for="compact-mode">Compact mode</Label>
+                <Switch
+                  id="compact-mode"
+                  checked={settings.appearance.compact_mode}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader class="flex flex-col items-start gap-2 md:flex-row md:items-center">
+              <div class="text-3xl font-semibold uppercase">Behavior</div>
+              <div class="text-md text-gray-500 dark:text-gray-400">
+                Manage the behavior of the app
+              </div>
+            </CardHeader>
+            <CardContent class="grid gap-4">
+              <div class="flex items-center gap-4">
+                <Label for="sort-by">Sort items by</Label>
+                <Select
+                  id="sort-by"
+                  options={['Creation_Time', 'Last_Modified']}
+                  placeholder="Sort By ..."
+                  value={settings.behavior.sort_by}
+                  itemComponent={(props) => (
+                    <SelectItem item={props.item}>
+                      {props.item.rawValue}
+                    </SelectItem>
+                  )}
+                >
+                  <SelectTrigger
+                    aria-label="select notifications"
+                    class="w-[180px]"
+                  >
+                    <SelectValue<string>>
+                      {(state) => state.selectedOption()}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent />
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Motion.div>
   );

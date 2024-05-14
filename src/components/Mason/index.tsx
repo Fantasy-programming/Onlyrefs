@@ -278,6 +278,10 @@ export function Mason<
         recalculate();
       });
 
+      listen('sidebar_toggled', () => {
+        recalculate();
+      });
+
       onCleanup(() => {
         window.removeEventListener('resize', recalculate);
       });
