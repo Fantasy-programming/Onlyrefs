@@ -20,6 +20,7 @@ fn main() {
         )
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_context_menu::init())
+        .plugin(tauri_plugin_snapshot::init())
         .setup(|app| {
             let handle = app.handle();
             config::init(handle);

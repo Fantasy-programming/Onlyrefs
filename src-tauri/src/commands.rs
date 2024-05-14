@@ -1,8 +1,11 @@
 use chrono::Local;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use std::thread::sleep;
+use std::time::Duration;
 use std::{default::Default, fs, path::Path, sync::Mutex, thread};
 use tauri::{AppHandle, Manager, State, WindowBuilder, WindowUrl};
+use tauri_plugin_snapshot::{snapshot, Options, Region};
 
 use crate::config::get_collection_path;
 use crate::media;
@@ -354,46 +357,44 @@ async fn remove_tag(
     }
 }
 
-// #[tauri::command]
-// async fn add_link(url: &str, handle: AppHandle) -> Result<(), String> {
-//     let window_builder = WindowBuilder::new(
-//         &handle,
-//         "capture",
-//         WindowUrl::External(url.parse().unwrap()),
-//     )
-//     .visible(false);
-//
-//     let window = window_builder.build().unwrap();
-//     window.with_webview(|webview| {
-//         webview.inner().;
-//     });
-//     let _ = window.eval(
-//         r#"
-//             new Promise((resolve, reject) => {
-//                 const canvas = document.createElement('canvas');
-//                 const context = canvas.getContext('2d');
-//                 const rect = document.body.getBoundingClientRect();
-//                 canvas.width = rect.width;
-//                 canvas.height = rect.height;
-//                 context.drawWindow(window, rect.left, rect.top, rect.width, rect.height, "rgb(255,255,255)");
-//                 canvas.toBlob(blob => {
-//                     const reader = new FileReader();
-//                     reader.readAsDataURL(blob);
-//                     reader.onloadend = () => resolve(reader.result);
-//                 }, 'image/png', 1.0);
-//             })
-//         "#,
-//     ).map_err(|err| err.to_string())?;
-//
-//     // let screen_shot = screen_shot_data.split(",").last().unwrap().to_string();
-//     Ok(())
-// }
+#[tauri::command]
+async fn generate_link_metadata(url: String, handle: AppHandle) -> Result<(), String> {
+    std::thread::spawn(move || {
+        let window = tauri::WindowBuilder::new(
+            &handle,
+            "capture",
+            WindowUrl::External(url.parse().unwrap()),
+        )
+        .build()
+        .unwrap();
+
+        let options = Options {
+            capture: None,
+            region: Some(Region::Document),
+            save: None,
+        };
+
+        let _ = window.hide();
+        // wait 30s then take the shoot
+        sleep(Duration::from_secs(30));
+        let img_buffer = snapshot(window.clone(), options).map_err(|error| error.to_string());
+        let _ = window.close();
+        // save image to disk
+        let img_path = get_collection_path(&handle).join("temp_link_capture.png");
+        fs::write(img_path, img_buffer.unwrap()).expect("Failed to write image to disk");
+    });
+
+    // .visible(false);
+
+    Ok(())
+}
 
 pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
     Box::new(tauri::generate_handler![
         generate_id,
         generate_media_metadata,
         generate_note_metadata,
+        generate_link_metadata,
         get_media_refs,
         get_settings,
         rename_ref,

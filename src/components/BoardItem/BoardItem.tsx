@@ -59,6 +59,7 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
           </p>
         )}
       </DialogTrigger>
+
       <ViewBox source={props.mediaInfo} type="image" />
     </Dialog>
   );

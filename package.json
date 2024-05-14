@@ -13,7 +13,12 @@
     "test": "vitest",
     "build": "vite build",
     "serve": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "serenity": "failsafe serenity:update serenity:clean wdio serenity:report",
+    "serenity:update": "serenity-bdd update",
+    "serenity:clean": "rimraf target",
+    "wdio": "wdio run ./wdio.conf.ts",
+    "serenity:report": "serenity-bdd run"
   },
   "license": "MIT",
   "dependencies": {
@@ -53,9 +58,13 @@
     "tiptap-markdown": "^0.8.10"
   },
   "devDependencies": {
+    "@solidjs/testing-library": "^0.8.7",
     "@tauri-apps/cli": "^1.5.8",
+    "@testing-library/jest-dom": "^6.4.5",
+    "@testing-library/user-event": "^14.5.2",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
+    "@wdio/cli": "^8.36.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
@@ -72,6 +81,6 @@
     "vite-plugin-solid": "^2.8.0",
     "vite-plugin-solid-svg": "^0.8.0",
     "vite-tsconfig-paths": "^4.3.1",
-    "vitest": "^1.4.0"
+    "vitest": "^1.6.0"
   }
 }

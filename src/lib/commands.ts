@@ -83,6 +83,11 @@ export const createNoteRef = async (
   }
 };
 
+export const createLinkRef = async (url: string) => {
+  console.log('Creating link ref');
+  await invoke('generate_link_metadata', { url });
+};
+
 /// Change the name of a ref
 export const renameRef = async (
   refID: string,
