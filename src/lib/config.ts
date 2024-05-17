@@ -31,10 +31,14 @@ export const breakpoints_6 = createMasonryBreakpoints(() => [
 export const SUPPORTED_FILES = [
   {
     name: 'image',
-    extensions: ['png', 'jpeg', 'webm', 'gif'],
+    extensions: ['png', 'jpeg', 'webp', 'gif', 'jpg'],
   },
   {
     name: 'video',
     extensions: ['mp4', 'avi', 'webm'],
+  },
+  {
+    name: 'audio',
+    extensions: ['mp3', 'wav', 'opus', 'aac', 'm4a', 'ogg'],
   },
 ];
