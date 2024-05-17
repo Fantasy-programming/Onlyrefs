@@ -8,6 +8,7 @@ use window_shadows::set_shadow;
 mod commands;
 mod config;
 mod media;
+mod parser;
 mod state;
 mod utils;
 
