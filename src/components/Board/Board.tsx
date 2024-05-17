@@ -1,4 +1,5 @@
 import { onMount, Show, createSignal, createMemo, Suspense } from 'solid-js';
+import { createShortcut } from '@solid-primitives/keyboard';
 import { Portal } from 'solid-js/web';
 
 import { useFileSelector } from './Board.hook';
@@ -18,13 +19,17 @@ const Board = (props: BoardProps) => {
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [searching, setSearching] = createSignal(false);
 
-  const [, dropFiles, progress] = useFileSelector;
+  const [selectF, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
 
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
 
   onMount(() => {
     dropFiles(props.collection);
+
+    createShortcut(['Control', 'o'], () => {
+      selectF(props.collection);
+    });
   });
 
   return (
