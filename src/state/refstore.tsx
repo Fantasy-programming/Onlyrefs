@@ -22,7 +22,6 @@ export const RefProvider: ParentComponent = (props) => {
   const fetchRefs = async () => {
     try {
       let data: Ref[] = await invoke('get_all_refs');
-      console.log(data);
       data = data.sort((a, b) => {
         const aUpdatedAt = getUpdatedAtTimestamp(a);
         const bUpdatedAt = getUpdatedAtTimestamp(b);

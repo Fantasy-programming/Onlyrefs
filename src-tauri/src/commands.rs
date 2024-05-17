@@ -160,6 +160,7 @@ fn generate_note_metadata(
     state: State<'_, Mutex<Vec<Ref>>>,
     handle: AppHandle,
 ) -> Result<NoteRef, String> {
+    let note_path = get_collection_path(&handle).join(ref_id).join("note.text");
     let meta_path = get_collection_path(&handle)
         .join(ref_id)
         .join("metadata.note.json");
@@ -167,6 +168,7 @@ fn generate_note_metadata(
     let note_metadata = NoteMetadata::new(ref_id, collection)?;
     let json_data = serde_json::to_string_pretty(&note_metadata).unwrap();
     fs::write(&meta_path, json_data).expect("Failed to write metadata file");
+    fs::write(note_path, note_content).expect("Failed to write note content to disk");
 
     // Store into state
     let mut state_guard = state
@@ -256,7 +258,9 @@ async fn generate_link_metadata(
         let _ = window.close();
 
         // save image to disk
-        let img_path = get_collection_path(&handle).join("snapshot.png");
+        let img_path = get_collection_path(&handle)
+            .join(&ref_id)
+            .join("snapshot.png");
         fs::write(&img_path, img_buffer.unwrap()).expect("Failed to write image to disk");
 
         // update the image state
