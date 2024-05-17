@@ -1,16 +1,47 @@
 import { ContextMenu } from 'tauri-plugin-context-menu';
 
-export interface GenerateID {
-  lenght: number;
-  createDir?: boolean;
+export interface ImageRef {
+  image_path: string;
+  low_res_imagepath: string;
+  metapath: string;
+  metadata: ImageMetadata;
 }
 
-export type Reftype = 'video' | 'image' | 'note';
+export interface VideoRef {
+  video_path: string;
+  metadata: VideoMetadata;
+  metapath: string;
+}
 
-export interface Metadata {
+export interface AudioRef {
+  audio_path: string;
+  metadata: AudioMetadata;
+  metapath: string;
+}
+
+export interface NoteRef {
+  content: string;
+  metapath: string;
+  metadata: NoteMetadata;
+}
+
+export interface LinkRef {
+  snapshoot: string;
+  metapath: string;
+  metadata: LinkMetadata;
+}
+
+export interface DocRef {
+  doc_path: string;
+  metapath: string;
+  metadata: DocMetadata;
+}
+
+export interface ImageMetadata {
   id: string;
-  file_name: string;
   name: string;
+  file_name: string;
+  ref_type: 'image';
   media_type: string;
   dimensions: [number, number];
   file_size: string;
@@ -22,49 +53,95 @@ export interface Metadata {
   tags?: string[];
 }
 
-export interface MediaRef {
-  imagepath: string;
-  low_res_imagepath: string;
-  metapath: string;
-  metadata: Metadata;
+export interface VideoMetadata {
+  id: string;
+  name: string;
+  file_name: string;
+  ref_type: 'video';
+  media_type: string;
+  dimensions: [number, number];
+  file_size: string;
+  collection: string;
+  created_at: string;
+  updated_at: string;
+  note_text: string;
+  tags?: string[];
 }
 
-export interface NoteRef {
-  metapath: string;
-  metadata: NoteMetadata;
+export interface AudioMetadata {
+  id: string;
+  name: string;
+  file_name: string;
+  ref_type: 'audio';
+  media_type: string;
+  file_size: string;
+  collection: string;
+  created_at: string;
+  updated_at: string;
+  note_text: string;
+  tags?: string[];
 }
 
 export interface NoteMetadata {
   id: string;
   name: string;
-  media_type: string;
-  note_text: string;
+  ref_type: 'note';
   collection: string;
   created_at: string;
   updated_at: string;
+  note_text: string;
   tags: string[];
 }
 
-export type backendRef = {
-  Media?: MediaRef;
-  Note?: NoteRef;
-};
+export interface LinkMetadata {
+  id: string;
+  name: string;
+  ref_type: 'link';
+  source_uri: string;
+  collection: string;
+  created_at: string;
+  updated_at: string;
+  note_text: string;
+  tags: string[];
+}
+
+export interface DocMetadata {
+  id: string;
+  name: string;
+  ref_type: 'doc';
+  collection: string;
+  created_at: string;
+  updated_at: string;
+  note_text: string;
+  tags: string[];
+}
+
+export interface GenerateID {
+  lenght: number;
+  createDir?: boolean;
+}
+
+export type Reftype = 'video' | 'image' | 'note';
+export type Ref = ImageRef | VideoRef | AudioRef | NoteRef | LinkRef | DocRef;
+export type RefMeta =
+  | ImageMetadata
+  | VideoMetadata
+  | AudioMetadata
+  | NoteMetadata
+  | LinkMetadata
+  | DocMetadata;
 
 export type contextItemType = ContextMenu.Item[];
-
-export type Ref = MediaRef | NoteRef;
 
 export interface tagEvent {
   id: string;
   path: string;
-  type: Reftype;
   tag: string;
 }
 
 export interface changeNameEvent {
   id: string;
   name: string;
-  type: Reftype;
   path: string;
 }
 

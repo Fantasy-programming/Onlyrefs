@@ -1,7 +1,7 @@
 import { debug, error } from 'tauri-plugin-log-api';
 import { onMount, createContext, ParentComponent, useContext } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
-import { MediaRef, NoteRef, Ref, backendRef } from '~/lib/types';
+import { NoteRef, Ref } from '~/lib/types';
 import { invoke } from '@tauri-apps/api';
 import { getUpdatedAtTimestamp } from '~/lib/helper';
 
@@ -21,26 +21,15 @@ export const RefProvider: ParentComponent = (props) => {
 
   const fetchRefs = async () => {
     try {
-      let data: backendRef[] = await invoke('get_media_refs');
-      let parsedData: Ref[] = [];
-
-      for (let i = 0; i < data.length; i++) {
-        const ref = data[i];
-        if ('Media' in ref) {
-          parsedData.push(ref.Media as MediaRef);
-        } else {
-          parsedData.push(ref.Note as NoteRef);
-        }
-      }
-
-      parsedData = parsedData.sort((a, b) => {
+      let data: Ref[] = await invoke('get_all_refs');
+      console.log(data);
+      data = data.sort((a, b) => {
         const aUpdatedAt = getUpdatedAtTimestamp(a);
         const bUpdatedAt = getUpdatedAtTimestamp(b);
         return bUpdatedAt - aUpdatedAt;
       });
 
-      debug('Debug: Refs fetched');
-      setRef(parsedData);
+      setRef(data);
     } catch (e) {
       error('Error: Failed to fetch refs at RefProvider fetchRef');
       throw new Error('Failed to fetch refs at RefProvider fetchRef');
@@ -69,7 +58,7 @@ export const RefProvider: ParentComponent = (props) => {
     );
   };
 
-  const addRef = (ref: MediaRef | NoteRef) => {
+  const addRef = (ref: Ref) => {
     setRef(produce((refs) => refs.unshift(ref)));
     debug('Debug: Ref added');
   };
@@ -94,10 +83,9 @@ export const RefProvider: ParentComponent = (props) => {
   const mutateNote = (id: string, note: string) => {
     setRef(
       (meta) => meta.metadata.id === id,
-      'metadata',
-      produce((metadata) => {
-        if ('note_text' in metadata) {
-          metadata.note_text = note;
+      produce((meta) => {
+        if (meta.metadata.ref_type === 'note') {
+          (meta as NoteRef).content = note;
         }
       }),
     );

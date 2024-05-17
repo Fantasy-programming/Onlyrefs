@@ -1,47 +1,29 @@
-import { error, info } from 'tauri-plugin-log-api';
+import { error } from 'tauri-plugin-log-api';
 import { invoke } from '@tauri-apps/api';
+import { createRefDir, deleteRefDir, makepath, refExist } from './helper';
 import {
-  createRefDir,
-  deleteRefDir,
-  refExist,
-  verifyExtension,
-} from './helper';
-import { MediaRef, GenerateID, NoteRef, Reftype } from './types';
+  Ref,
+  GenerateID,
+  NoteRef,
+  ImageRef,
+  VideoRef,
+  DocRef,
+  AudioRef,
+} from './types';
 import { copyFile } from '@tauri-apps/api/fs';
-import { appDataDir, join, sep } from '@tauri-apps/api/path';
-import { COLLECTIONS_DIR } from './config';
 import { emit } from '@tauri-apps/api/event';
 
-export const createMediaRef = async (
-  mediaPath: string,
+export const createImageRef = async (
+  imagePath: string,
+  fileName: string,
   collectionName: string,
-): Promise<MediaRef | null> => {
+): Promise<Ref | null> => {
   try {
-    const segments = mediaPath.split(sep);
-    const fileName = segments[segments.length - 1];
-    const extension = fileName.split('.').pop();
-
-    if (!extension) {
-      error('Error: File has no extension');
-      return null;
-    }
-
-    if (!verifyExtension(extension)) {
-      info('Error: File extensino not supported');
-      return null;
-    }
-
     const mediaID = await generate_id({ lenght: 13, createDir: true });
-    const destPath = await join(
-      await appDataDir(),
-      COLLECTIONS_DIR,
-      mediaID,
-      fileName,
-    );
+    const destPath = await makepath(mediaID, fileName);
+    await copyFile(imagePath, destPath);
 
-    await copyFile(mediaPath, destPath);
-
-    const data: MediaRef = await invoke('generate_media_metadata', {
+    const data: ImageRef = await invoke('generate_image_metadata', {
       refId: mediaID,
       fileName: fileName,
       collection: collectionName,
@@ -54,7 +36,67 @@ export const createMediaRef = async (
     return data;
   } catch (e) {
     error(
-      `Error: Failed to create new media ref for file ${mediaPath} - ${e} `,
+      `Error: Failed to create new media ref for file ${imagePath} - ${e} `,
+    );
+    console.error(e);
+    return null;
+  }
+};
+
+export const createVideoRef = async (
+  videoPath: string,
+  fileName: string,
+  collectionName: string,
+): Promise<Ref | null> => {
+  try {
+    const mediaID = await generate_id({ lenght: 13, createDir: true });
+    const destPath = await makepath(mediaID, fileName);
+    await copyFile(videoPath, destPath);
+
+    const data: VideoRef = await invoke('generate_video_metadata', {
+      refId: mediaID,
+      fileName: fileName,
+      collection: collectionName,
+    });
+
+    if (data) {
+      emit('ref_added', data);
+    }
+
+    return data;
+  } catch (e) {
+    error(
+      `Error: Failed to create new media ref for file ${videoPath} - ${e} `,
+    );
+    console.error(e);
+    return null;
+  }
+};
+
+export const createAudioRef = async (
+  audioPath: string,
+  fileName: string,
+  collectionName: string,
+): Promise<Ref | null> => {
+  try {
+    const mediaID = await generate_id({ lenght: 13, createDir: true });
+    const destPath = await makepath(mediaID, fileName);
+    await copyFile(audioPath, destPath);
+
+    const data: AudioRef = await invoke('generate_audio_metadata', {
+      refId: mediaID,
+      fileName: fileName,
+      collection: collectionName,
+    });
+
+    if (data) {
+      emit('ref_added', data);
+    }
+
+    return data;
+  } catch (e) {
+    error(
+      `Error: Failed to create new media ref for file ${audioPath} - ${e} `,
     );
     console.error(e);
     return null;
@@ -83,6 +125,34 @@ export const createNoteRef = async (
   }
 };
 
+export const createDocumentRef = async (
+  docPath: string,
+  fileName: string,
+  collectionName: string,
+): Promise<Ref | null> => {
+  try {
+    const mediaID = await generate_id({ lenght: 13, createDir: true });
+    const destPath = await makepath(mediaID, fileName);
+    await copyFile(docPath, destPath);
+
+    const data: DocRef = await invoke('generate_audio_metadata', {
+      refId: mediaID,
+      fileName: fileName,
+      collection: collectionName,
+    });
+
+    if (data) {
+      emit('ref_added', data);
+    }
+
+    return data;
+  } catch (e) {
+    error(`Error: Failed to create new media ref for file ${docPath} - ${e} `);
+    console.error(e);
+    return null;
+  }
+};
+
 export const createLinkRef = async (url: string) => {
   console.log('Creating link ref');
   await invoke('generate_link_metadata', { url });
@@ -93,14 +163,12 @@ export const renameRef = async (
   refID: string,
   newName: string,
   path: string,
-  type: Reftype,
 ) => {
   try {
     await invoke('rename_ref', {
       refId: refID,
       path,
       newName: newName,
-      refType: type,
     });
   } catch (e) {
     error(
@@ -122,14 +190,9 @@ export const deleteRef = async (collectionID: string) => {
 };
 
 /// Add a tag to a ref
-export const addTag = async (
-  id: string,
-  path: string,
-  type: Reftype,
-  tag: string,
-) => {
+export const addTag = async (id: string, path: string, tag: string) => {
   try {
-    await invoke('add_tag', { refId: id, path, refType: type, tag: tag });
+    await invoke('add_tag', { refId: id, path, tag: tag });
   } catch (e) {
     error(`Error: Failed add_tag operation for the ref with id ${id} - ${e}`);
     console.error(e);
@@ -137,17 +200,11 @@ export const addTag = async (
 };
 
 /// Remove the tag of a ref
-export const removeTag = async (
-  id: string,
-  path: string,
-  type: Reftype,
-  tag: string,
-) => {
+export const removeTag = async (id: string, path: string, tag: string) => {
   try {
     await invoke('remove_tag', {
       refId: id,
       path: path,
-      refType: type,
       tag: tag,
     });
   } catch (e) {
@@ -165,11 +222,11 @@ export const mutateNote = async (
   content: string,
 ) => {
   try {
+    console.log('here');
     await invoke('change_note_content', {
       refId: noteID,
       path: path,
       noteContent: content,
-      refType: 'note',
     });
   } catch (e) {
     error(

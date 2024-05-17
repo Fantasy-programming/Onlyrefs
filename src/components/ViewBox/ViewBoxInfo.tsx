@@ -5,7 +5,6 @@ import { debounce } from '@solid-primitives/scheduled';
 import { emit } from '@tauri-apps/api/event';
 import toast from 'solid-toast';
 
-import { Metadata } from '../../lib/types';
 import { ViewBoxInfoProps } from './ViewBox.types';
 
 import { Input } from '../ui/input';
@@ -24,12 +23,13 @@ import {
   isMedia_Metadata,
   saveMediaToDisk,
 } from '../../lib/helper';
-import { useSettingsSelector } from '~/state/settingsStore';
+import { ImageMetadata } from '~/lib/types';
+// import { useSettingsSelector } from '~/state/settingsStore';
 
 export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [showAllTags, setShowAllTags] = createSignal(false);
-  const { settings } = useSettingsSelector();
+  // const { settings } = useSettingsSelector();
 
   const [inputValue, setInputValue] = createSignal('');
 
@@ -40,12 +40,11 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   };
 
   const debouncedSave = debounce(
-    async (id: string, value: string, path: string, type: string) => {
+    async (id: string, value: string, path: string) => {
       emit('ref_name_changed', {
         id: id,
         name: value,
         path: path,
-        type: type,
       });
     },
     1000,
@@ -54,12 +53,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   const handleNameInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
     event,
   ) => {
-    debouncedSave(
-      props.metadata.id,
-      event.currentTarget.value,
-      props.path,
-      props.type,
-    );
+    debouncedSave(props.metadata.id, event.currentTarget.value, props.path);
   };
 
   const handleTagSubmit: JSX.EventHandler<
@@ -79,7 +73,6 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
       id: props.metadata.id,
       tag: inputValue(),
       path: props.path,
-      type: props.type,
     });
 
     setInputValue('');
@@ -90,7 +83,6 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
       id: props.metadata.id,
       tag: name,
       path: props.path,
-      type: props.type,
     });
   };
 
@@ -160,8 +152,8 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           </div>
           <Show
             when={
-              (props.type === 'image' || props.type === 'video') &&
-              settings.appearance.show_media_info
+              props.metadata.ref_type === 'image' ||
+              props.metadata.ref_type === 'video'
             }
           >
             <h4 class="text-lg uppercase underline decoration-wavy underline-offset-[6px]">
@@ -169,14 +161,14 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
             </h4>
             <div class="my-3">
               <Switch>
-                <Match when={props.type === 'image'}>
+                <Match when={props.metadata.ref_type === 'image'}>
                   <ViewBoxInfoImage
-                    dimensions={(props.metadata as Metadata).dimensions}
-                    file_size={(props.metadata as Metadata).file_size}
-                    media_type={(props.metadata as Metadata).media_type}
+                    dimensions={(props.metadata as ImageMetadata).dimensions}
+                    file_size={(props.metadata as ImageMetadata).file_size}
+                    media_type={(props.metadata as ImageMetadata).media_type}
                   />
                 </Match>
-                <Match when={props.type === 'video'}>
+                <Match when={props.metadata.ref_type === 'video'}>
                   <div>video here</div>
                 </Match>
               </Switch>
@@ -196,7 +188,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
                 if (isMedia_Metadata(props.metadata)) {
                   saveMediaToDisk(
                     props.metadata.id,
-                    (props.metadata as Metadata).file_name,
+                    (props.metadata as ImageMetadata).file_name,
                   );
                 }
               }}

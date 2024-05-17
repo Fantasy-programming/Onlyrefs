@@ -1,7 +1,6 @@
-import { Metadata, NoteMetadata } from '~/lib/types';
+import { RefMeta } from '~/lib/types';
 
 export interface ViewBoxInfoProps {
-  metadata: Metadata | NoteMetadata;
+  metadata: RefMeta;
   path: string;
-  type: string;
 }

@@ -1,6 +1,6 @@
 import { Switch, Match } from 'solid-js';
 import { BoardItemProps } from './BoardItem.types.ts';
-import { MediaRef, NoteRef } from '~/lib/types.ts';
+import { ImageRef, NoteRef, VideoRef } from '~/lib/types.ts';
 import { showMenu } from 'tauri-plugin-context-menu';
 
 import { Dialog, DialogTrigger } from '../ui/dialog';
@@ -10,17 +10,15 @@ import { NoteContent } from './BoardNoteItem.tsx';
 import { createItems } from '~/lib/helper.ts';
 
 export const BoardItem = (props: BoardItemProps) => {
-  const type = props.refItem?.metadata?.media_type?.split('/')[0];
-
   return (
     <Switch>
-      <Match when={type === 'image'}>
-        <ImageItem mediaInfo={props.refItem as MediaRef} type="image" />
+      <Match when={props.refItem.metadata.ref_type === 'image'}>
+        <ImageItem mediaInfo={props.refItem as ImageRef} />
       </Match>
-      <Match when={type === 'video'}>
-        <VideoItem mediaInfo={props.refItem as MediaRef} />
+      <Match when={props.refItem.metadata.ref_type === 'video'}>
+        <VideoItem mediaInfo={props.refItem as VideoRef} />
       </Match>
-      <Match when={type === 'text' || 'note'}>
+      <Match when={props.refItem.metadata.ref_type === 'note'}>
         <NoteItem noteInfo={props.refItem as NoteRef} />
       </Match>
     </Switch>
@@ -28,7 +26,7 @@ export const BoardItem = (props: BoardItemProps) => {
 };
 
 // Render an image into the board
-const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
+const ImageItem = (props: { mediaInfo: ImageRef }) => {
   const showcontext = async (e: MouseEvent) => {
     e.preventDefault();
     showMenu({
@@ -60,13 +58,13 @@ const ImageItem = (props: { mediaInfo: MediaRef; type: string }) => {
         )}
       </DialogTrigger>
 
-      <ViewBox source={props.mediaInfo} type="image" />
+      <ViewBox source={props.mediaInfo} />
     </Dialog>
   );
 };
 
 // Render a video into the board
-const VideoItem = (props: { mediaInfo: MediaRef }) => {
+const VideoItem = (props: { mediaInfo: VideoRef }) => {
   const showcontext = async (e: MouseEvent) => {
     e.preventDefault();
     showMenu({
@@ -89,7 +87,7 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
         >
           <video
             class="absolute h-full w-full rounded-xl object-cover"
-            src={props?.mediaInfo?.imagepath}
+            src={props?.mediaInfo?.video_path}
             preload="auto"
             autoplay
             loop
@@ -102,7 +100,7 @@ const VideoItem = (props: { mediaInfo: MediaRef }) => {
           </p>
         )}
       </DialogTrigger>
-      <ViewBox source={props?.mediaInfo} type="video" />
+      <ViewBox source={props?.mediaInfo} />
     </Dialog>
   );
 };
@@ -129,7 +127,7 @@ const NoteItem = (props: { noteInfo: NoteRef }) => {
           class="max-h-[500px] min-h-[50px] w-full cursor-pointer overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 text-start shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20 focus-visible:border-primary focus-visible:outline-none"
           tabindex="0"
         >
-          <NoteContent content={props.noteInfo.metadata} />
+          <NoteContent data={props.noteInfo} />
         </div>
         {props.noteInfo.metadata.name === '' ? null : (
           <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
@@ -137,7 +135,7 @@ const NoteItem = (props: { noteInfo: NoteRef }) => {
           </p>
         )}
       </DialogTrigger>
-      <ViewBox source={props.noteInfo} type="note" />
+      <ViewBox source={props.noteInfo} />
     </Dialog>
   );
 };

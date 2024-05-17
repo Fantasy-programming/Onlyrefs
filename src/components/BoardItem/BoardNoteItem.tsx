@@ -12,7 +12,7 @@ import TaskList from '@tiptap/extension-task-list';
 import { Markdown } from 'tiptap-markdown';
 
 import { ControlProps, ToolbarProps } from './BoardItem.types.ts';
-import { MediaRef, NoteMetadata, NoteRef } from '~/lib/types.ts';
+import { NoteRef } from '~/lib/types.ts';
 
 import { Motion, Presence } from 'solid-motionone';
 import { Toggle, Toolbar } from 'terracotta';
@@ -137,7 +137,7 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
   );
 }
 
-export const NoteContent = (props: { content: NoteMetadata }) => {
+export const NoteContent = (props: { data: NoteRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
 
   createTiptapEditor(() => ({
@@ -161,7 +161,7 @@ export const NoteContent = (props: { content: NoteMetadata }) => {
           'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full',
       },
     },
-    content: props.content.note_text,
+    content: props.data.content,
   }));
 
   return (
@@ -169,7 +169,7 @@ export const NoteContent = (props: { content: NoteMetadata }) => {
       ref={setContainer}
       classList={{
         "before:content-['“'] font-serif   after:content-['”'] after:text-3xl before:text-3xl before:leading-[0] after:leading-[0] after:pt-[10px] before:pb-[10px] before:mt-3 after:mt-3 after:block before:block text-2xl text-center":
-          props.content.tags.includes('quote'),
+          props.data.metadata.tags.includes('quote'),
 
         'h-full overflow-y-hidden': true,
       }}
@@ -252,7 +252,7 @@ export const NewNote = () => {
   );
 };
 
-export const NoteEditor = (props: { source: NoteRef | MediaRef }) => {
+export const NoteEditor = (props: { source: NoteRef }) => {
   const [container, setContainer] = createSignal<HTMLDivElement>();
   const [menu, setMenu] = createSignal<HTMLDivElement>();
 
@@ -292,7 +292,7 @@ export const NoteEditor = (props: { source: NoteRef | MediaRef }) => {
           'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
       },
     },
-    content: props.source.metadata.note_text,
+    content: props.source.content,
     onUpdate({ editor }) {
       debouncedSave(
         editor.storage.markdown.getMarkdown(),

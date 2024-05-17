@@ -51,7 +51,7 @@ export async function setupListeners(root: RootState): Promise<UnlistenFn[]> {
 
     const refNameChangedListener = await listen('ref_name_changed', (event) => {
       const values = event.payload as changeNameEvent;
-      renameRef(values.id, values.name, values.path, values.type);
+      renameRef(values.id, values.name, values.path);
       root.mutateName(values.id, values.name);
     });
 
@@ -67,7 +67,7 @@ export async function setupListeners(root: RootState): Promise<UnlistenFn[]> {
 
     const tagAddedListener = await listen('tag_added', (event) => {
       const values = event.payload as tagEvent;
-      addTag(values.id, values.path, values.type, values.tag);
+      addTag(values.id, values.path, values.tag);
       root.mutateTag(values.id, values.tag, 'add');
     });
 
@@ -75,7 +75,7 @@ export async function setupListeners(root: RootState): Promise<UnlistenFn[]> {
 
     const tagRemovedListener = await listen('tag_removed', (event) => {
       const values = event.payload as tagEvent;
-      removeTag(values.id, values.path, values.type, values.tag);
+      removeTag(values.id, values.path, values.tag);
       root.mutateTag(values.id, values.tag, 'remove');
     });
 

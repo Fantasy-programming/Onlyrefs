@@ -30,7 +30,7 @@ export const breakpoints_6 = createMasonryBreakpoints(() => [
 
 export const SUPPORTED_FILES = [
   {
-    name: 'Image',
+    name: 'image',
     extensions: ['png', 'jpeg', 'webm', 'gif'],
   },
   {
