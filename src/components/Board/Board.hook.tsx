@@ -3,7 +3,15 @@ import { open } from '@tauri-apps/api/dialog';
 import { onCleanup, createSignal, createRoot } from 'solid-js';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
 import { SUPPORTED_FILES } from '~/lib/config';
-import { createMediaRef } from '~/lib/commands';
+import {
+  createAudioRef,
+  createDocumentRef,
+  createImageRef,
+  createVideoRef,
+} from '~/lib/commands';
+import { sep } from '@tauri-apps/api/path';
+import { error, info } from 'tauri-plugin-log-api';
+import { verifyExtension } from '~/lib/helper';
 
 export const useFileSelector = createRoot(() => {
   const [isProcessing, setIsProcessing] = createSignal(false);
@@ -30,8 +38,39 @@ export const useFileSelector = createRoot(() => {
     setIsProcessing(true);
 
     try {
-      for (const image of files) {
-        await createMediaRef(image, collection);
+      for (const file of files) {
+        const segments = file.split(sep);
+        const fileName = segments[segments.length - 1];
+        const extension = fileName.split('.').pop();
+
+        if (!extension) {
+          error('Error: File has no extension');
+          return null;
+        }
+
+        const type = verifyExtension(extension);
+
+        if (!type) {
+          info('Error: File extension not supported');
+          return null;
+        }
+
+        switch (type) {
+          case 'image':
+            await createImageRef(file, fileName, collection);
+            break;
+          case 'video':
+            await createVideoRef(file, fileName, collection);
+            break;
+          case 'audio':
+            await createAudioRef(file, fileName, collection);
+            break;
+          case 'document':
+            await createDocumentRef(file, fileName, collection);
+            break;
+          default:
+            error('Error: Unknown file type');
+        }
 
         setProgress({
           total: progress().total,

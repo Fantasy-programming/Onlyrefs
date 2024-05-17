@@ -17,10 +17,10 @@ import {
   breakpoints_6,
 } from './config';
 import {
-  MediaRef,
-  Metadata,
-  NoteMetadata,
+  ImageMetadata,
+  ImageRef,
   Ref,
+  RefMeta,
   contextItemType,
 } from './types';
 import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
@@ -76,10 +76,15 @@ export const get_note_content = async (notepath: string) => {
   }
 };
 
-export const verifyExtension = async (extension: string) => {
-  return (
-    extension.toLowerCase() in SUPPORTED_FILES.map((file) => file.extensions)
-  );
+export const verifyExtension = (extension: string) => {
+  extension = extension.toLowerCase();
+  for (const category of SUPPORTED_FILES) {
+    if (category.extensions.includes(extension)) {
+      return category.name;
+    }
+  }
+
+  return null;
 };
 
 /// Search for Refs
@@ -141,13 +146,11 @@ export const elapsedTime = (createdAt: string) => {
   }
 };
 
-export const isMediaRef = (source: Ref): source is MediaRef => {
+export const isMediaRef = (source: Ref): source is ImageRef => {
   return 'colors' in (source.metadata as any);
 };
 
-export const isMedia_Metadata = (
-  source: Metadata | NoteMetadata,
-): source is Metadata => {
+export const isMedia_Metadata = (source: RefMeta): source is ImageMetadata => {
   return 'colors' in (source as any);
 };
 
@@ -168,6 +171,17 @@ export const saveMediaToDisk = async (id: string, file_name: string) => {
   );
 
   await copyFile(fileLocation, destFile);
+};
+
+export const makepath = async (id: string, fileName: string) => {
+  const destPath = await join(
+    await appDataDir(),
+    COLLECTIONS_DIR,
+    id,
+    fileName,
+  );
+
+  return destPath;
 };
 
 // Create a context menu
