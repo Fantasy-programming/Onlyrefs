@@ -1,6 +1,6 @@
 import { Switch, Match, Show } from 'solid-js';
 import { BoardItemProps } from './BoardItem.types.ts';
-import { ImageRef, NoteRef, VideoRef } from '~/lib/types.ts';
+import { ImageRef, LinkRef, NoteRef, VideoRef } from '~/lib/types.ts';
 import { showMenu } from 'tauri-plugin-context-menu';
 
 import { Dialog, DialogTrigger } from '../ui/dialog';
@@ -21,6 +21,9 @@ export const BoardItem = (props: BoardItemProps) => {
       </Match>
       <Match when={props.refItem.metadata.ref_type === 'note'}>
         <NoteItem noteInfo={props.refItem as NoteRef} />
+      </Match>
+      <Match when={props.refItem.metadata.ref_type === 'link'}>
+        <LinkItem linkInfo={props.refItem as LinkRef} />
       </Match>
     </Switch>
   );
@@ -158,6 +161,44 @@ const NoteItem = (props: { noteInfo: NoteRef }) => {
         )}
       </DialogTrigger>
       <ViewBox source={props.noteInfo} />
+    </Dialog>
+  );
+};
+
+// Render an image into the board
+const LinkItem = (props: { linkInfo: LinkRef }) => {
+  const showcontext = async (e: MouseEvent) => {
+    e.preventDefault();
+    showMenu({
+      pos: { x: e.clientX, y: e.clientY },
+      items: createItems('imagebase', props.linkInfo.metadata.id),
+    });
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger
+        as="div"
+        class="w-full rounded-xl"
+        tabIndex="-1"
+        onContextMenu={showcontext}
+      >
+        <div
+          class={`cursor-pointer rounded-xl border border-transparent bg-cover bg-center bg-no-repeat shadow-md transition-all duration-300 hover:border-primary hover:shadow-inner hover:shadow-foreground/20 focus-visible:border-primary focus-visible:outline-none `}
+          style={{
+            'aspect-ratio': `4/3`,
+            'background-image': `url(${props?.linkInfo?.snapshoot})`,
+          }}
+          tabindex="0"
+        />
+        {props.linkInfo.metadata.name === '' ? null : (
+          <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">
+            {props.linkInfo.metadata.name}
+          </p>
+        )}
+      </DialogTrigger>
+
+      <ViewBox source={props.linkInfo} />
     </Dialog>
   );
 };

@@ -8,7 +8,7 @@ import {
   Switch,
   createSignal,
 } from 'solid-js';
-import { ImageRef, NoteRef, Ref, VideoRef } from '../../lib/types';
+import { ImageRef, LinkRef, NoteRef, Ref, VideoRef } from '../../lib/types';
 import { DialogContent } from '../ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { ViewBoxInfo } from './ViewBoxInfo';
@@ -35,11 +35,17 @@ export const ViewBox: Component<ParentProps & { source: Ref }> = (props) => {
   return (
     <DialogContent
       class={
-        'flex h-full max-h-none  w-full max-w-none flex-col overflow-y-scroll p-0 lg:h-[90%] lg:w-[90%] lg:flex-row'
+        'flex h-full max-h-none  w-full max-w-none flex-col p-0 lg:h-[90%] lg:w-[90%] lg:flex-row'
       }
     >
-      <div class="relative flex flex-grow flex-col items-center  justify-center p-0 py-2 pl-2 lg:w-full lg:pr-[calc((0.5rem*2)+400px)]">
-        <div class="flex h-full w-full items-center justify-center overflow-clip rounded-xl p-7">
+      <div
+        class="relative flex flex-grow flex-col items-center justify-center p-0 py-2 pl-2 lg:w-full lg:pr-[calc((0.5rem*2)+400px)]"
+        classList={{
+          'overflow-y-auto overscroll-none overflow-x-hidden':
+            props.source.metadata.ref_type === 'image',
+        }}
+      >
+        <div class="flex h-full w-full items-center justify-center overflow-scroll  rounded-xl p-7">
           <Switch>
             <Match when={props.source.metadata.ref_type === 'video'}>
               <video
@@ -70,9 +76,17 @@ export const ViewBox: Component<ParentProps & { source: Ref }> = (props) => {
                 />
               </ViewBoxZoom>
             </Match>
-
             <Match when={props.source.metadata.ref_type === 'note'}>
               <NoteEditor source={props.source as NoteRef} />
+            </Match>
+            <Match when={props.source.metadata.ref_type === 'link'}>
+              <div>
+                <img
+                  src={(props.source as LinkRef).snapshoot}
+                  loading="lazy"
+                  class="h-auto w-full rounded-xl object-contain"
+                />
+              </div>
             </Match>
           </Switch>
         </div>

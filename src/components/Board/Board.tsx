@@ -14,10 +14,23 @@ import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 import { NewNote } from '../BoardItem/BoardNoteItem';
 
 import Logo from '~/assets/logo-bw.svg';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
+import { Label } from '../ui/label';
+import { Button } from '../ui/button';
+import { createLinkRef } from '~/lib/commands';
 
 const Board = (props: BoardProps) => {
   const [boardRefs, setBoardRefs] = createSignal(props.refs);
   const [searching, setSearching] = createSignal(false);
+  const [dialogOpen, setDialogOpen] = createSignal(false);
+  const [link, setLink] = createSignal<string>('');
 
   const [selectF, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
@@ -30,7 +43,18 @@ const Board = (props: BoardProps) => {
     createShortcut(['Control', 'o'], () => {
       selectF(props.collection);
     });
+
+    createShortcut(['Control', 'l'], () => {
+      setDialogOpen(true);
+    });
   });
+
+  const handleCreation = async () => {
+    if (link()) {
+      await createLinkRef(link(), props.collection);
+    }
+    setDialogOpen(false);
+  };
 
   return (
     <main class="h-full py-10 pe-10 ps-4 md:p-10">
@@ -107,6 +131,32 @@ const Board = (props: BoardProps) => {
           </div>
         </Portal>
       </Show>
+      <Dialog open={dialogOpen()} onOpenChange={setDialogOpen}>
+        <DialogContent class="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add link</DialogTitle>
+            <DialogDescription>
+              Save this link to your collection
+            </DialogDescription>
+          </DialogHeader>
+          <div class="grid grid-cols-4 items-center gap-4 py-4">
+            <Label for="link" class="text-right">
+              Link
+            </Label>
+            <Input
+              id="link"
+              class="col-span-3"
+              value={link()}
+              onchange={(e) => setLink(e.currentTarget.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="submit" onclick={handleCreation}>
+              Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };

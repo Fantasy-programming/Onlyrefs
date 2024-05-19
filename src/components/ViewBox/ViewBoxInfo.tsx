@@ -88,8 +88,8 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   };
 
   return (
-    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight dark:border-gray-100/50  dark:shadow-cardShadow md:rounded-xl lg:absolute lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
-      <div class="onlyrefNoise h-full">
+    <div class="absolute right-0 top-0 z-10 h-full w-full  rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight  dark:border-gray-100/50 dark:shadow-cardShadow md:rounded-xl lg:absolute lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
+      <div class="onlyrefNoise h-full w-full">
         <header class="onlyrefNoise flex flex-col gap-3 rounded-t-xl bg-foreground/5  p-7">
           <input
             type="text"
@@ -101,7 +101,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           <span class="text-sm">{elapsedTime(props.metadata.created_at)}</span>
         </header>
         <div
-          class="overflow-y-scroll p-4"
+          class="relative w-full overflow-x-hidden overflow-y-scroll p-4"
           style={{
             height: 'calc(100% - 148px - 64px)',
           }}
@@ -184,7 +184,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
             Note
           </h4>
           <div
-            class="my-4"
+            class="my-4 "
             style={{
               'max-height': 'calc(100% - 148px - 64px - 100px - 16px)',
               overflow: 'auto',
@@ -196,6 +196,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
               content={props.metadata.note_text}
             />
           </div>
+          <div class="pointer-events-none absolute bottom-[20px] left-0 h-11 w-full bg-[linear-gradient(180deg,_hsl(var(--background)_/_0.2)_0%,_hsl(var(--background)_/_0.9)_100%)] " />
         </div>
         <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 lg:absolute">
           <Tooltip placement="top" openDelay={50}>
