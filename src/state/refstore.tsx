@@ -12,6 +12,7 @@ export interface RootState {
   mutateTag: (id: string, tags: string, type: 'add' | 'remove') => void;
   mutateName: (id: string, name: string) => void;
   mutateNote: (id: string, note: string) => void;
+  mutateNoteText: (id: string, note: string) => void;
 }
 
 const Context = createContext<RootState>();
@@ -91,6 +92,11 @@ export const RefProvider: ParentComponent = (props) => {
     debug(`Debug: Note with the id ${id} mutated`);
   };
 
+  const mutateNoteText = (id: string, note: string) => {
+    setRef((meta) => meta.metadata.id === id, 'metadata', 'note_text', note);
+    debug(`Debug: Note of the ref with id ${id} mutated`);
+  };
+
   const rootState = {
     get ref() {
       return ref;
@@ -100,6 +106,7 @@ export const RefProvider: ParentComponent = (props) => {
     mutateTag,
     mutateName,
     mutateNote,
+    mutateNoteText,
   };
 
   return (

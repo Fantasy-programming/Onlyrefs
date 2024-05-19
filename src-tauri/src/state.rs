@@ -525,7 +525,7 @@ pub struct Settings {
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct AppearanceSettings {
     pub show_media_info: bool,
-    pub compact_mode: bool,
+    pub video_ref_autoplay: bool,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]

@@ -1,4 +1,4 @@
-import { Switch, Match } from 'solid-js';
+import { Switch, Match, Show } from 'solid-js';
 import { BoardItemProps } from './BoardItem.types.ts';
 import { ImageRef, NoteRef, VideoRef } from '~/lib/types.ts';
 import { showMenu } from 'tauri-plugin-context-menu';
@@ -8,6 +8,7 @@ import { Skeleton } from '../ui/skeleton';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { NoteContent } from './BoardNoteItem.tsx';
 import { createItems } from '~/lib/helper.ts';
+import { useSettingsSelector } from '~/state/settingsStore.tsx';
 
 export const BoardItem = (props: BoardItemProps) => {
   return (
@@ -65,6 +66,8 @@ const ImageItem = (props: { mediaInfo: ImageRef }) => {
 
 // Render a video into the board
 const VideoItem = (props: { mediaInfo: VideoRef }) => {
+  const { settings } = useSettingsSelector();
+
   const showcontext = async (e: MouseEvent) => {
     e.preventDefault();
     showMenu({
@@ -88,11 +91,30 @@ const VideoItem = (props: { mediaInfo: VideoRef }) => {
           <video
             class="absolute h-full w-full rounded-xl object-cover"
             src={props?.mediaInfo?.video_path}
-            preload="auto"
-            autoplay
+            preload={
+              settings.appearance.video_ref_autoplay ? 'auto' : 'metadata'
+            }
+            autoplay={settings.appearance.video_ref_autoplay}
             loop
             muted
           ></video>
+          <Show when={!settings.appearance.show_media_info}>
+            <div class="absolute inset-0 z-10 flex items-center justify-center">
+              <svg
+                class="h-16 w-16 animate-spin text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+            </div>
+          </Show>
         </div>
         {props.mediaInfo.metadata.name === '' ? null : (
           <p class="mt-[10px] h-5 overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-medium text-muted/80">

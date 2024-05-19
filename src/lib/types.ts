@@ -158,7 +158,7 @@ export interface AppSettings {
 
 interface AppearanceSettings {
   show_media_info: boolean;
-  compact_mode: boolean;
+  video_ref_autoplay: boolean;
 }
 
 interface BehaviorSettings {

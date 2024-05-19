@@ -13,7 +13,7 @@ use crate::state::{
     AudioMetadata, AudioRef, DocMetadata, DocRef, ImageMetadata, ImageRef, LinkMetadata, LinkRef,
     NoteMetadata, NoteRef, Ref, Settings, VideoMetadata, VideoRef,
 };
-use crate::utils::{self, convert_file_src};
+use crate::utils::{self, convert_file_src, mutate_note};
 
 #[tauri::command]
 async fn get_all_refs(state: State<'_, Mutex<Vec<Ref>>>) -> Result<Vec<Ref>, String> {
@@ -412,6 +412,34 @@ async fn change_note_content(
 }
 
 #[tauri::command]
+async fn change_note_text(
+    ref_id: &str,
+    note_text: &str,
+    path: &str,
+    state: State<'_, Mutex<Vec<Ref>>>,
+) -> Result<(), String> {
+    let location = Path::new(path);
+    let _ = mutate_note(location, note_text);
+
+    // Now update the state with the new name
+    let mut state_guard = state
+        .lock()
+        .map_err(|_| "Failed to acquire lock on state".to_string())?;
+
+    let found_ref = state_guard
+        .iter_mut()
+        .find(|ref_instance| ref_instance.get_id() == ref_id);
+
+    if found_ref.is_none() {
+        return Err(format!("Reference with ID '{}' not found", ref_id));
+    }
+
+    let metadata = found_ref.unwrap().get_ref_meta().unwrap();
+    metadata.update_note(note_text);
+    Ok(())
+}
+
+#[tauri::command]
 fn generate_id(lenght: usize) -> String {
     let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let mut rng = rand::thread_rng();
@@ -442,5 +470,6 @@ pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
         add_tag,
         remove_tag,
         change_note_content,
+        change_note_text,
     ])
 }

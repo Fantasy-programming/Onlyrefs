@@ -134,7 +134,7 @@ pub fn remove_tag(metadata_path: &Path, tag: &str) -> Result<(), std::io::Error>
 }
 
 /// Mutate note component from a ref
-fn mutate_note(metadata_path: &Path, text: &str) -> Result<(), std::io::Error> {
+pub fn mutate_note(metadata_path: &Path, text: &str) -> Result<(), std::io::Error> {
     let metadata_json = fs::read_to_string(metadata_path)?;
     let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
 

@@ -24,12 +24,13 @@ import {
   saveMediaToDisk,
 } from '../../lib/helper';
 import { ImageMetadata } from '~/lib/types';
-// import { useSettingsSelector } from '~/state/settingsStore';
+import { useSettingsSelector } from '~/state/settingsStore';
+import { ViewNoteEditor } from './ViewNoteEditor';
 
 export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [showAllTags, setShowAllTags] = createSignal(false);
-  // const { settings } = useSettingsSelector();
+  const { settings } = useSettingsSelector();
 
   const [inputValue, setInputValue] = createSignal('');
 
@@ -152,11 +153,12 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           </div>
           <Show
             when={
-              props.metadata.ref_type === 'image' ||
-              props.metadata.ref_type === 'video'
+              (props.metadata.ref_type === 'image' ||
+                props.metadata.ref_type === 'video') &&
+              settings.appearance.show_media_info
             }
           >
-            <h4 class="text-lg uppercase underline decoration-wavy underline-offset-[6px]">
+            <h4 class="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
               Info
             </h4>
             <div class="my-3">
@@ -173,11 +175,17 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
                 </Match>
               </Switch>
             </div>
-            <h4 class="text-lg uppercase underline decoration-wavy underline-offset-[6px]">
-              Notes
-            </h4>
-            <div class="my-3"></div>
           </Show>
+          <h4 class="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
+            Note
+          </h4>
+          <div class="my-4">
+            <ViewNoteEditor
+              id={props.metadata.id}
+              path={props.path}
+              content={props.metadata.note_text}
+            />
+          </div>
         </div>
         <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 lg:absolute">
           <Tooltip placement="top" openDelay={50}>

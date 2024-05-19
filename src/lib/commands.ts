@@ -1,4 +1,4 @@
-import { error } from 'tauri-plugin-log-api';
+import { error, info } from 'tauri-plugin-log-api';
 import { invoke } from '@tauri-apps/api';
 import { createRefDir, deleteRefDir, makepath, refExist } from './helper';
 import {
@@ -9,6 +9,7 @@ import {
   VideoRef,
   DocRef,
   AudioRef,
+  LinkRef,
 } from './types';
 import { copyFile } from '@tauri-apps/api/fs';
 import { emit } from '@tauri-apps/api/event';
@@ -153,9 +154,23 @@ export const createDocumentRef = async (
   }
 };
 
-export const createLinkRef = async (url: string) => {
-  console.log('Creating link ref');
-  await invoke('generate_link_metadata', { url });
+export const createLinkRef = async (url: string, collectionName: string) => {
+  const linkID = await generate_id({ lenght: 13, createDir: true });
+
+  console.log('here');
+  info('ongoing');
+  const data: LinkRef = await invoke('generate_link_metadata', {
+    refId: linkID,
+    url,
+    collection: collectionName,
+  });
+  info('completed');
+
+  if (data) {
+    emit('ref_added', data);
+  }
+
+  return data;
 };
 
 /// Change the name of a ref
@@ -231,6 +246,25 @@ export const mutateNote = async (
   } catch (e) {
     error(
       `Error: Failed mutate_note operation for the ref with id ${noteID} - ${e}`,
+    );
+    console.error(e);
+  }
+};
+
+export const mutateNoteText = async (
+  id: string,
+  path: string,
+  text: string,
+) => {
+  try {
+    await invoke('change_note_text', {
+      refId: id,
+      path: path,
+      noteText: text,
+    });
+  } catch (e) {
+    error(
+      `Error: Failed mutateNoteText operation for the ref with id ${id} - ${e}`,
     );
     console.error(e);
   }

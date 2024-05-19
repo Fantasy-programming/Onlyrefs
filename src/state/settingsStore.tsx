@@ -6,6 +6,8 @@ import { AppSettings } from '~/lib/types';
 
 export interface SettingRootState {
   readonly settings: AppSettings;
+  showInfo: () => void;
+  autoPlayVideo: () => void;
 }
 
 const Context = createContext<SettingRootState>();
@@ -24,10 +26,22 @@ export const SettingsProvider: ParentComponent = (props) => {
     }
   });
 
+  const showInfo = () => {
+    setSettings('appearance', 'show_media_info', (show) => !show);
+    debug(`Debug: Appearance: Show_media_info toggled`);
+  };
+
+  const autoPlayVideo = () => {
+    setSettings('appearance', 'video_ref_autoplay', (play) => !play);
+    debug(`Debug: Appearance autoPlayVideo toggled`);
+  };
+
   const settingsState = {
     get settings() {
       return settings;
     },
+    showInfo,
+    autoPlayVideo,
   };
 
   return (

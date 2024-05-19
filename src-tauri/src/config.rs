@@ -5,7 +5,7 @@ const DEFAULT_SETTINGS: &str = r#"
 {
   "appearance": {
     "show_media_info": true,
-    "compact_mode": true
+    "video_ref_autoplay": false
   },
   "behavior": {
     "sort_by": "CreationTime"

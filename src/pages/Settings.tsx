@@ -14,7 +14,7 @@ import { RiArrowsArrowGoBackLine } from 'solid-icons/ri';
 import { useSettingsSelector } from '~/state/settingsStore';
 
 const Settings = () => {
-  const { settings } = useSettingsSelector();
+  const { settings, showInfo, autoPlayVideo } = useSettingsSelector();
 
   return (
     <Motion.div class="flex h-full flex-col py-10 pe-10 ps-4 md:p-10">
@@ -42,13 +42,15 @@ const Settings = () => {
                 <Switch
                   checked={settings.appearance.show_media_info}
                   id="dark-mode"
+                  onChange={() => showInfo()}
                 />
               </div>
               <div class="flex items-center gap-4">
-                <Label for="compact-mode">Compact mode</Label>
+                <Label for="autoplay-video">Autoplay Video Ref</Label>
                 <Switch
-                  id="compact-mode"
-                  checked={settings.appearance.compact_mode}
+                  id="autoplay-video"
+                  checked={settings.appearance.video_ref_autoplay}
+                  onChange={() => autoPlayVideo()}
                 />
               </div>
             </CardContent>

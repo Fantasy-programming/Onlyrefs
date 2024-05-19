@@ -9,6 +9,7 @@ import {
   renameRef,
   deleteRef,
   removeTag,
+  mutateNoteText,
 } from './commands';
 import { RootState } from '~/state/refstore';
 import { Ref, changeNameEvent, changeNoteEvent, tagEvent } from './types';
@@ -64,6 +65,17 @@ export async function setupListeners(root: RootState): Promise<UnlistenFn[]> {
     });
 
     unlisteners.push(noteChangedListener);
+
+    const noteTextChangedListener = await listen(
+      'note_text_changed',
+      (event) => {
+        const values = event.payload as changeNoteEvent;
+        mutateNoteText(values.id, values.path, values.content);
+        root.mutateNoteText(values.id, values.content);
+      },
+    );
+
+    unlisteners.push(noteTextChangedListener);
 
     const tagAddedListener = await listen('tag_added', (event) => {
       const values = event.payload as tagEvent;
