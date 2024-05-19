@@ -1,6 +1,6 @@
 [package]
 name = "only-refs"
-version = "0.0.5"
+version = "0.0.6"
 description = "All your references in a single place"
 authors = ["Ngobo Ridy"]
 edition = "2021"

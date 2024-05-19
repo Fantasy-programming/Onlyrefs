@@ -88,7 +88,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   };
 
   return (
-    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight dark:border-gray-100/50  dark:shadow-cardShadow md:rounded-xl lg:absolute    lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
+    <div class="static right-0 top-0 z-10 h-full w-full rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight dark:border-gray-100/50  dark:shadow-cardShadow md:rounded-xl lg:absolute lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
       <div class="onlyrefNoise h-full">
         <header class="onlyrefNoise flex flex-col gap-3 rounded-t-xl bg-foreground/5  p-7">
           <input
@@ -100,7 +100,12 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           />
           <span class="text-sm">{elapsedTime(props.metadata.created_at)}</span>
         </header>
-        <div class="p-4">
+        <div
+          class="overflow-y-scroll p-4"
+          style={{
+            height: 'calc(100% - 148px - 64px)',
+          }}
+        >
           <h4 class="text-lg uppercase">Tags</h4>
           <div class="my-3 transition-all">
             <Presence>
@@ -153,8 +158,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           </div>
           <Show
             when={
-              (props.metadata.ref_type === 'image' ||
-                props.metadata.ref_type === 'video') &&
+              props.metadata.ref_type === 'image' &&
               settings.appearance.show_media_info
             }
           >
@@ -179,7 +183,13 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           <h4 class="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
             Note
           </h4>
-          <div class="my-4">
+          <div
+            class="my-4"
+            style={{
+              'max-height': 'calc(100% - 148px - 64px - 100px - 16px)',
+              overflow: 'auto',
+            }}
+          >
             <ViewNoteEditor
               id={props.metadata.id}
               path={props.path}

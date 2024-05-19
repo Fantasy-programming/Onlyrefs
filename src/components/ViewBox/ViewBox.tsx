@@ -14,31 +14,47 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { ViewBoxInfo } from './ViewBoxInfo';
 import { NoteEditor } from '../BoardItem/BoardNoteItem';
 import { ViewBoxZoom } from './ViewBoxZoom';
-import { isMediaRef } from '~/lib/helper';
 
 export const ViewBox: Component<ParentProps & { source: Ref }> = (props) => {
+  let videoRef: HTMLVideoElement | undefined;
+
+  const [videoDimensions, setVideoDimensions] = createSignal({
+    width: 0,
+    height: 0,
+  });
+
+  const handleVideoLoadedMetadata = () => {
+    if (videoRef) {
+      setVideoDimensions({
+        width: videoRef.videoWidth,
+        height: videoRef.videoHeight,
+      });
+    }
+  };
+
   return (
     <DialogContent
       class={
         'flex h-full max-h-none  w-full max-w-none flex-col overflow-y-scroll p-0 lg:h-[90%] lg:w-[90%] lg:flex-row'
       }
-      style={{
-        background: isMediaRef(props.source)
-          ? props.source.metadata.colors[0]
-          : undefined,
-      }}
     >
       <div class="relative flex flex-grow flex-col items-center  justify-center p-0 py-2 pl-2 lg:w-full lg:pr-[calc((0.5rem*2)+400px)]">
         <div class="flex h-full w-full items-center justify-center overflow-clip rounded-xl p-7">
           <Switch>
             <Match when={props.source.metadata.ref_type === 'video'}>
               <video
+                ref={(el) => (videoRef = el)}
                 class="aspect-video h-auto w-auto rounded-xl"
                 src={(props.source as VideoRef).video_path}
                 preload="auto"
                 autoplay
                 controls
                 loop
+                onLoadedMetadata={handleVideoLoadedMetadata}
+                style={{
+                  'max-width': `min(100%, ${videoDimensions().width}px)`,
+                  'max-height': `min(100%, ${videoDimensions().height}px)`,
+                }}
               ></video>
             </Match>
             <Match when={props.source.metadata.ref_type === 'image'}>

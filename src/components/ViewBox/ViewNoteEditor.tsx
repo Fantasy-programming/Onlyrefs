@@ -55,7 +55,7 @@ export const ViewNoteEditor = (props: {
   }));
 
   return (
-    <div class="onlyrefNoise flex h-full w-full flex-col items-center overflow-x-hidden overscroll-y-contain bg-foreground/5">
+    <div class="onlyrefNoise flex h-full w-full flex-col items-center overflow-x-hidden overscroll-y-contain rounded-lg bg-foreground/5">
       <div
         ref={setContainer}
         class="m-auto w-full hyphens-auto break-words p-2"

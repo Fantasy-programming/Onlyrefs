@@ -1,6 +1,6 @@
 {
   "name": "only-refs",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "type": "module",
   "scripts": {
@@ -84,3 +84,4 @@
     "vitest": "^1.6.0"
   }
 }
+
