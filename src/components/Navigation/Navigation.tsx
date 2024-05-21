@@ -1,7 +1,11 @@
+import { dialog } from '@tauri-apps/api';
+import { installUpdate } from '@tauri-apps/api/updater';
+
 import { Motion } from 'solid-motionone';
 import { Show, createSignal } from 'solid-js';
 import { useColorMode } from '@kobalte/core';
 import { gridSizeHook } from '../../state/hook';
+import { useUpdatePoll } from './useUpdatePoll';
 
 import { FiSettings, FiSun, FiMoon, FiGrid } from 'solid-icons/fi';
 import { BsGrid3x3Gap } from 'solid-icons/bs';
@@ -9,10 +13,30 @@ import { TbGridDots } from 'solid-icons/tb';
 import { Toggle } from '../ui/toggle';
 
 import Logo from '~/assets/logo-simple.svg';
+import { RiSystemLoopLeftFill } from 'solid-icons/ri';
 
 export const SideNavigation = () => {
   const { toggleColorMode, colorMode } = useColorMode();
+  const updateAvailable = useUpdatePoll();
   const [gridPressed, setGridPressed] = createSignal(false);
+
+  async function handleUpdate() {
+    const confirm = await dialog.ask(
+      'An update is available. Do you want to update now?',
+      {
+        title: 'Update Available',
+        type: 'info',
+      },
+    );
+
+    if (confirm) {
+      try {
+        await installUpdate();
+      } catch (error) {
+        console.error('Failed to install update:', error);
+      }
+    }
+  }
 
   return (
     <Motion.nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
@@ -28,6 +52,12 @@ export const SideNavigation = () => {
         </div>
       </div>
       <div class="flex flex-col items-center gap-6 py-12 text-white">
+        <Show when={updateAvailable()}>
+          <div class="relative" onClick={handleUpdate}>
+            <RiSystemLoopLeftFill class="h-5 w-5 text-foreground" />
+            <span class="absolute right-0 top-0 h-2 w-2 rounded-full bg-accent" />
+          </div>
+        </Show>
         <Toggle
           pressed={colorMode() === 'light'}
           onChange={() => toggleColorMode()}
