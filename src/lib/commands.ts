@@ -1,4 +1,3 @@
-import { error, info } from 'tauri-plugin-log-api';
 import { invoke } from '@tauri-apps/api';
 import { createRefDir, deleteRefDir, makepath, refExist } from './helper';
 import {
@@ -36,9 +35,6 @@ export const createImageRef = async (
 
     return data;
   } catch (e) {
-    error(
-      `Error: Failed to create new media ref for file ${imagePath} - ${e} `,
-    );
     console.error(e);
     return null;
   }
@@ -66,9 +62,6 @@ export const createVideoRef = async (
 
     return data;
   } catch (e) {
-    error(
-      `Error: Failed to create new media ref for file ${videoPath} - ${e} `,
-    );
     console.error(e);
     return null;
   }
@@ -96,9 +89,6 @@ export const createAudioRef = async (
 
     return data;
   } catch (e) {
-    error(
-      `Error: Failed to create new media ref for file ${audioPath} - ${e} `,
-    );
     console.error(e);
     return null;
   }
@@ -121,7 +111,6 @@ export const createNoteRef = async (
       emit('ref_added', data);
     }
   } catch (e) {
-    error(`Error: Failed to create new note ref - ${e} `);
     console.error(e);
   }
 };
@@ -148,7 +137,6 @@ export const createDocumentRef = async (
 
     return data;
   } catch (e) {
-    error(`Error: Failed to create new media ref for file ${docPath} - ${e} `);
     console.error(e);
     return null;
   }
@@ -158,13 +146,11 @@ export const createLinkRef = async (url: string, collectionName: string) => {
   const linkID = await generate_id({ lenght: 13, createDir: true });
 
   console.log('here');
-  info('ongoing');
   const data: LinkRef = await invoke('generate_link_metadata', {
     refId: linkID,
     url,
     collection: collectionName,
   });
-  info('completed');
 
   if (data) {
     emit('ref_added', data);
@@ -186,9 +172,6 @@ export const renameRef = async (
       newName: newName,
     });
   } catch (e) {
-    error(
-      `Error: Failed rename_ref operation for the ref with id ${refID} - ${e}`,
-    );
     console.error(e);
   }
 };
@@ -199,7 +182,6 @@ export const deleteRef = async (collectionID: string) => {
     await invoke('remove_ref', { refId: collectionID });
     await deleteRefDir(collectionID);
   } catch (e) {
-    error(`Error: Failed to delete ref with id ${collectionID} - ${e} `);
     console.error(e);
   }
 };
@@ -209,7 +191,6 @@ export const addTag = async (id: string, path: string, tag: string) => {
   try {
     await invoke('add_tag', { refId: id, path, tag: tag });
   } catch (e) {
-    error(`Error: Failed add_tag operation for the ref with id ${id} - ${e}`);
     console.error(e);
   }
 };
@@ -223,9 +204,6 @@ export const removeTag = async (id: string, path: string, tag: string) => {
       tag: tag,
     });
   } catch (e) {
-    error(
-      `Error: Failed remove_tag operation for the ref with id ${id} - ${e}`,
-    );
     console.error(e);
   }
 };
@@ -244,9 +222,6 @@ export const mutateNote = async (
       noteContent: content,
     });
   } catch (e) {
-    error(
-      `Error: Failed mutate_note operation for the ref with id ${noteID} - ${e}`,
-    );
     console.error(e);
   }
 };
@@ -263,9 +238,6 @@ export const mutateNoteText = async (
       noteText: text,
     });
   } catch (e) {
-    error(
-      `Error: Failed mutateNoteText operation for the ref with id ${id} - ${e}`,
-    );
     console.error(e);
   }
 };
@@ -289,7 +261,6 @@ export const generate_id = async ({
         break;
       }
     } catch (e) {
-      error(`Error: Failed to generate_id`);
       console.error(e);
     }
   }

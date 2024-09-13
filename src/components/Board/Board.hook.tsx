@@ -10,7 +10,6 @@ import {
   createVideoRef,
 } from '~/lib/commands';
 import { sep } from '@tauri-apps/api/path';
-import { error, info } from 'tauri-plugin-log-api';
 import { verifyExtension } from '~/lib/helper';
 
 export const useFileSelector = createRoot(() => {
@@ -44,14 +43,12 @@ export const useFileSelector = createRoot(() => {
         const extension = fileName.split('.').pop();
 
         if (!extension) {
-          error('Error: File has no extension');
           return null;
         }
 
         const type = verifyExtension(extension);
 
         if (!type) {
-          info('Error: File extension not supported');
           return null;
         }
 
@@ -69,7 +66,7 @@ export const useFileSelector = createRoot(() => {
             await createDocumentRef(file, fileName, collection);
             break;
           default:
-            error('Error: Unknown file type');
+            console.error('Error: Unknown file type');
         }
 
         setProgress({

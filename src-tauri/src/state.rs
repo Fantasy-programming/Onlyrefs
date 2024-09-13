@@ -540,12 +540,18 @@ pub enum SortBy {
     ModificationTime,
 }
 
-pub fn init_media_ref(app_handle: AppHandle) -> Mutex<Vec<Ref>> {
-    let collections_dir = get_collection_path(&app_handle);
-    utils::fetch_refs(&collections_dir)
+pub fn init_media_ref(app_handle: &AppHandle) -> Mutex<Vec<Ref>> {
+    let collections_dir = get_collection_path(app_handle);
+    match utils::fetch_refs(&collections_dir) {
+        Ok(refs) => refs,
+        Err(e) => {
+            eprintln!("Error initializing media references: {}", e);
+            Mutex::new(Vec::new())
+        }
+    }
 }
 
-pub fn init_settings(app_handle: AppHandle) -> Mutex<Settings> {
-    let settings = get_settings_path(&app_handle);
+pub fn init_settings(app_handle: &AppHandle) -> Mutex<Settings> {
+    let settings = get_settings_path(app_handle);
     utils::fetch_settings(&settings)
 }

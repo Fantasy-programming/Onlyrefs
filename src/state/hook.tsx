@@ -1,4 +1,3 @@
-import { debug } from 'tauri-plugin-log-api';
 import { Accessor, onMount, createRoot, createSignal } from 'solid-js';
 
 export type IGridSize = [
@@ -18,7 +17,7 @@ export const gridSizeHook = createRoot(() => {
   });
 
   const updateGridSize = (size: number) => {
-    debug(`Debug: Grid size updated to ${size}`);
+    console.debug(`Debug: Grid size updated to ${size}`);
     setGridSize(size);
     localStorage.setItem('gridSize', size.toString());
   };

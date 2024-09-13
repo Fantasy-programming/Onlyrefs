@@ -1,4 +1,3 @@
-import { debug, error } from 'tauri-plugin-log-api';
 import { onMount, createContext, ParentComponent, useContext } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 import { NoteRef, Ref } from '~/lib/types';
@@ -31,7 +30,6 @@ export const RefProvider: ParentComponent = (props) => {
 
       setRef(data);
     } catch (e) {
-      error('Error: Failed to fetch refs at RefProvider fetchRef');
       throw new Error('Failed to fetch refs at RefProvider fetchRef');
     }
   };
@@ -39,7 +37,6 @@ export const RefProvider: ParentComponent = (props) => {
   onMount(fetchRefs);
 
   const mutateTag = (id: string, tagname: string, type: string) => {
-    debug(`Debug: Tag of ref with id ${id} mutated`);
     setRef(
       (meta) => meta.metadata.id === id,
       'metadata',
@@ -60,12 +57,10 @@ export const RefProvider: ParentComponent = (props) => {
 
   const addRef = (ref: Ref) => {
     setRef(produce((refs) => refs.unshift(ref)));
-    debug('Debug: Ref added');
   };
 
   const mutateName = (id: string, name: string) => {
     setRef((meta) => meta.metadata.id === id, 'metadata', 'name', name);
-    debug(`Debug: Name of ref with id ${id} mutated`);
   };
 
   const deleteRef = (id: string) => {
@@ -77,7 +72,6 @@ export const RefProvider: ParentComponent = (props) => {
         }
       }),
     );
-    debug(`Debug: Ref with the id ${id} deleted`);
   };
 
   const mutateNote = (id: string, note: string) => {
@@ -89,12 +83,10 @@ export const RefProvider: ParentComponent = (props) => {
         }
       }),
     );
-    debug(`Debug: Note with the id ${id} mutated`);
   };
 
   const mutateNoteText = (id: string, note: string) => {
     setRef((meta) => meta.metadata.id === id, 'metadata', 'note_text', note);
-    debug(`Debug: Note of the ref with id ${id} mutated`);
   };
 
   const rootState = {
@@ -117,7 +109,6 @@ export const RefProvider: ParentComponent = (props) => {
 export const useRefSelector = () => {
   const refSelector = useContext(Context);
   if (!refSelector) {
-    error('Error: useRefSelectorContext should be called inside RefProvider');
     throw new Error(
       'useRefSelectorContext should be called inside RefProvider',
     );

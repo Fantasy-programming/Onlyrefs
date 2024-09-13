@@ -24,13 +24,13 @@ import {
   saveMediaToDisk,
 } from '../../lib/helper';
 import { ImageMetadata } from '~/lib/types';
-import { useSettingsSelector } from '~/state/settingsStore';
 import { ViewNoteEditor } from './ViewNoteEditor';
+import { getSettings } from '~/resources/settings.resource';
 
 export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
   const [showAllTags, setShowAllTags] = createSignal(false);
-  const { settings } = useSettingsSelector();
+  const settings = getSettings();
 
   const [inputValue, setInputValue] = createSignal('');
 
@@ -159,7 +159,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
           <Show
             when={
               props.metadata.ref_type === 'image' &&
-              settings.appearance.show_media_info
+              settings()?.appearance.show_media_info
             }
           >
             <h4 class="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">

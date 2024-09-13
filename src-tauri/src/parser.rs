@@ -1,5 +1,6 @@
 use std::{
     fs::read_to_string,
+    io,
     path::{Path, PathBuf},
 };
 
@@ -9,79 +10,58 @@ use crate::state::{ImageMetadata, ImageRef, Ref, Settings, VideoMetadata, VideoR
 use crate::utils::convert_file_src;
 
 /// Parse a pathbuffer array into a Ref struct
-pub fn parse_refs(refs: &[PathBuf]) -> Result<Ref, std::io::Error> {
-    if refs
-        .iter()
-        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.image.json")
-    {
-        return parse_image_ref(refs);
-    }
+pub fn parse_refs(refs: &[PathBuf]) -> Result<Ref, io::Error> {
+    let metadata_file = refs.iter().find_map(|ref_path| {
+        ref_path.file_name().and_then(|name| {
+            let name_str = name.to_str()?;
+            match name_str {
+                "metadata.image.json" => Some(("image", ref_path)),
+                "metadata.video.json" => Some(("video", ref_path)),
+                "metadata.audio.json" => Some(("audio", ref_path)),
+                "metadata.note.json" => Some(("note", ref_path)),
+                "metadata.link.json" => Some(("link", ref_path)),
+                "metadata.doc.json" => Some(("doc", ref_path)),
+                _ => None,
+            }
+        })
+    });
 
-    if refs
-        .iter()
-        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.video.json")
-    {
-        return parse_video_ref(refs);
+    match metadata_file {
+        Some(("image", _)) => parse_image_ref(refs),
+        Some(("video", _)) => parse_video_ref(refs),
+        Some(("audio", _)) => parse_audio_ref(refs),
+        Some(("note", _)) => parse_note_ref(refs),
+        Some(("link", _)) => parse_link_ref(refs),
+        Some(("doc", _)) => parse_doc_ref(refs),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Invalid input: neither a media nor a note reference found",
+        )),
     }
-
-    if refs
-        .iter()
-        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.audio.json")
-    {
-        return parse_audio_ref(refs);
-    }
-
-    if refs
-        .iter()
-        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.note.json")
-    {
-        return parse_note_ref(refs);
-    }
-
-    if refs
-        .iter()
-        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.link.json")
-    {
-        return parse_link_ref(refs);
-    }
-
-    if refs
-        .iter()
-        .any(|ref_path| ref_path.file_name().unwrap() == "metadata.doc.json")
-    {
-        return parse_doc_ref(refs);
-    }
-
-    Err(std::io::Error::new(
-        std::io::ErrorKind::InvalidInput,
-        "Invalid input: neither a media nor a note reference found",
-    ))
 }
 
 /// Parse a image reference
-fn parse_image_ref(refs: &[PathBuf]) -> Result<Ref, std::io::Error> {
+fn parse_image_ref(refs: &[PathBuf]) -> Result<Ref, io::Error> {
     let mut image_ref = ImageRef::default();
 
     for ref_path in refs {
-        if ref_path.file_name().unwrap() == "metadata.image.json" {
-            let json_txt = std::fs::read_to_string(ref_path)?;
-            let metadata = parse_metadata::<ImageMetadata>(&json_txt)?;
-            image_ref.metapath = ref_path.to_str().unwrap().to_string();
-            image_ref.metadata = Some(metadata);
-            continue;
+        if let Some(file_name) = ref_path.file_name().and_then(|f| f.to_str()) {
+            if file_name == "metadata.image.json" {
+                let json_txt = std::fs::read_to_string(ref_path)?;
+                let metadata = parse_metadata::<ImageMetadata>(&json_txt)?;
+                image_ref.metapath = ref_path
+                    .to_str()
+                    .ok_or_else(|| {
+                        std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid metapath")
+                    })?
+                    .to_string();
+                image_ref.metadata = Some(metadata);
+            } else if file_name.starts_with("lower_") {
+                image_ref.low_res_imagepath = convert_file_src(ref_path);
+            } else {
+                image_ref.image_path = convert_file_src(ref_path);
+            }
         }
-
-        if ref_path
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .starts_with("lower_")
-        {
-            image_ref.low_res_imagepath = convert_file_src(ref_path);
-            continue;
-        }
-        image_ref.image_path = convert_file_src(ref_path);
     }
 
     if image_ref.low_res_imagepath.is_empty() {
@@ -96,15 +76,22 @@ fn parse_video_ref(refs: &[PathBuf]) -> Result<Ref, std::io::Error> {
     let mut video_ref = VideoRef::default();
 
     for ref_path in refs {
-        if ref_path.file_name().unwrap() == "metadata.video.json" {
-            let json_txt = std::fs::read_to_string(ref_path)?;
-            let metadata = parse_metadata::<VideoMetadata>(&json_txt)?;
-            video_ref.metapath = ref_path.to_str().unwrap().to_string();
-            video_ref.metadata = Some(metadata);
-            continue;
-        }
+        if let Some(file_name) = ref_path.file_name().and_then(|f| f.to_str()) {
+            if file_name == "metadata.video.json" {
+                let json_txt = std::fs::read_to_string(ref_path)?;
+                let metadata = parse_metadata::<VideoMetadata>(&json_txt)?;
 
-        video_ref.video_path = convert_file_src(ref_path);
+                video_ref.metapath = ref_path
+                    .to_str()
+                    .ok_or_else(|| {
+                        std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid metapath")
+                    })?
+                    .to_string();
+                video_ref.metadata = Some(metadata);
+            } else {
+                video_ref.video_path = convert_file_src(ref_path);
+            }
+        }
     }
 
     Ok(Ref::Video(video_ref))

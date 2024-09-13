@@ -27,15 +27,19 @@ import { Button } from '../ui/button';
 import { createLinkRef } from '~/lib/commands';
 
 const Board = (props: BoardProps) => {
-  const [boardRefs, setBoardRefs] = createSignal(props.refs);
-  const [searching, setSearching] = createSignal(false);
-  const [dialogOpen, setDialogOpen] = createSignal(false);
+  const [searchTerm, setSearchTerm] = createSignal('');
   const [link, setLink] = createSignal<string>('');
 
+  const [dialogOpen, setDialogOpen] = createSignal(false);
   const [selectF, dropFiles, progress] = useFileSelector;
   const [gridSize] = gridSizeHook;
 
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
+
+  const refs = createMemo(() => {
+    const ref = props.refs.latest;
+    return searchTerm() !== '' ? searchExtended(ref, searchTerm()) : ref ?? [];
+  });
 
   onMount(() => {
     dropFiles(props.collection);
@@ -65,22 +69,14 @@ const Board = (props: BoardProps) => {
           </h1>
         </Show>
         <Input
+          value={searchTerm()}
           placeholder="Search your refs..."
           class="border-none font-serif text-3xl italic outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-4xl"
-          oninput={(e) => {
-            const value = e.target.value;
-            if (!Boolean(value)) {
-              setBoardRefs(props.refs);
-              setSearching(false);
-              return;
-            }
-            setBoardRefs(searchExtended(props.refs, value));
-            if (!searching()) setSearching(true);
-          }}
+          oninput={(e) => setSearchTerm(e.target.value)}
         />
       </div>
       <Show
-        when={props.refs.length !== 0}
+        when={props.refs()?.length !== 0}
         fallback={
           <div class="relative h-full w-full">
             <div class="absolute left-1/2 top-1/3 flex -translate-x-1/2  -translate-y-1/2 flex-col items-center justify-center gap-5 text-center font-serif text-2xl text-muted/80 md:text-3xl">
@@ -100,8 +96,8 @@ const Board = (props: BoardProps) => {
             'p-10': breakPoints()() === 5,
             'p-12': breakPoints()() === 6,
           }}
-          pre={!searching() ? [NewNote] : []}
-          items={boardRefs()}
+          pre={searchTerm() === '' ? [NewNote] : []}
+          items={refs()}
           gap={20}
           columns={breakPoints()()}
         >

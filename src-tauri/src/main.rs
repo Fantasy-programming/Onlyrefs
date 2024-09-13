@@ -1,4 +1,3 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![allow(unused_imports)]
 use tauri::Manager;
@@ -24,10 +23,10 @@ fn main() {
         .plugin(tauri_plugin_snapshot::init())
         .setup(|app| {
             let handle = app.handle();
-            config::init(handle);
 
-            app.manage(state::init_media_ref(app.handle()));
-            app.manage(state::init_settings(app.handle()));
+            config::init(&handle);
+            app.manage(state::init_media_ref(&handle));
+            app.manage(state::init_settings(&handle));
 
             // Set window shadow (macos & windows only)
             #[cfg(any(windows, target_os = "macos"))]
@@ -35,6 +34,7 @@ fn main() {
                 let window = app.get_window("main").unwrap();
                 set_shadow(&window, true).expect("Unsupported platform");
             }
+
             Ok(())
         })
         .invoke_handler(commands::get_handlers())

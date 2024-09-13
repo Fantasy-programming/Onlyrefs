@@ -5,7 +5,7 @@ use serde_json::Value;
 use std::collections::{HashMap, VecDeque};
 use std::fs::read_to_string;
 use std::panic::PanicInfo;
-use std::{fs, path::Path, path::PathBuf, sync::Mutex};
+use std::{fs, io, path::Path, path::PathBuf, sync::Mutex};
 
 use crate::parser::parse_refs;
 use crate::state::{AudioMetadata, AudioRef, LinkMetadata, LinkRef, Metadata, RefMeta};
@@ -22,46 +22,48 @@ where
 }
 
 /// Get all subdirectories in the given path
-fn get_all_refs(collections_dir: &Path) -> Vec<Vec<PathBuf>> {
-    let mut refs = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(collections_dir) {
-        for entry in entries.flatten() {
-            if let Ok(path) = entry.path().canonicalize() {
-                if path.is_dir() {
-                    let mut children = Vec::new();
-                    if let Ok(dir_entries) = std::fs::read_dir(&path) {
-                        for child in dir_entries.flatten() {
-                            children.push(child.path());
-                        }
-                    }
-                    refs.push(children);
-                }
-            }
-        }
-    }
-    refs
+fn get_all_refs(collections_dir: &Path) -> io::Result<Vec<Vec<PathBuf>>> {
+    let result = fs::read_dir(collections_dir)?
+        .filter_map(|entry| entry.ok())
+        .filter_map(|entry| entry.path().canonicalize().ok())
+        .filter(|path| path.is_dir())
+        .map(|dir| {
+            fs::read_dir(&dir)
+                .map(|entries| {
+                    entries
+                        .filter_map(|entry| entry.ok())
+                        .map(|entry| entry.path())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_else(|_| Vec::new())
+        })
+        .collect::<Vec<_>>();
+
+    Ok(result)
 }
 
 /// Get all references in the collections directory
-pub fn fetch_refs(collections_dir: &Path) -> Mutex<Vec<Ref>> {
-    let mut ref_vec: Vec<Ref> = Vec::new();
-    let mut error_queue: VecDeque<std::io::Error> = VecDeque::new();
+pub fn fetch_refs(collections_dir: &Path) -> io::Result<Mutex<Vec<Ref>>> {
+    let all_refs = get_all_refs(collections_dir)?;
 
-    for ref_paths in get_all_refs(collections_dir) {
+    let mut ref_vec = Vec::new();
+    let mut errors = Vec::new();
+
+    for ref_paths in all_refs {
         match parse_refs(&ref_paths) {
             Ok(ref_data) => ref_vec.push(ref_data),
-            Err(err) => error_queue.push_back(err),
+            Err(err) => errors.push(err),
         }
     }
 
-    if !error_queue.is_empty() {
+    if !errors.is_empty() {
         eprintln!("Errors encountered during reference parsing:");
-        for err in error_queue.drain(..) {
+        for err in &errors {
             eprintln!(" - {}", err);
         }
     }
 
-    Mutex::new(ref_vec)
+    Ok(Mutex::new(ref_vec))
 }
 
 pub fn fetch_settings(settings_path: &Path) -> Mutex<Settings> {
@@ -272,7 +274,7 @@ mod tests {
         let _ = fs::create_dir_all(collection_dir.join("dir1"));
         let _ = fs::create_dir_all(collection_dir.join("dir2"));
 
-        let refs = get_all_refs(collection_dir);
+        let refs = get_all_refs(collection_dir).unwrap_or_default();
         assert_eq!(refs.len(), 2);
         assert_eq!(refs[0].len(), 0);
         assert_eq!(refs[1].len(), 0);

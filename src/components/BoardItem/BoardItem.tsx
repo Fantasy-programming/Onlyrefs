@@ -8,7 +8,7 @@ import { Skeleton } from '../ui/skeleton';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { NoteContent } from './BoardNoteItem.tsx';
 import { createItems } from '~/lib/helper.ts';
-import { useSettingsSelector } from '~/state/settingsStore.tsx';
+import { getSettings } from '~/resources/settings.resource.ts';
 
 export const BoardItem = (props: BoardItemProps) => {
   return (
@@ -69,7 +69,7 @@ const ImageItem = (props: { mediaInfo: ImageRef }) => {
 
 // Render a video into the board
 const VideoItem = (props: { mediaInfo: VideoRef }) => {
-  const { settings } = useSettingsSelector();
+  const settings = getSettings();
 
   const showcontext = async (e: MouseEvent) => {
     e.preventDefault();
@@ -95,13 +95,13 @@ const VideoItem = (props: { mediaInfo: VideoRef }) => {
             class="absolute h-full w-full rounded-xl object-cover"
             src={props?.mediaInfo?.video_path}
             preload={
-              settings.appearance.video_ref_autoplay ? 'auto' : 'metadata'
+              settings()?.appearance.video_ref_autoplay ? 'auto' : 'metadata'
             }
-            autoplay={settings.appearance.video_ref_autoplay}
+            autoplay={settings()?.appearance.video_ref_autoplay}
             loop
             muted
           ></video>
-          <Show when={!settings.appearance.show_media_info}>
+          <Show when={!settings()?.appearance.show_media_info}>
             <div class="absolute inset-0 z-10 flex items-center justify-center">
               <svg
                 class="h-16 w-16 animate-spin text-white"

@@ -1,9 +1,9 @@
-import { Accessor } from 'solid-js';
-import { Ref } from '../../lib/types';
+import type { Accessor, Resource } from 'solid-js';
+import type { Ref } from '../../lib/types';
 
 export interface BoardProps {
   collection: string;
-  refs: Ref[];
+  refs: Resource<Ref[]>;
   home?: boolean;
 }
 

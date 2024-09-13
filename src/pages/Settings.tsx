@@ -11,10 +11,14 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { RiArrowsArrowGoBackLine } from 'solid-icons/ri';
-import { useSettingsSelector } from '~/state/settingsStore';
+import {
+  getSettings,
+  showInfo,
+  autoPlayVideo,
+} from '~/resources/settings.resource';
 
 const Settings = () => {
-  const { settings, showInfo, autoPlayVideo } = useSettingsSelector();
+  const settings = getSettings();
 
   return (
     <Motion.div class="flex h-full flex-col py-10 pe-10 ps-4 md:p-10">
@@ -40,7 +44,7 @@ const Settings = () => {
               <div class="flex items-center gap-4">
                 <Label for="dark-mode">Show Media Info</Label>
                 <Switch
-                  checked={settings.appearance.show_media_info}
+                  checked={settings()?.appearance.show_media_info}
                   id="dark-mode"
                   onChange={() => showInfo()}
                 />
@@ -49,7 +53,7 @@ const Settings = () => {
                 <Label for="autoplay-video">Autoplay Video Ref</Label>
                 <Switch
                   id="autoplay-video"
-                  checked={settings.appearance.video_ref_autoplay}
+                  checked={settings()?.appearance.video_ref_autoplay}
                   onChange={() => autoPlayVideo()}
                 />
               </div>
@@ -69,7 +73,7 @@ const Settings = () => {
                   id="sort-by"
                   options={['Creation_Time', 'Last_Modified']}
                   placeholder="Sort By ..."
-                  value={settings.behavior.sort_by}
+                  value={settings()?.behavior.sort_by}
                   itemComponent={(props) => (
                     <SelectItem item={props.item}>
                       {props.item.rawValue}

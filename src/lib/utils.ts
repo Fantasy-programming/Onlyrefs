@@ -1,4 +1,3 @@
-import { error } from 'tauri-plugin-log-api';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
@@ -18,7 +17,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function disableMenu() {
+export function cleanState() {
   if (window.location.hostname !== 'tauri.localhost') {
     return;
   }
@@ -93,8 +92,8 @@ export async function setupListeners(root: RootState): Promise<UnlistenFn[]> {
 
     unlisteners.push(tagRemovedListener);
   } catch (e) {
-    error(`Error: Error setting up listeners - ${e}`);
-    throw error;
+    console.error(e);
+    throw e;
   }
 
   return unlisteners;

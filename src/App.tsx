@@ -5,15 +5,14 @@ import { Toaster } from 'solid-toast';
 
 import './App.css';
 
-import { setupListeners } from './lib/utils';
-import { useRefSelector } from './state/refstore';
+// import { setupListeners } from './lib/utils';
+// import { useRefSelector } from './state/refstore';
 import { Show, createSignal, onCleanup } from 'solid-js';
 import { createShortcut } from '@solid-primitives/keyboard';
 import { emit } from '@tauri-apps/api/event';
 
 const App = (props: RouteSectionProps) => {
-  const root = useRefSelector();
-  const unlisteners = setupListeners(root);
+  // const unlisteners = setupListeners(root);
 
   const [sideNavOpen, setSideNavOpen] = createSignal(true);
 
@@ -22,10 +21,10 @@ const App = (props: RouteSectionProps) => {
     emit('sidebar_toggled');
   });
 
-  onCleanup(async () => {
-    const unlistener = await unlisteners;
-    unlistener.forEach((unlistener) => unlistener());
-  });
+  // onCleanup(async () => {
+  //   const unlistener = await unlisteners;
+  //   unlistener.forEach((unlistener) => unlistener());
+  // });
 
   return (
     <>

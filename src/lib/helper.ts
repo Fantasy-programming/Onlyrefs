@@ -25,7 +25,6 @@ import {
 } from './types';
 import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/api/dialog';
-import { error } from 'tauri-plugin-log-api';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
@@ -47,7 +46,6 @@ export const createRefDir = async (collectionName: string) => {
     });
   } catch (e) {
     console.error(e);
-    error(`Error: Couln't create ${collectionName} directory`);
   }
 };
 
@@ -60,7 +58,6 @@ export const deleteRefDir = async (collectionID: string) => {
     });
   } catch (e) {
     console.error(e);
-    error(`Error: Couldn't delete ${collectionID} directory`);
   }
 };
 
@@ -71,7 +68,6 @@ export const get_note_content = async (notepath: string) => {
     return content;
   } catch (e) {
     console.error(e);
-    error(`Error: Failed to read the file at ${notepath}`);
     return 'Something went wrong';
   }
 };
@@ -88,13 +84,13 @@ export const verifyExtension = (extension: string) => {
 };
 
 /// Search for Refs
-export function searchExtended(refs: Ref[], searchText: string) {
+export function searchExtended(refs: Ref[] | undefined, searchText: string) {
   const fuseOpt: IFuseOptions<Ref> = {
     keys: ['metadata.name', 'metadata.tags'],
     threshold: 0.5,
   };
 
-  const fuse = new Fuse(refs, fuseOpt);
+  const fuse = new Fuse(refs || [], fuseOpt);
   const results = fuse.search(searchText);
 
   return results.map((result) => result.item);

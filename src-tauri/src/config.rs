@@ -26,15 +26,15 @@ pub fn get_collection_path(handle: &AppHandle) -> PathBuf {
     app_data_dir.join("collections")
 }
 
-pub fn init(handle: AppHandle) {
-    let collection_path = get_collection_path(&handle);
-    let settings_path = get_settings_path(&handle);
+pub fn init(handle: &AppHandle) {
+    let collection_path = get_collection_path(handle);
+    let settings_path = get_settings_path(handle);
 
     if !(collection_path.exists()) {
         fs::create_dir_all(&collection_path).unwrap();
     }
 
     if !(settings_path.exists()) {
-        fs::write(settings_path, DEFAULT_SETTINGS).unwrap();
+        fs::write(&settings_path, DEFAULT_SETTINGS).unwrap();
     }
 }

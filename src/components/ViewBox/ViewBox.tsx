@@ -5,6 +5,7 @@ import {
   Match,
   ParentProps,
   Show,
+  Suspense,
   Switch,
   createSignal,
 } from 'solid-js';
@@ -130,10 +131,12 @@ export const ViewBox: Component<ParentProps & { source: Ref }> = (props) => {
           </Show>
         </div>
       </div>
-      <ViewBoxInfo
-        metadata={props.source.metadata}
-        path={props.source.metapath}
-      />
+      <Suspense>
+        <ViewBoxInfo
+          metadata={props.source.metadata}
+          path={props.source.metapath}
+        />
+      </Suspense>
     </DialogContent>
   );
 };
