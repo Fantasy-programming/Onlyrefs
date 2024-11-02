@@ -1,7 +1,7 @@
 import { Motion } from 'solid-motionone';
 import { useParams } from '@solidjs/router';
 import { JSX, Setter, Show, createSignal, onMount } from 'solid-js';
-import { useRefSelector } from '~/state/refstore';
+import { getRefs } from '~/resources/refs.resource';
 
 import Board from '~/components/Board/Board';
 
@@ -23,7 +23,7 @@ import { Button } from '~/components/ui/button';
 
 const BoardsPage = () => {
   const [boards, setBoards] = createSignal<string[]>([]);
-  const root = useRefSelector();
+  const refs = getRefs();
 
   const { id } = useParams();
   const boardID = decodeURIComponent(id);
@@ -31,10 +31,14 @@ const BoardsPage = () => {
   const getBoards = async () => {
     const boards: string[] = [];
 
-    for (const refs of root.ref) {
-      if (refs.metadata?.collection) {
-        if (!boards.includes(refs.metadata.collection)) {
-          boards.push(refs.metadata.collection);
+    const data = refs();
+
+    if (!data) return;
+
+    for (const ref of data) {
+      if (ref.metadata?.collection) {
+        if (!boards.includes(ref.metadata.collection)) {
+          boards.push(ref.metadata.collection);
         }
       }
     }
@@ -49,7 +53,7 @@ const BoardsPage = () => {
     <>
       <Show
         when={!id}
-        fallback={<Board collection={boardID} home={true} refs={root.ref} />}
+        fallback={<Board collection={boardID} home={true} refs={refs} />}
       >
         <Motion.div animate={{ opacity: [0, 1] }} class="mt-20">
           <header class="flex items-center justify-between">

@@ -2,73 +2,34 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "beforeBuildCommand": "yarn run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "only-refs",
-    "version": "0.0.6"
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": "v1Compatible"
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "dialog": {
-        "open": true
-      },
-      "fs": {
-        "scope": [
-          "$HOME/**",
-          "**",
-          "$APP",
-          "$APP/**",
-          "$APPDATA/**",
-          "$CONFIG",
-          "$CONFIG/**"
-        ],
-        "all": true
-      },
-      "path": {
-        "all": true
-      },
-      "protocol": {
-        "asset": true,
-        "assetScope": ["$APPDATA/**"]
-      },
-      "window": {
-        "all": false,
-        "close": true,
-        "hide": true,
-        "show": true,
-        "setTitle": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true
-      },
-      "clipboard": {
-        "writeText": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.onlyref",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
+  "productName": "only-refs",
+  "mainBinaryName": "only-refs",
+  "version": "0.0.6",
+  "identifier": "com.onlyref",
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUxQzlFNThGQkQzRTlFRkQKUldUOW5qNjlqK1hKNGRyL3FCRE50d256TUhBWE9JNkxQWFBhbEYva0NZK0ZkS24raGhFdXU2OW8K",
+      "endpoints": [
+        "https://tauri-update-server.freedominwork.workers.dev/v1/{{target}}/{{arch}}/{{current_version}}"
       ]
-    },
-    "security": {
-      "csp": "default-src: 'self'; media-src 'self' asset: https://asset.localhost"
-    },
+    }
+  },
+  "app": {
     "windows": [
       {
         "fullscreen": false,
@@ -79,12 +40,14 @@
         "height": 600
       }
     ],
-    "updater": {
-      "active": true,
-      "endpoints": [
-        "https://tauri-update-server.freedominwork.workers.dev/v1/{{target}}/{{arch}}/{{current_version}}"
-      ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUxQzlFNThGQkQzRTlFRkQKUldUOW5qNjlqK1hKNGRyL3FCRE50d256TUhBWE9JNkxQWFBhbEYva0NZK0ZkS24raGhFdXU2OW8K"
+    "security": {
+      "assetProtocol": {
+        "scope": [
+          "$APPDATA/**"
+        ],
+        "enable": true
+      },
+      "csp": "default-src: 'self'; media-src 'self' asset: https://asset.localhost; connect-src ipc: http://ipc.localhost"
     }
   }
 }

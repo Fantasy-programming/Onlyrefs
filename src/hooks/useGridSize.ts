@@ -5,7 +5,7 @@ export type IGridSize = [
   updateGridSize: (size: number) => void,
 ];
 
-export const gridSizeHook = createRoot(() => {
+export const useGridSize = createRoot(() => {
   const [gridSize, setGridSize] = createSignal(4);
 
   onMount(() => {

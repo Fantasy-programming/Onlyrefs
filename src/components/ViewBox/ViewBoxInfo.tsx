@@ -7,15 +7,15 @@ import toast from 'solid-toast';
 
 import { ViewBoxInfoProps } from './ViewBox.types';
 
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
+import { Input } from '../ui/input-old';
+import { Button } from '../ui/button-old';
 
 import { RiSystemDeleteBin6Line } from 'solid-icons/ri';
 import { TbLayoutDashboard } from 'solid-icons/tb';
 import { OcShare3 } from 'solid-icons/oc';
 import { VsAdd } from 'solid-icons/vs';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip-old';
 import { ViewBoxTag } from './ViewBoxTags';
 
 import {

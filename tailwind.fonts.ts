@@ -1,9 +1,9 @@
-const plugin = require('tailwindcss/plugin');
+import plugin from 'tailwindcss/plugin';
 
 const fontVariationSettings = plugin(function ({ addUtilities }) {
   addUtilities({
     '.font-thin': {
-      fontWeight: 100,
+      fontWeight: '100',
       fontVariationSettings: '"wght" 100',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 100',
@@ -13,7 +13,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-extralight': {
-      fontWeight: 200,
+      fontWeight: '200',
       fontVariationSettings: '"wght" 200',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 200',
@@ -23,7 +23,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-light': {
-      fontWeight: 300,
+      fontWeight: '300',
       fontVariationSettings: '"wght" 300',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 300',
@@ -33,7 +33,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-normal': {
-      fontWeight: 400,
+      fontWeight: '400',
       fontVariationSettings: '"wght" 400',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 400',
@@ -43,7 +43,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-medium': {
-      fontWeight: 500,
+      fontWeight: '500',
       fontVariationSettings: '"wght" 500',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 500',
@@ -53,7 +53,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-semibold': {
-      fontWeight: 600,
+      fontWeight: '600',
       fontVariationSettings: '"wght" 600',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 600',
@@ -63,7 +63,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-bold': {
-      fontWeight: 700,
+      fontWeight: '700',
       fontVariationSettings: '"wght" 700',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 700',
@@ -73,7 +73,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-extrabold': {
-      fontWeight: 800,
+      fontWeight: '800',
       fontVariationSettings: '"wght" 800',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 800',
@@ -83,7 +83,7 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
 
   addUtilities({
     '.font-black': {
-      fontWeight: 900,
+      fontWeight: '900',
       fontVariationSettings: '"wght" 900',
       '&.italic': {
         fontVariationSettings: '"slnt" 1, "wght" 900',
@@ -99,4 +99,4 @@ const fontVariationSettings = plugin(function ({ addUtilities }) {
   });
 });
 
-module.exports = fontVariationSettings;
+export default fontVariationSettings;

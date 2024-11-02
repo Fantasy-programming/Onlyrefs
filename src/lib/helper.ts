@@ -1,36 +1,27 @@
-import {
-  exists,
-  createDir,
-  readTextFile,
-  copyFile,
-  removeDir,
-} from '@tauri-apps/api/fs';
+import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
+import { readTextFile, copyFile, remove } from '@tauri-apps/plugin-fs';
+import { exists, mkdir } from '@tauri-apps/plugin-fs';
+import { open } from '@tauri-apps/plugin-dialog';
 import { differenceInSeconds, parse } from 'date-fns';
 import Fuse, { IFuseOptions } from 'fuse.js';
 
 import {
+  BREAKPOINTS_4,
+  BREAKPOINTS_5,
+  BREAKPOINTS_6,
   COLLECTIONS_DIR,
   DATA_DIR,
   SUPPORTED_FILES,
-  breakpoints_4,
-  breakpoints_5,
-  breakpoints_6,
 } from './config';
-import {
-  ImageMetadata,
-  ImageRef,
-  Ref,
-  RefMeta,
-  contextItemType,
-} from './types';
-import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/dialog';
+
+import { ImageMetadata, ImageRef, Ref } from './types';
+import { RefMeta, contextItemType } from './types';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
   try {
     return exists(`${COLLECTIONS_DIR}/${collectionName}`, {
-      dir: DATA_DIR,
+      baseDir: DATA_DIR,
     });
   } catch (error) {
     return false;
@@ -40,8 +31,8 @@ export const refExist = async (collectionName: string) => {
 /// Create a ref directory
 export const createRefDir = async (collectionName: string) => {
   try {
-    await createDir(`${COLLECTIONS_DIR}/${collectionName}`, {
-      dir: DATA_DIR,
+    await mkdir(`${COLLECTIONS_DIR}/${collectionName}`, {
+      baseDir: DATA_DIR,
       recursive: true,
     });
   } catch (e) {
@@ -52,8 +43,8 @@ export const createRefDir = async (collectionName: string) => {
 /// Delete a ref directory
 export const deleteRefDir = async (collectionID: string) => {
   try {
-    await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
-      dir: DATA_DIR,
+    await remove(`${COLLECTIONS_DIR}/${collectionID}`, {
+      baseDir: DATA_DIR,
       recursive: true,
     });
   } catch (e) {
@@ -100,13 +91,13 @@ export function searchExtended(refs: Ref[] | undefined, searchText: string) {
 export const getBreakpoints = (columns: number) => {
   switch (columns) {
     case 4:
-      return breakpoints_4;
+      return BREAKPOINTS_4;
     case 5:
-      return breakpoints_5;
+      return BREAKPOINTS_5;
     case 6:
-      return breakpoints_6;
+      return BREAKPOINTS_6;
     default:
-      return breakpoints_4;
+      return BREAKPOINTS_4;
   }
 };
 

@@ -2,6 +2,7 @@ node_modules
 dist# Devenv
 .devenv*
 devenv.local.nix
+dist
 
 # direnv
 .direnv

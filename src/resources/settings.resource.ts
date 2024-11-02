@@ -1,7 +1,7 @@
-import service from '~/services/settings.service';
 import { createResource } from 'solid-js';
+import service from '@/services/settings.service';
 
-import { AppSettings } from '~/lib/types';
+import { AppSettings } from '@/lib/types';
 
 const [settings, { mutate }] = createResource<AppSettings>(service.getSettings);
 

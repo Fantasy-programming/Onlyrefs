@@ -1,36 +1,19 @@
-/* @refresh reload */
-import { Router, Route } from '@solidjs/router';
-import { render, ErrorBoundary } from 'solid-js/web';
-import { cleanState } from './lib/utils.ts';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 
-// Styling
+import { cleanState } from './lib/utils.ts';
+import { App } from './App';
+
+// Global Styling
 import '@fontsource-variable/nunito';
 import '@fontsource/prociono';
 import './index.css';
 
-// Providers
-import { ColorModeProvider, localStorageManager } from '@kobalte/core';
-
-// Pages
-import App from './App';
-import Home from './pages/Home';
-import Boards from './pages/Boards';
-import Settings from './pages/Settings';
-
+// Context menu fixes
 cleanState();
 
-render(
-  () => (
-    <ErrorBoundary fallback={(err) => <div>{err}</div>}>
-      <ColorModeProvider storageManager={localStorageManager}>
-        <Router root={App}>
-          <Route path="/" component={Home} />
-          <Route path="/boards" component={Boards} />
-          <Route path="/boards/:id" component={Boards} />
-          <Route path="/settings" component={Settings} />
-        </Router>
-      </ColorModeProvider>
-    </ErrorBoundary>
-  ),
-  document.getElementById('root') as HTMLElement,
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
 );

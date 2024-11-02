@@ -3,8 +3,8 @@ import { BoardItemProps } from './BoardItem.types.ts';
 import { ImageRef, LinkRef, NoteRef, VideoRef } from '~/lib/types.ts';
 import { showMenu } from 'tauri-plugin-context-menu';
 
-import { Dialog, DialogTrigger } from '../ui/dialog';
-import { Skeleton } from '../ui/skeleton';
+import { Dialog, DialogTrigger } from '../ui/dialog-old.tsx';
+import { Skeleton } from '../ui/skeleton-old.tsx';
 import { ViewBox } from '../ViewBox/ViewBox.tsx';
 import { NoteContent } from './BoardNoteItem.tsx';
 import { createItems } from '~/lib/helper.ts';

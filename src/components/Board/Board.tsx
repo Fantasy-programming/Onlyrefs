@@ -1,19 +1,16 @@
 import { onMount, Show, createSignal, createMemo, Suspense } from 'solid-js';
 import { createShortcut } from '@solid-primitives/keyboard';
 import { Portal } from 'solid-js/web';
-
 import { useFileSelector } from './Board.hook';
-import { gridSizeHook } from '~/state/hook';
+import { useGridSize } from '~/hooks/useGridSize';
 import { getBreakpoints, searchExtended } from '~/lib/helper';
-import { BoardProps } from './Board.types';
+import refService from '~/services/refs.service';
 
-import { Input } from '../ui/input';
+import { Input } from '../ui/input-old';
 import { Mason } from '../Mason';
-import { Progress, ProgressValueLabel } from '../ui/progress';
+import { Progress, ProgressValueLabel } from '../ui/progress-old';
 import { BoardItem, BoardItemSkeleton } from '../BoardItem/BoardItem';
 import { NewNote } from '../BoardItem/BoardNoteItem';
-
-import Logo from '~/assets/logo-bw.svg';
 import {
   Dialog,
   DialogContent,
@@ -21,24 +18,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '../ui/dialog';
-import { Label } from '../ui/label';
-import { Button } from '../ui/button';
-import { createLinkRef } from '~/lib/commands';
+} from '../ui/dialog-old';
+import { Label } from '../ui/label-old';
+import { Button } from '../ui/button-old';
+import Logo from '~/assets/logo-bw.svg';
+
+import { BoardProps } from './Board.types';
 
 const Board = (props: BoardProps) => {
   const [searchTerm, setSearchTerm] = createSignal('');
-  const [link, setLink] = createSignal<string>('');
 
+  const [link, setLink] = createSignal<string>('');
   const [dialogOpen, setDialogOpen] = createSignal(false);
   const [selectF, dropFiles, progress] = useFileSelector;
-  const [gridSize] = gridSizeHook;
+  const [gridSize] = useGridSize;
 
   const breakPoints = createMemo(() => getBreakpoints(gridSize()));
 
   const refs = createMemo(() => {
     const ref = props.refs.latest;
-    return searchTerm() !== '' ? searchExtended(ref, searchTerm()) : ref ?? [];
+    return searchTerm() !== ''
+      ? searchExtended(ref, searchTerm())
+      : (ref ?? []);
   });
 
   onMount(() => {
@@ -55,7 +56,7 @@ const Board = (props: BoardProps) => {
 
   const handleCreation = async () => {
     if (link()) {
-      await createLinkRef(link(), props.collection);
+      await refService.createLinkRef(link(), props.collection);
     }
     setDialogOpen(false);
   };

@@ -1,7 +1,11 @@
-const { fontFamily } = require('tailwindcss/defaultTheme');
+import { Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme"
 
-/**@type {import("tailwindcss").Config} */
-module.exports = {
+import animate from "tailwindcss-animate"
+import typography from "@tailwindcss/typography"
+import fluidFonts from "./tailwind.fonts.ts"
+
+export const preset: Config = {
   darkMode: ['class', '[data-kb-theme="dark"]'],
   content: ['./src/**/*.{js,jsx,md,mdx,ts,tsx}'],
   theme: {
@@ -74,25 +78,22 @@ module.exports = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
-      fontFamily: {
-        sans: ['Inter', ...fontFamily.sans],
-      },
       keyframes: {
         'accordion-down': {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: 'var(--kb-accordion-content-height)' },
         },
         'accordion-up': {
           from: { height: 'var(--kb-accordion-content-height)' },
-          to: { height: 0 },
+          to: { height: "0" },
         },
         'content-show': {
-          from: { opacity: 0, transform: 'scale(0.96)' },
-          to: { opacity: 1, transform: 'scale(1)' },
+          from: { opacity: "0", transform: 'scale(0.96)' },
+          to: { opacity: "1", transform: 'scale(1)' },
         },
         'content-hide': {
-          from: { opacity: 1, transform: 'scale(1)' },
-          to: { opacity: 0, transform: 'scale(0.96)' },
+          from: { opacity: "1", transform: 'scale(1)' },
+          to: { opacity: "0", transform: 'scale(0.96)' },
         },
       },
       animation: {
@@ -105,7 +106,7 @@ module.exports = {
         fluid: 'repeat(auto-fit, minmax(15rem, 1fr))',
       },
       fontFamily: {
-        serif: 'var(--font-serif)',
+        serif: ['var(--font-serif)',"Inter",  ...fontFamily.sans],
         sans: 'var(--font-sans)',
       },
       boxShadow: {
@@ -170,8 +171,10 @@ module.exports = {
     },
   },
   plugins: [
-    require('tailwindcss-animate'),
-    require('@tailwindcss/typography'),
-    require('./fontvariation'),
+    animate,
+    typography,
+    fluidFonts,
   ],
-};
+}
+
+

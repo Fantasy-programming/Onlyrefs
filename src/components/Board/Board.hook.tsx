@@ -1,14 +1,10 @@
 import { listen } from '@tauri-apps/api/event';
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 import { onCleanup, createSignal, createRoot } from 'solid-js';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
 import { SUPPORTED_FILES } from '~/lib/config';
-import {
-  createAudioRef,
-  createDocumentRef,
-  createImageRef,
-  createVideoRef,
-} from '~/lib/commands';
+import refsService from '~/services/refs.service';
+
 import { sep } from '@tauri-apps/api/path';
 import { verifyExtension } from '~/lib/helper';
 
@@ -54,16 +50,16 @@ export const useFileSelector = createRoot(() => {
 
         switch (type) {
           case 'image':
-            await createImageRef(file, fileName, collection);
+            await refsService.createImageRef(file, fileName, collection);
             break;
           case 'video':
-            await createVideoRef(file, fileName, collection);
+            await refsService.createVideoRef(file, fileName, collection);
             break;
           case 'audio':
-            await createAudioRef(file, fileName, collection);
+            await refsService.createAudioRef(file, fileName, collection);
             break;
           case 'document':
-            await createDocumentRef(file, fileName, collection);
+            await refsService.createDocumentRef(file, fileName, collection);
             break;
           default:
             console.error('Error: Unknown file type');

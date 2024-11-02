@@ -1,6 +1,6 @@
 import { JSX, Show, createSignal } from 'solid-js';
 import { debounce } from '@solid-primitives/scheduled';
-import { createNoteRef } from '~/lib/commands.ts';
+import refsService from '~/services/refs.service.ts';
 import { createTiptapEditor, createEditorTransaction } from 'solid-tiptap';
 
 import StarterKit from '@tiptap/starter-kit';
@@ -30,7 +30,7 @@ const SaveNote = Extension.create({
           return false;
         }
 
-        createNoteRef('all', text).then(() => {
+        refsService.createNoteRef('all', text).then(() => {
           editor.commands.clearContent();
         });
 

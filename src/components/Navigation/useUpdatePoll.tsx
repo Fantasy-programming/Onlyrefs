@@ -1,5 +1,5 @@
 import { createSignal, onCleanup } from 'solid-js';
-import { checkUpdate } from '@tauri-apps/api/updater';
+import { checkUpdate } from '@tauri-apps/plugin-updater';
 
 export function useUpdatePoll() {
   const [updateAvailable, setUpdateAvailable] = createSignal(false);

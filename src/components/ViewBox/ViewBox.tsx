@@ -1,4 +1,4 @@
-import { writeText } from '@tauri-apps/api/clipboard';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {
   Component,
   For,
@@ -10,8 +10,8 @@ import {
   createSignal,
 } from 'solid-js';
 import { ImageRef, LinkRef, NoteRef, Ref, VideoRef } from '../../lib/types';
-import { DialogContent } from '../ui/dialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { DialogContent } from '../ui/dialog-old';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip-old';
 import { ViewBoxInfo } from './ViewBoxInfo';
 import { NoteEditor } from '../BoardItem/BoardNoteItem';
 import { ViewBoxZoom } from './ViewBoxZoom';

@@ -1,10 +1,10 @@
 import { createMasonryBreakpoints } from '~/components/Mason';
-import { BaseDirectory } from '@tauri-apps/api/fs';
+import { BaseDirectory } from '@tauri-apps/plugin-fs';
 
 export const COLLECTIONS_DIR = 'collections';
 export const DATA_DIR = BaseDirectory.AppData;
 
-export const breakpoints_4 = createMasonryBreakpoints(() => [
+export const BREAKPOINTS_4 = createMasonryBreakpoints(() => [
   { query: '(min-width: 1536px)', columns: 4 },
   { query: '(min-width: 1280px) and (max-width: 1536px)', columns: 4 },
   { query: '(min-width: 1024px) and (max-width: 1280px)', columns: 3 },
@@ -12,7 +12,7 @@ export const breakpoints_4 = createMasonryBreakpoints(() => [
   { query: '(max-width: 768px)', columns: 2 },
 ]);
 
-export const breakpoints_5 = createMasonryBreakpoints(() => [
+export const BREAKPOINTS_5 = createMasonryBreakpoints(() => [
   { query: '(min-width: 1536px)', columns: 5 },
   { query: '(min-width: 1280px) and (max-width: 1536px)', columns: 5 },
   { query: '(min-width: 1024px) and (max-width: 1280px)', columns: 4 },
@@ -20,7 +20,7 @@ export const breakpoints_5 = createMasonryBreakpoints(() => [
   { query: '(max-width: 768px)', columns: 2 },
 ]);
 
-export const breakpoints_6 = createMasonryBreakpoints(() => [
+export const BREAKPOINTS_6 = createMasonryBreakpoints(() => [
   { query: '(min-width: 1536px)', columns: 6 },
   { query: '(min-width: 1280px) and (max-width: 1536px)', columns: 6 },
   { query: '(min-width: 1024px) and (max-width: 1280px)', columns: 4 },

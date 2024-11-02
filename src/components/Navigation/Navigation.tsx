@@ -1,19 +1,20 @@
-import { dialog } from '@tauri-apps/api';
-import { installUpdate } from '@tauri-apps/api/updater';
+import {} from '@tauri-apps/api';
+import { installUpdate } from '@tauri-apps/plugin-updater';
 
 import { Motion } from 'solid-motionone';
 import { Show, createSignal } from 'solid-js';
 import { useColorMode } from '@kobalte/core';
-import { gridSizeHook } from '../../state/hook';
 import { useUpdatePoll } from './useUpdatePoll';
 
 import { FiSettings, FiSun, FiMoon, FiGrid } from 'solid-icons/fi';
 import { BsGrid3x3Gap } from 'solid-icons/bs';
 import { TbGridDots } from 'solid-icons/tb';
-import { Toggle } from '../ui/toggle';
+import { Toggle } from '../ui/toggle-old';
 
 import Logo from '~/assets/logo-simple.svg';
 import { RiSystemLoopLeftFill } from 'solid-icons/ri';
+import { useGridSize } from '~/hooks/useGridSize';
+import * as dialog from '@tauri-apps/plugin-dialog';
 
 export const SideNavigation = () => {
   const { toggleColorMode, colorMode } = useColorMode();
@@ -103,7 +104,7 @@ export const SideNavigation = () => {
 };
 
 const SizePicker = () => {
-  const [gridSize, updateGridSize] = gridSizeHook;
+  const [gridSize, updateGridSize] = useGridSize;
 
   return (
     <div class="flex flex-col space-y-6 rounded-full bg-foreground  p-3 transition-all ease-in">
