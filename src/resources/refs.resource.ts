@@ -1,9 +1,11 @@
-import service from '~/services/refs.service';
-import { createResource } from 'solid-js';
-import { Ref } from '~/lib/types';
+import service from '@/services/refs.service';
+import { Ref } from '@/lib/types';
 
-const [refs] = createResource<Ref[]>(service.getRefs);
-
-export const getRefs = () => {
-  return refs;
+export const getRefs = async (): Promise<Ref[] | undefined> => {
+  try {
+    return await service.getRefs();
+  } catch (e) {
+    console.error('getRefs error', e);
+    return undefined;
+  }
 };

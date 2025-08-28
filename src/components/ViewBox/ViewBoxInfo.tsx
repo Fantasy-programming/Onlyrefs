@@ -1,78 +1,74 @@
-import { For, JSX, Match, Show, Switch, createSignal } from 'solid-js';
-import { Motion, Presence } from 'solid-motionone';
-import { As } from '@kobalte/core';
-import { debounce } from '@solid-primitives/scheduled';
+import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { emit } from '@tauri-apps/api/event';
-import toast from 'solid-toast';
+import { toast } from 'react-toastify';
 
 import { ViewBoxInfoProps } from './ViewBox.types';
 
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 
-import { RiSystemDeleteBin6Line } from 'solid-icons/ri';
-import { TbLayoutDashboard } from 'solid-icons/tb';
-import { OcShare3 } from 'solid-icons/oc';
-import { VsAdd } from 'solid-icons/vs';
+import { IoTrashOutline } from 'react-icons/io5';
+import { TbLayoutDashboard } from 'react-icons/tb';
+import { HiOutlineShare } from 'react-icons/hi';
+import { VscAdd } from 'react-icons/vsc';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { ViewBoxTag } from './ViewBoxTags';
 
-import {
-  elapsedTime,
-  isMedia_Metadata,
-  saveMediaToDisk,
-} from '../../lib/helper';
-import { ImageMetadata } from '~/lib/types';
+import { elapsedTime, isMedia_Metadata, saveMediaToDisk } from '../../lib/helper';
+import { ImageMetadata } from '@/lib/types';
 import { ViewNoteEditor } from './ViewNoteEditor';
-import { getSettings } from '~/resources/settings.resource';
+import { getSettings } from '@/resources/settings.resource';
 
-export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
-  const [openTagsAdder, setOpenTagsAdder] = createSignal(false);
-  const [showAllTags, setShowAllTags] = createSignal(false);
+function debounce<T extends (...args: any[]) => void>(fn: T, wait = 1000) {
+  let t: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (t) clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
+}
+
+export const ViewBoxInfo: React.FC<ViewBoxInfoProps> = (props) => {
+  const [openTagsAdder, setOpenTagsAdder] = useState(false);
+  const [showAllTags, setShowAllTags] = useState(false);
   const settings = getSettings();
 
-  const [inputValue, setInputValue] = createSignal('');
+  const [inputValue, setInputValue] = useState('');
 
-  const handleTagInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
-    event,
-  ) => {
-    setInputValue(event.currentTarget.value);
-  };
+  // const handleTagInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   setInputValue(event.currentTarget.value);
+  // };
 
-  const debouncedSave = debounce(
-    async (id: string, value: string, path: string) => {
-      emit('ref_name_changed', {
-        id: id,
-        name: value,
-        path: path,
-      });
-    },
-    1000,
+  const debouncedSave = useMemo(
+    () =>
+      debounce(async (id: string, value: string, path: string) => {
+        await emit('ref_name_changed', {
+          id,
+          name: value,
+          path,
+        });
+      }, 1000),
+    [],
   );
 
-  const handleNameInput: JSX.EventHandler<HTMLInputElement, InputEvent> = (
-    event,
-  ) => {
+  const handleNameInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     debouncedSave(props.metadata.id, event.currentTarget.value, props.path);
   };
 
-  const handleTagSubmit: JSX.EventHandler<
-    HTMLFormElement,
-    SubmitEvent
-  > = async (event) => {
+  const handleTagSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (inputValue() === '') return;
+    if (inputValue === '') return;
 
-    if (props.metadata.tags?.includes(inputValue())) {
+    if (props.metadata.tags?.includes(inputValue)) {
       setInputValue('');
       return;
     }
 
-    emit('tag_added', {
+    await emit('tag_added', {
       id: props.metadata.id,
-      tag: inputValue(),
+      tag: inputValue,
       path: props.path,
     });
 
@@ -80,7 +76,7 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   };
 
   const removeTag = async (name: string) => {
-    emit('tag_removed', {
+    await emit('tag_removed', {
       id: props.metadata.id,
       tag: name,
       path: props.path,
@@ -88,181 +84,152 @@ export const ViewBoxInfo = (props: ViewBoxInfoProps) => {
   };
 
   return (
-    <div class="absolute right-0 top-0 z-10 h-full w-full  rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight  dark:border-gray-100/50 dark:shadow-cardShadow md:rounded-xl lg:absolute lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
-      <div class="onlyrefNoise h-full w-full">
-        <header class="onlyrefNoise flex flex-col gap-3 rounded-t-xl bg-foreground/5  p-7">
+    <div className="absolute right-0 top-0 z-10 h-full w-full  rounded-t-xl border-gray-900/50 bg-background shadow-cardShadowLight  dark:border-gray-100/50 dark:shadow-cardShadow md:rounded-xl lg:absolute lg:my-2 lg:mr-2 lg:h-[calc(100%-(0.5rem*2))] lg:w-[400px]">
+      <div className="onlyrefNoise h-full w-full">
+        <header className="onlyrefNoise flex flex-col gap-3 rounded-t-xl bg-foreground/5  p-7">
           <input
             type="text"
-            class="h-[50px] border-none bg-transparent text-3xl outline-none "
-            autofocus
-            onInput={handleNameInput}
-            value={props.metadata.name}
+            className="h-[50px] border-none bg-transparent text-3xl outline-none "
+            autoFocus
+            onChange={handleNameInput}
+            defaultValue={props.metadata.name}
           />
-          <span class="text-sm">{elapsedTime(props.metadata.created_at)}</span>
+          <span className="text-sm">{elapsedTime(props.metadata.created_at)}</span>
         </header>
         <div
-          class="relative w-full overflow-x-hidden overflow-y-scroll p-4"
-          style={{
-            height: 'calc(100% - 148px - 64px)',
-          }}
+          className="relative w-full overflow-x-hidden overflow-y-scroll p-4"
+          style={{ height: 'calc(100% - 148px - 64px)' } as React.CSSProperties}
         >
-          <h4 class="text-lg uppercase">Tags</h4>
-          <div class="my-3 transition-all">
-            <Presence>
-              <Show when={openTagsAdder()}>
-                <Motion.form
-                  animate={{ opacity: [0, 1], y: [-10, 0] }}
-                  exit={{ opacity: [1, 0] }}
-                  class="pb-5"
+          <h4 className="text-lg uppercase">Tags</h4>
+          <div className="my-3 transition-all">
+            <AnimatePresence>
+              {openTagsAdder && (
+                <motion.form
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="pb-5"
                   onSubmit={handleTagSubmit}
                 >
-                  <div class="focus-within:ring-offset-3 flex rounded-sm ring-offset-foreground/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring">
+                  <div className="focus-within:ring-offset-3 flex rounded-sm ring-offset-foreground/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring">
                     <Input
                       type="text"
-                      class="h-[50px] w-full rounded-r-none border-none  bg-foreground/10 text-lg ring-offset-current focus-visible:ring-offset-0"
-                      value={inputValue()}
-                      onInput={handleTagInput}
+                      className="h-[50px] w-full rounded-r-none border-none  bg-foreground/10 text-lg ring-offset-current focus-visible:ring-offset-0"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.currentTarget.value)}
                     />
-                    <Button class="h-auto rounded-l-none rounded-r-sm text-lg">
-                      <VsAdd />
+                    <Button className="h-auto rounded-l-none rounded-r-sm text-lg">
+                      <VscAdd />
                     </Button>
                   </div>
-                </Motion.form>
-              </Show>
-            </Presence>
+                </motion.form>
+              )}
+            </AnimatePresence>
             <div
-              class="relative flex max-h-36 flex-row flex-wrap overflow-hidden py-3  transition-all"
-              classList={{
-                'max-h-none': showAllTags(),
-                'overflow-auto': showAllTags(),
-              }}
+              className={`relative flex max-h-36 flex-row flex-wrap ${showAllTags ? 'max-h-none overflow-auto' : 'overflow-hidden'} py-3 transition-all`}
               onClick={() => setShowAllTags(true)}
             >
               <Button
                 variant="secondary"
-                class="mb-[7px] mr-[5px] px-3 py-[6px] text-lg"
-                onClick={() => setOpenTagsAdder(!openTagsAdder())}
+                className="mb-[7px] mr-[5px] px-3 py-[6px] text-lg"
+                onClick={() => setOpenTagsAdder((s) => !s)}
               >
                 Add Tags
               </Button>
-              <Show when={props.metadata.tags}>
-                <For each={props.metadata.tags}>
-                  {(tag) => (
-                    <ViewBoxTag name={tag} removeTag={removeTag}>
-                      {tag}
-                    </ViewBoxTag>
-                  )}
-                </For>
-              </Show>
+              {props.metadata.tags &&
+                props.metadata.tags.map((tag) => (
+                  <ViewBoxTag key={tag} name={tag} removeTag={removeTag}>
+                    {tag}
+                  </ViewBoxTag>
+                ))}
             </div>
           </div>
-          <Show
-            when={
-              props.metadata.ref_type === 'image' &&
-              settings()?.appearance.show_media_info
-            }
-          >
-            <h4 class="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
-              Info
-            </h4>
-            <div class="my-3">
-              <Switch>
-                <Match when={props.metadata.ref_type === 'image'}>
+          {props.metadata.ref_type === 'image' && settings?.appearance?.show_media_info && (
+            <>
+              <h4 className="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
+                Info
+              </h4>
+              <div className="my-3">
+                {props.metadata.ref_type === 'image' ? (
                   <ViewBoxInfoImage
                     dimensions={(props.metadata as ImageMetadata).dimensions}
                     file_size={(props.metadata as ImageMetadata).file_size}
                     media_type={(props.metadata as ImageMetadata).media_type}
                   />
-                </Match>
-                <Match when={props.metadata.ref_type === 'video'}>
+                ) : (
                   <div>video here</div>
-                </Match>
-              </Switch>
-            </div>
-          </Show>
-          <h4 class="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
+                )}
+              </div>
+            </>
+          )}
+          <h4 className="text-lg uppercase underline decoration-foreground decoration-wavy underline-offset-[6px]">
             Note
           </h4>
           <div
-            class="my-4 "
-            style={{
-              'max-height': 'calc(100% - 148px - 64px - 100px - 16px)',
-              overflow: 'auto',
-            }}
+            className="my-4 "
+            style={{ maxHeight: 'calc(100% - 148px - 64px - 100px - 16px)', overflow: 'auto' } as React.CSSProperties}
           >
-            <ViewNoteEditor
-              id={props.metadata.id}
-              path={props.path}
-              content={props.metadata.note_text}
-            />
+            <ViewNoteEditor id={props.metadata.id} path={props.path} content={props.metadata.note_text} />
           </div>
-          <div class="pointer-events-none absolute bottom-[20px] left-0 h-11 w-full bg-[linear-gradient(180deg,_hsl(var(--background)_/_0.2)_0%,_hsl(var(--background)_/_0.9)_100%)] " />
+          <div className="pointer-events-none absolute bottom-[20px] left-0 h-11 w-full bg-[linear-gradient(180deg,_hsl(var(--background)_/_0.2)_0%,_hsl(var(--background)_/_0.9)_100%)] " />
         </div>
-        <div class="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 lg:absolute">
-          <Tooltip placement="top" openDelay={50}>
+        <div className="bottom-0 z-30 flex w-full items-center justify-center gap-x-3 px-4 pb-4 lg:absolute">
+          <Tooltip delayDuration={50}>
             <TooltipTrigger
-              class="transition-all delay-200"
-              asChild
+              className="transition-all delay-200"
               onClick={() => {
                 if (isMedia_Metadata(props.metadata)) {
-                  saveMediaToDisk(
-                    props.metadata.id,
-                    (props.metadata as ImageMetadata).file_name,
-                  );
+                  saveMediaToDisk(props.metadata.id, (props.metadata as ImageMetadata).file_name);
                 }
               }}
             >
-              <As
-                component={Button}
-                size="round"
-                variant="tertiary"
-                class="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
+              <Button
+                // size="round"
+                // variant="tertiary"
+                className="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
                 aria-label="save ref to pc"
               >
-                <OcShare3 class="h-6 w-6" />
-              </As>
+                <HiOutlineShare className="h-6 w-6" />
+              </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="top">
               <p>Save to Disk</p>
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip placement="top" openDelay={50}>
-            <TooltipTrigger class="transition-all delay-200" asChild>
-              <As
-                component={Button}
-                size="round"
-                variant="tertiary"
-                class="flex h-12 w-12 items-center justify-center text-white hover:text-white/80"
+          <Tooltip delayDuration={50}>
+            <TooltipTrigger className="transition-all delay-200">
+              <Button
+                // size="round"
+                // variant="tertiary"
+                className="flex h-12 w-12 items-center justify-center text-white hover:text-white/80"
                 aria-label="add to board"
               >
-                <TbLayoutDashboard class="h-6 w-6" />
-              </As>
+                <TbLayoutDashboard className="h-6 w-6" />
+              </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="top">
               <p>Add To Board</p>
             </TooltipContent>
           </Tooltip>
-          <Tooltip placement="top" openDelay={50}>
+          <Tooltip delayDuration={50}>
             <TooltipTrigger
-              class="transition-all delay-100"
-              asChild
+              className="transition-all delay-100"
               onClick={() => {
                 emit('deleteRef', props.metadata.id);
                 toast.success('Ref deleted');
               }}
             >
-              <As
-                component={Button}
-                variant="destructive"
-                size="round"
-                class="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
+              <Button
+                // variant="destructive"
+                // size="round"
+                className="flex h-12 w-12 items-center justify-center  text-white hover:text-white/80"
                 aria-label="save ref to pc"
               >
-                <RiSystemDeleteBin6Line class="h-6 w-6 " />
-              </As>
+                <IoTrashOutline className="h-6 w-6 " />
+              </Button>
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="top">
               <p>Delete Ref</p>
             </TooltipContent>
           </Tooltip>
@@ -278,19 +245,19 @@ interface ViewBoxInfoImageProps {
   media_type: string;
 }
 
-export const ViewBoxInfoImage = (props: ViewBoxInfoImageProps) => {
+export const ViewBoxInfoImage: React.FC<ViewBoxInfoImageProps> = (props) => {
   return (
     <>
-      <div class="text-lg">
-        <span class="font-semibold">Dimension: </span>
+      <div className="text-lg">
+        <span className="font-semibold">Dimension: </span>
         <span>{props.dimensions.join(' x ')}</span>
       </div>
-      <div class="text-lg">
-        <span class="font-semibold">File Size: </span>
+      <div className="text-lg">
+        <span className="font-semibold">File Size: </span>
         <span>{props.file_size}</span>
       </div>
-      <div class="text-lg">
-        <span class="font-semibold">File Type: </span>
+      <div className="text-lg">
+        <span className="font-semibold">File Type: </span>
         <span>{props.media_type}</span>
       </div>
     </>

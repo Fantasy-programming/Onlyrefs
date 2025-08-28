@@ -1,11 +1,10 @@
-import { onMount, createContext, ParentComponent, useContext } from 'solid-js';
-import { createStore, produce } from 'solid-js/store';
-import { NoteRef, Ref } from '~/lib/types';
-import { invoke } from '@tauri-apps/api';
-import { getUpdatedAtTimestamp } from '~/lib/helper';
+import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { NoteRef, Ref } from '@/lib/types';
+import { invoke } from '@tauri-apps/api/core';
+import { getUpdatedAtTimestamp } from '@/lib/helper';
 
 export interface RootState {
-  readonly ref: Ref[];
+  ref: Ref[];
   addRef: (ref: Ref) => void;
   deleteRef: (id: string) => void;
   mutateTag: (id: string, tags: string, type: 'add' | 'remove') => void;
@@ -14,10 +13,10 @@ export interface RootState {
   mutateNoteText: (id: string, note: string) => void;
 }
 
-const Context = createContext<RootState>();
+const Context = createContext<RootState | undefined>(undefined);
 
-export const RefProvider: ParentComponent = (props) => {
-  const [ref, setRef] = createStore<Ref[]>([]);
+export const RefProvider: React.FC = ({ children }: PropsWithChildren) => {
+  const [ref, setRef] = useState<Ref[]>([]);
 
   const fetchRefs = async () => {
     try {
@@ -34,65 +33,80 @@ export const RefProvider: ParentComponent = (props) => {
     }
   };
 
-  onMount(fetchRefs);
+  useEffect(() => {
+    fetchRefs();
+  }, []);
 
   const mutateTag = (id: string, tagname: string, type: string) => {
-    setRef(
-      (meta) => meta.metadata.id === id,
-      'metadata',
-      'tags',
-      produce((tags) => {
-        if (type === 'add') {
-          tags?.push(tagname);
-        }
+    setRef((prev) =>
+      prev.map((meta) => {
+        if (meta.metadata.id !== id) return meta;
+        const tags = meta.metadata.tags ? [...meta.metadata.tags] : [];
+        if (type === 'add') tags.push(tagname);
         if (type === 'remove') {
-          const index = tags?.indexOf(tagname);
-          if (index !== -1 && index !== undefined) {
-            tags?.splice(index, 1);
-          }
+          const index = tags.indexOf(tagname);
+          if (index !== -1) tags.splice(index, 1);
         }
+        return { ...meta, metadata: { ...meta.metadata, tags } } as Ref;
       }),
     );
   };
 
-  const addRef = (ref: Ref) => {
-    setRef(produce((refs) => refs.unshift(ref)));
+  const addRef = (r: Ref) => {
+    setRef((prev) => [r, ...prev]);
   };
 
   const mutateName = (id: string, name: string) => {
-    setRef((meta) => meta.metadata.id === id, 'metadata', 'name', name);
-  };
+    setRef((prev) =>
+      prev.map((m) => {
+        if (m.metadata.id !== id) return m;
 
-  const deleteRef = (id: string) => {
-    setRef(
-      produce((ref) => {
-        const index = ref.findIndex((ref) => ref.metadata.id == id);
-        if (index !== -1 && index !== undefined) {
-          ref.splice(index, 1);
-        }
-      }),
+        // Type-safe update by preserving the original structure
+        return {
+          ...m,
+          metadata: {
+            ...m.metadata,
+            name
+          }
+        } as Ref;
+      })
     );
   };
 
+  const deleteRef = (id: string) => {
+    setRef((prev) => prev.filter((r) => r.metadata.id !== id));
+  };
+
   const mutateNote = (id: string, note: string) => {
-    setRef(
-      (meta) => meta.metadata.id === id,
-      produce((meta) => {
+    setRef((prev) =>
+      prev.map((meta) => {
+        if (meta.metadata.id !== id) return meta;
         if (meta.metadata.ref_type === 'note') {
-          (meta as NoteRef).content = note;
+          return { ...(meta as NoteRef), content: note } as Ref;
         }
+        return meta;
       }),
     );
   };
 
   const mutateNoteText = (id: string, note: string) => {
-    setRef((meta) => meta.metadata.id === id, 'metadata', 'note_text', note);
+    setRef((prev) =>
+      prev.map((m) => {
+        if (m.metadata.id !== id) return m;
+
+        return {
+          ...m,
+          metadata: {
+            ...m.metadata,
+            note_text: note
+          }
+        } as Ref;
+      })
+    );
   };
 
-  const rootState = {
-    get ref() {
-      return ref;
-    },
+  const rootState: RootState = {
+    ref,
     addRef,
     deleteRef,
     mutateTag,
@@ -101,17 +115,11 @@ export const RefProvider: ParentComponent = (props) => {
     mutateNoteText,
   };
 
-  return (
-    <Context.Provider value={rootState}>{props.children}</Context.Provider>
-  );
+  return <Context.Provider value={rootState}>{children}</Context.Provider>;
 };
 
 export const useRefSelector = () => {
-  const refSelector = useContext(Context);
-  if (!refSelector) {
-    throw new Error(
-      'useRefSelectorContext should be called inside RefProvider',
-    );
-  }
-  return refSelector;
+  const ctx = useContext(Context);
+  if (!ctx) throw new Error('useRefSelector must be used within RefProvider');
+  return ctx;
 };

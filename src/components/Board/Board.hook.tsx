@@ -1,56 +1,45 @@
-import { listen } from '@tauri-apps/api/event';
-import { open } from '@tauri-apps/api/dialog';
-import { onCleanup, createSignal, createRoot } from 'solid-js';
+import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { open } from '@tauri-apps/plugin-dialog';
+import { useEffect, useRef, useState } from 'react';
 import { ProgressionProps, useFileSelectorReturnType } from './Board.types';
-import { SUPPORTED_FILES } from '~/lib/config';
+import { SUPPORTED_FILES } from '@/lib/config';
 import {
   createAudioRef,
   createDocumentRef,
   createImageRef,
   createVideoRef,
-} from '~/lib/commands';
+} from '@/lib/commands';
 import { sep } from '@tauri-apps/api/path';
-import { verifyExtension } from '~/lib/helper';
+import { verifyExtension } from '@/lib/helper';
 
-export const useFileSelector = createRoot(() => {
-  const [isProcessing, setIsProcessing] = createSignal(false);
-  const [progress, setProgress] = createSignal<ProgressionProps>({
-    total: 0,
-    completed: 0,
-  });
+export const useFileSelector = (): useFileSelectorReturnType => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState<ProgressionProps>({ total: 0, completed: 0 });
 
-  const fileOperationQueue: { collection: string; files: string[] }[] = [];
-  let waitForFiles: Promise<() => void>;
+  const fileOperationQueue = useRef<{ collection: string; files: string[] }[]>([]);
+  const unlistenRef = useRef<UnlistenFn | null>(null);
 
   const processQueue = async () => {
-    if (isProcessing()) {
-      return;
-    }
-
-    if (fileOperationQueue.length === 0) {
+    if (isProcessing) return;
+    if (fileOperationQueue.current.length === 0) {
       setProgress({ total: 0, completed: 0 });
       return;
     }
 
-    const { collection, files } = fileOperationQueue.shift()!;
+    const { collection, files } = fileOperationQueue.current.shift()!;
 
     setIsProcessing(true);
 
     try {
       for (const file of files) {
-        const segments = file.split(sep);
+        const segments = file.split(sep());
         const fileName = segments[segments.length - 1];
         const extension = fileName.split('.').pop();
 
-        if (!extension) {
-          return null;
-        }
+        if (!extension) return null;
 
         const type = verifyExtension(extension);
-
-        if (!type) {
-          return null;
-        }
+        if (!type) return null;
 
         switch (type) {
           case 'image':
@@ -69,10 +58,7 @@ export const useFileSelector = createRoot(() => {
             console.error('Error: Unknown file type');
         }
 
-        setProgress({
-          total: progress().total,
-          completed: progress().completed + 1,
-        });
+        setProgress((prev) => ({ total: prev.total, completed: prev.completed + 1 }));
       }
     } finally {
       setIsProcessing(false);
@@ -81,54 +67,35 @@ export const useFileSelector = createRoot(() => {
   };
 
   const selectFiles = async (collection: string) => {
-    const files = await open({
-      multiple: true,
-      filters: SUPPORTED_FILES,
-    });
+    const files = await open({ multiple: true, filters: SUPPORTED_FILES });
+    if (!files || !Array.isArray(files)) return;
 
-    if (!files || !Array.isArray(files)) {
-      return;
-    }
+    fileOperationQueue.current.push({ files: files as string[], collection });
 
-    fileOperationQueue.push({
-      files: files,
-      collection: collection,
-    });
-
-    setProgress((prev) => {
-      return {
-        total: prev.total + files.length,
-        completed: prev.completed,
-      };
-    });
+    setProgress((prev) => ({ total: prev.total + (files as string[]).length, completed: prev.completed }));
 
     await processQueue();
   };
 
   const dropFiles = async (collection: string) => {
-    waitForFiles = listen('tauri://file-drop', async (event) => {
+    const unlisten = await listen('tauri://file-drop', async (event) => {
       const files = event.payload as string[];
-
-      fileOperationQueue.push({
-        files: files,
-        collection: collection,
-      });
-
-      setProgress((prev) => {
-        return {
-          total: prev.total + files.length,
-          completed: prev.completed,
-        };
-      });
-
+      fileOperationQueue.current.push({ files, collection });
+      setProgress((prev) => ({ total: prev.total + files.length, completed: prev.completed }));
       await processQueue();
     });
+
+    unlistenRef.current = unlisten;
   };
 
-  onCleanup(() => {
-    waitForFiles.then((f) => f());
-    setProgress({ total: 0, completed: 0 });
-  });
-
-  return [selectFiles, dropFiles, progress] as useFileSelectorReturnType;
-});
+  useEffect(() => {
+    return () => {
+      if (unlistenRef.current) {
+        unlistenRef.current();
+      }
+      setProgress({ total: 0, completed: 0 });
+    };
+  }, []);
+  
+  return [selectFiles, dropFiles, () => progress] as useFileSelectorReturnType;
+};

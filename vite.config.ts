@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite';
-import solid from 'vite-plugin-solid';
-import solidSvg from 'vite-plugin-solid-svg';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+
 
 export default defineConfig(async () => ({
-  plugins: [solid(), solidSvg(), tsconfigPaths()],
+  plugins: [react(), tsconfigPaths(), tailwindcss()],
   clearScreen: false,
   server: {
     port: 1420,

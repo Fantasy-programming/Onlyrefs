@@ -1,9 +1,8 @@
-import type { Accessor, Resource } from 'solid-js';
 import type { Ref } from '../../lib/types';
 
 export interface BoardProps {
   collection: string;
-  refs: Resource<Ref[]>;
+  refs: Ref[];
   home?: boolean;
 }
 
@@ -15,7 +14,7 @@ export interface ProgressionProps {
 export type useFileSelectorReturnType = [
   selectFrom: (collection: string) => Promise<void>,
   selectDrop: (collection: string) => Promise<void>,
-  progress: Accessor<ProgressionProps>,
+  progress: ProgressionProps,
 ];
 
 export interface SourceRef {

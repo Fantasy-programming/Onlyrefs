@@ -1,37 +1,27 @@
-import { dialog } from '@tauri-apps/api';
-import { installUpdate } from '@tauri-apps/api/updater';
-
-import { Motion } from 'solid-motionone';
-import { Show, createSignal } from 'solid-js';
-import { useColorMode } from '@kobalte/core';
-import { gridSizeHook } from '../../state/hook';
+import React, { useState } from 'react';
+import { check } from '@tauri-apps/plugin-updater';
 import { useUpdatePoll } from './useUpdatePoll';
+import { useGridSize } from '../../state/hook';
+import { FiSettings, FiSun, FiMoon, FiGrid } from 'react-icons/fi';
+import { BsGrid3X3Gap } from 'react-icons/bs';
+import { TbGridDots } from 'react-icons/tb';
+import Logo from '@/assets/logo-simple.svg';
+import { RiLoopLeftFill } from 'react-icons/ri';
+import * as dialog from '@tauri-apps/plugin-dialog';
 
-import { FiSettings, FiSun, FiMoon, FiGrid } from 'solid-icons/fi';
-import { BsGrid3x3Gap } from 'solid-icons/bs';
-import { TbGridDots } from 'solid-icons/tb';
-import { Toggle } from '../ui/toggle';
-
-import Logo from '~/assets/logo-simple.svg';
-import { RiSystemLoopLeftFill } from 'solid-icons/ri';
-
-export const SideNavigation = () => {
-  const { toggleColorMode, colorMode } = useColorMode();
+export const SideNavigation: React.FC = () => {
   const updateAvailable = useUpdatePoll();
-  const [gridPressed, setGridPressed] = createSignal(false);
+  const [gridPressed, setGridPressed] = useState(false);
 
   async function handleUpdate() {
-    const confirm = await dialog.ask(
-      'An update is available. Do you want to update now?',
-      {
-        title: 'Update Available',
-        type: 'info',
-      },
-    );
+    const confirm = await dialog.ask('An update is available. Do you want to update now?', {
+      title: 'Update Available',
+      kind: 'info',
+    });
 
     if (confirm) {
       try {
-        await installUpdate();
+        await Update.install();
       } catch (error) {
         console.error('Failed to install update:', error);
       }
@@ -39,91 +29,54 @@ export const SideNavigation = () => {
   }
 
   return (
-    <Motion.nav class="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
-      <div class="absolute left-1/2 top-[5%] -translate-x-1/2 -translate-y-1/2">
-        <Logo class="h-9 w-9" />
+    <nav className="fixed left-0 top-0 z-50 hidden h-screen w-10 flex-col items-center justify-end md:flex md:w-20">
+      <div className="absolute left-1/2 top-[5%] -translate-x-1/2 -translate-y-1/2">
+        <Logo className="h-9 w-9" />
       </div>
-      <div class="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
-        <div class="flex items-center gap-4 text-3xl">
+      <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rotate-90">
+        <div className="flex items-center gap-4 text-3xl">
           <span>
-            <span class="opacity-9 text-foreground">Only</span>
-            <span class="opacity-9 text-accent/80">Ref</span>
+            <span className="opacity-9 text-foreground">Only</span>
+            <span className="opacity-9 text-accent/80">Ref</span>
           </span>
         </div>
       </div>
-      <div class="flex flex-col items-center gap-6 py-12 text-white">
-        <Show when={updateAvailable()}>
-          <div class="relative" onClick={handleUpdate}>
-            <RiSystemLoopLeftFill class="h-5 w-5 text-foreground" />
-            <span class="absolute right-0 top-0 h-2 w-2 rounded-full bg-accent" />
+      <div className="flex flex-col items-center gap-6 py-12 text-white">
+        {updateAvailable && (
+          <div className="relative" onClick={handleUpdate}>
+            <RiLoopLeftFill className="h-5 w-5 text-foreground" />
+            <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-accent" />
           </div>
-        </Show>
-        <Toggle
-          pressed={colorMode() === 'light'}
-          onChange={() => toggleColorMode()}
-          class={
-            gridPressed() === true ? 'pointer-events-none opacity-0' : 'block'
-          }
-        >
-          {(state) => (
-            <Show
-              when={state.pressed()}
-              fallback={<FiMoon class="h-5 w-5 text-foreground" />}
-            >
-              <FiSun class="h-5 w-5 text-foreground" />
-            </Show>
-          )}
-        </Toggle>
-        <Toggle
-          pressed={gridPressed()}
-          onChange={() => setGridPressed(!gridPressed())}
-        >
-          {(state) => (
-            <Show
-              when={state.pressed()}
-              fallback={<FiGrid class="h-5 w-5 text-foreground" />}
-            >
-              <SizePicker />
-            </Show>
-          )}
-        </Toggle>
-        <a
-          href="/settings"
-          class={
-            gridPressed() === true ? 'pointer-events-none opacity-0' : 'block'
-          }
-        >
+        )}
+        <button onClick={() => { }} className={gridPressed ? 'pointer-events-none opacity-0' : 'block'}>
+          {gridPressed ? <FiSun className="h-5 w-5 text-foreground" /> : <FiMoon className="h-5 w-5 text-foreground" />}
+        </button>
+        <button onClick={() => setGridPressed((p) => !p)}>
+          {gridPressed ? <SizePicker /> : <FiGrid className="h-5 w-5 text-foreground" />}
+        </button>
+        <a href="/settings" className={gridPressed ? 'pointer-events-none opacity-0' : 'block'}>
           <span>
-            <FiSettings class="h-5 w-5 text-foreground" />
+            <FiSettings className="h-5 w-5 text-foreground" />
           </span>
         </a>
       </div>
-    </Motion.nav>
+    </nav>
   );
 };
 
-const SizePicker = () => {
-  const [gridSize, updateGridSize] = gridSizeHook;
+const SizePicker: React.FC = () => {
+  const [gridSize, updateGridSize] = useGridSize();
 
   return (
-    <div class="flex flex-col space-y-6 rounded-full bg-foreground  p-3 transition-all ease-in">
-      <div
-        class={gridSize() === 4 ? '' : 'opacity-50'}
-        onclick={() => updateGridSize(4)}
-      >
-        <FiGrid class="h-5 w-5 text-background" />
+    <div className="flex flex-col space-y-6 rounded-full bg-foreground  p-3 transition-all ease-in">
+      <div className={gridSize === 4 ? '' : 'opacity-50'} onClick={() => updateGridSize(4)}>
+        <FiGrid className="h-5 w-5 text-background" />
       </div>
-      <div
-        class={gridSize() === 5 ? '' : 'opacity-50'}
-        onClick={() => updateGridSize(5)}
-      >
-        <BsGrid3x3Gap class="h-5 w-5 text-background" />
+      <div className={gridSize === 5 ? '' : 'opacity-50'} onClick={() => updateGridSize(5)}>
+        <BsGrid3X3Gap className="h-5 w-5 text-background" />
       </div>
-      <div
-        class={gridSize() === 6 ? '' : 'opacity-50'}
-        onclick={() => updateGridSize(6)}
-      >
-        <TbGridDots class="h-5 w-5 text-background" />
+      <div className={gridSize === 6 ? '' : 'opacity-50'} onClick={() => updateGridSize(6)}>
+        <TbGridDots className="h-5 w-5 text-background" />
       </div>
     </div>
   );

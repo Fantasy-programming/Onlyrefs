@@ -1,5 +1,5 @@
 use std::{fs, path::Path, path::PathBuf};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 const DEFAULT_SETTINGS: &str = r#"
 {
@@ -13,7 +13,8 @@ const DEFAULT_SETTINGS: &str = r#"
 }"#;
 
 fn get_app_data_dir_path(handle: &AppHandle) -> PathBuf {
-    handle.path_resolver().app_data_dir().unwrap()
+    let resolver = handle.path();
+    return resolver.data_dir().unwrap();
 }
 
 pub fn get_settings_path(handle: &AppHandle) -> PathBuf {

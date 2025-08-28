@@ -1,10 +1,10 @@
 import {
   exists,
-  createDir,
+  create,
   readTextFile,
   copyFile,
-  removeDir,
-} from '@tauri-apps/api/fs';
+  remove,
+} from '@tauri-apps/plugin-fs';
 import { differenceInSeconds, parse } from 'date-fns';
 import Fuse, { IFuseOptions } from 'fuse.js';
 
@@ -24,13 +24,13 @@ import {
   contextItemType,
 } from './types';
 import { appDataDir, downloadDir, join } from '@tauri-apps/api/path';
-import { open } from '@tauri-apps/api/dialog';
+import { open } from '@tauri-apps/plugin-dialog';
 
 /// Check if a ref with the given id exists
 export const refExist = async (collectionName: string) => {
   try {
     return exists(`${COLLECTIONS_DIR}/${collectionName}`, {
-      dir: DATA_DIR,
+      baseDir: DATA_DIR,
     });
   } catch (error) {
     return false;
@@ -40,9 +40,8 @@ export const refExist = async (collectionName: string) => {
 /// Create a ref directory
 export const createRefDir = async (collectionName: string) => {
   try {
-    await createDir(`${COLLECTIONS_DIR}/${collectionName}`, {
-      dir: DATA_DIR,
-      recursive: true,
+    await create(`${COLLECTIONS_DIR}/${collectionName}`, {
+      baseDir: DATA_DIR,
     });
   } catch (e) {
     console.error(e);
@@ -52,9 +51,8 @@ export const createRefDir = async (collectionName: string) => {
 /// Delete a ref directory
 export const deleteRefDir = async (collectionID: string) => {
   try {
-    await removeDir(`${COLLECTIONS_DIR}/${collectionID}`, {
-      dir: DATA_DIR,
-      recursive: true,
+    await remove(`${COLLECTIONS_DIR}/${collectionID}`, {
+      baseDir: DATA_DIR,
     });
   } catch (e) {
     console.error(e);

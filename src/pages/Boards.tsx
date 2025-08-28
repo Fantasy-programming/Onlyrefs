@@ -1,9 +1,8 @@
-import { Motion } from 'solid-motionone';
+import { motion } from 'framer-motion';
 import { useParams } from '@solidjs/router';
-import { JSX, Setter, Show, createSignal, onMount } from 'solid-js';
-import { useRefSelector } from '~/state/refstore';
+import { useRefSelector } from '@/state/refstore';
 
-import Board from '~/components/Board/Board';
+import Board from '@/components/Board/Board';
 
 import {
   Dialog,
@@ -13,16 +12,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '~/components/ui/dialog';
+} from '@/components/ui/dialog';
 
-import { Label } from '~/components/ui/label';
-import { Input } from '~/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
-import BoardList from '~/components/BoardList/BoardList';
-import { Button } from '~/components/ui/button';
+import BoardList from '@/components/BoardList/BoardList';
+import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 
 const BoardsPage = () => {
-  const [boards, setBoards] = createSignal<string[]>([]);
+  const [boards, setBoards] = useState<string[]>([]);
   const root = useRefSelector();
 
   const { id } = useParams();
@@ -41,34 +41,37 @@ const BoardsPage = () => {
     setBoards(boards);
   };
 
-  onMount(() => {
+  useEffect(() => {
     getBoards();
-  });
+  }, [])
+
 
   return (
     <>
-      <Show
-        when={!id}
-        fallback={<Board collection={boardID} home={true} refs={root.ref} />}
-      >
-        <Motion.div animate={{ opacity: [0, 1] }} class="mt-20">
-          <header class="flex items-center justify-between">
-            <h1 class="text-3xl text-primary-foreground">Boards</h1>
-            <NewCollectionDialog setter={setBoards} />
-          </header>
-          <main class="mt-10">
-            <BoardList boards={boards} />
-          </main>
-        </Motion.div>
-      </Show>
+      {
+        id ? (
+          <Board collection={boardID} home={true} refs={root.ref} />
+        ) : (
+
+          <motion.div animate={{ opacity: [0, 1] }} className="mt-20">
+            <header className="flex items-center justify-between">
+              <h1 className="text-3xl text-primary-foreground">Boards</h1>
+              <NewCollectionDialog setter={setBoards} />
+            </header>
+            <main className="mt-10">
+              <BoardList boards={boards} />
+            </main>
+          </motion.div>
+        )
+      }
     </>
   );
 };
 
 const NewCollectionDialog = (props: { setter: Setter<string[]> }) => {
-  const [showDialog, setShowDialog] = createSignal(false);
+  const [showDialog, setShowDialog] = useState(false);
 
-  const handleCreation: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (
+  const handleCreation = async (
     e,
   ) => {
     e.preventDefault();
@@ -87,25 +90,26 @@ const NewCollectionDialog = (props: { setter: Setter<string[]> }) => {
   return (
     <Dialog open={showDialog()} onOpenChange={setShowDialog}>
       <DialogTrigger
-        as={Button}
-        class=" h-11 rounded-md border border-input bg-transparent px-8 hover:bg-accent hover:text-accent-foreground "
+        asChild
       >
-        Create Collection
+        <Button className=" h-11 rounded-md border border-input bg-transparent px-8 hover:bg-accent hover:text-accent-foreground ">
+          Create Collection
+        </Button>
       </DialogTrigger>
-      <DialogContent class="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create collection</DialogTitle>
           <DialogDescription>
             Create a new collection to organize your refs
           </DialogDescription>
         </DialogHeader>
-        <form onsubmit={handleCreation}>
-          <div class="grid gap-4 py-4">
-            <div class="grid grid-cols-4 items-center gap-4">
-              <Label for="name" class="text-right">
+        <form onSubmit={handleCreation}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
                 Name
               </Label>
-              <Input id="name" name="name" class="col-span-3" />
+              <Input id="name" name="name" className="col-span-3" />
             </div>
           </div>
           <DialogFooter>

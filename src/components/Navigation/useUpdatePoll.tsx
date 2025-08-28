@@ -1,23 +1,30 @@
-import { createSignal, onCleanup } from 'solid-js';
-import { checkUpdate } from '@tauri-apps/api/updater';
+import { useEffect, useState } from 'react';
+import { check } from '@tauri-apps/plugin-updater';
 
 export function useUpdatePoll() {
-  const [updateAvailable, setUpdateAvailable] = createSignal(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
-  async function checkUp() {
-    try {
-      const { shouldUpdate } = await checkUpdate();
-      setUpdateAvailable(shouldUpdate);
-    } catch (error) {
-      console.error('Failed to check for updates:', error);
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkUp() {
+      try {
+        const update = await check();
+        if (mounted) setUpdateAvailable(update != null);
+      } catch (error) {
+        console.error('Failed to check for updates:', error);
+      }
     }
-  }
 
-  checkUp();
+    checkUp();
 
-  const intervalId = setInterval(checkUpdate, 30 * 60 * 1000); // 30 minutes
+    const intervalId = setInterval(checkUp, 30 * 60 * 1000);
 
-  onCleanup(() => clearInterval(intervalId));
+    return () => {
+      mounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
 
   return updateAvailable;
 }

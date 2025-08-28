@@ -1,32 +1,29 @@
-import type { Component } from 'solid-js';
-import { splitProps } from 'solid-js';
+import * as React from "react"
+import * as ProgressPrimitive from "@radix-ui/react-progress"
 
-import { Progress as ProgressPrimitive } from '@kobalte/core';
+import { cn } from "@/lib/utils"
 
-import { Label } from './label';
-
-const Progress: Component<ProgressPrimitive.ProgressRootProps> = (props) => {
-  const [, rest] = splitProps(props, ['children']);
+function Progress({
+  className,
+  value,
+  ...props
+}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
   return (
-    <ProgressPrimitive.Root {...rest}>
-      {props.children}
-      <ProgressPrimitive.Track class="relative h-4 w-full overflow-hidden rounded-full bg-background/20">
-        <ProgressPrimitive.Fill class="h-full w-[var(--kb-progress-fill-width)] flex-1 bg-primary/50 transition-all" />
-      </ProgressPrimitive.Track>
+    <ProgressPrimitive.Root
+      data-slot="progress"
+      className={cn(
+        "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full",
+        className
+      )}
+      {...props}
+    >
+      <ProgressPrimitive.Indicator
+        data-slot="progress-indicator"
+        className="bg-primary h-full w-full flex-1 transition-all"
+        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      />
     </ProgressPrimitive.Root>
-  );
-};
+  )
+}
 
-const ProgressLabel: Component<ProgressPrimitive.ProgressLabelProps> = (
-  props,
-) => {
-  return <ProgressPrimitive.Label as={Label} {...props} />;
-};
-
-const ProgressValueLabel: Component<
-  ProgressPrimitive.ProgressValueLabelProps
-> = (props) => {
-  return <ProgressPrimitive.ValueLabel as={Label} {...props} />;
-};
-
-export { Progress, ProgressLabel, ProgressValueLabel };
+export { Progress }

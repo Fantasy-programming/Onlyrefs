@@ -1,7 +1,6 @@
-import { SourceRef } from '../Board/Board.types.ts';
-import { Ref } from '~/lib/types.ts';
+import { SourceRef } from '../Board/Board.types';
+import { Ref } from '@/lib/types';
 import type { Editor } from '@tiptap/core';
-import { JSX } from 'solid-js';
 
 export interface BoardItemProps {
   refItem: Ref;
@@ -18,13 +17,13 @@ export interface RefContextMenuProps {
 }
 
 export interface ControlProps {
-  class: string;
+  className: string;
   editor: Editor;
   title: string;
   key: string;
   onChange: () => void;
   isActive?: (editor: Editor) => boolean;
-  children: JSX.Element;
+  children: React.ReactNode;
 }
 
 export interface ToolbarProps {

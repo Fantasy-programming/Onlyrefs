@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::thread::sleep;
 use std::time::Duration;
 use std::{default::Default, fs, path::Path, sync::Mutex, thread};
-use tauri::{AppHandle, Manager, State, WindowBuilder, WindowUrl};
-use tauri_plugin_snapshot::{snapshot, Options, Region};
+use tauri::ipc::Invoke;
+use tauri::{generate_handler, AppHandle, Emitter, EventTarget, Manager, State};
 
 use crate::config::get_collection_path;
 use crate::media;
@@ -91,7 +91,9 @@ async fn generate_image_metadata(
         });
 
         //emit color extracted event
-        handle.emit_all("colors-added", Some(colors)).unwrap();
+        handle
+            .emit_to(EventTarget::any(), "colors-added", Some(colors))
+            .unwrap();
 
         Ok(())
     });
@@ -234,54 +236,6 @@ async fn generate_link_metadata(
         .map_err(|_| "Failed to acquire lock on state".to_string())?;
 
     state_guard.push(Ref::Link(new_ref.clone()));
-
-    std::thread::spawn(move || -> Result<(), String> {
-        let window = tauri::WindowBuilder::new(
-            &handle,
-            "capture",
-            WindowUrl::External(url.parse().unwrap()),
-        )
-        .build()
-        .unwrap();
-
-        let options = Options {
-            capture: None,
-            region: Some(Region::Document),
-            save: None,
-        };
-
-        let _ = window.hide();
-
-        // wait 30s then take the shoot
-        sleep(Duration::from_secs(30));
-        let img_buffer = snapshot(window.clone(), options).map_err(|error| error.to_string());
-        let _ = window.close();
-
-        // save image to disk
-        let img_path = get_collection_path(&handle)
-            .join(&ref_id)
-            .join("snapshot.png");
-        fs::write(&img_path, img_buffer.unwrap()).expect("Failed to write image to disk");
-
-        // update the image state
-
-        let state_mutex = handle.state::<Mutex<Vec<Ref>>>();
-        let mut state = state_mutex
-            .lock()
-            .map_err(|_| "Failed to acquire lock on state".to_string())?;
-
-        let found_ref = state
-            .iter_mut()
-            .find(|ref_instance| ref_instance.get_id() == ref_id);
-
-        match found_ref.unwrap() {
-            Ref::Link(ref mut link_ref) => {
-                link_ref.snapshoot = convert_file_src(&img_path);
-                Ok(())
-            }
-            _ => Err("Invalid reference type for note content".to_string()),
-        }
-    });
 
     Ok(new_ref)
 }
@@ -442,11 +396,11 @@ async fn change_note_text(
 #[tauri::command]
 fn generate_id(lenght: usize) -> String {
     let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     let id: String = (0..lenght)
         .map(|_| {
-            let idx = rng.gen_range(0..characters.len());
+            let idx = rng.random_range(0..characters.len());
             characters.chars().nth(idx).unwrap()
         })
         .collect();
@@ -454,8 +408,8 @@ fn generate_id(lenght: usize) -> String {
     id
 }
 
-pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
-    Box::new(tauri::generate_handler![
+pub fn get_handlers() -> impl Fn(Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
+    generate_handler![
         generate_id,
         generate_image_metadata,
         generate_video_metadata,
@@ -471,5 +425,5 @@ pub fn get_handlers() -> Box<dyn Fn(tauri::Invoke<tauri::Wry>) + Send + Sync> {
         remove_tag,
         change_note_content,
         change_note_text,
-    ])
+    ]
 }

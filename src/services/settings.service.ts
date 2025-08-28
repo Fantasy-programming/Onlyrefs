@@ -1,5 +1,5 @@
-import { AppSettings } from '~/lib/types';
-import { invoke } from '@tauri-apps/api';
+import { AppSettings } from '@/lib/types';
+import { invoke } from '@tauri-apps/api/core';
 
 const getSettings = async (): Promise<AppSettings> => {
   try {

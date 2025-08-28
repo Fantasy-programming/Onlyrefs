@@ -1,19 +1,13 @@
-import type { Component, ComponentProps } from 'solid-js';
-import { splitProps } from 'solid-js';
+import { cn } from "@/lib/utils"
 
-import { cn } from '../../lib/utils';
-
-const Skeleton: Component<ComponentProps<'div'>> = (props) => {
-  const [, rest] = splitProps(props, ['class']);
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      class={cn(
-        'animate-pulse rounded-md bg-primary-foreground/10',
-        props.class,
-      )}
-      {...rest}
+      data-slot="skeleton"
+      className={cn("bg-accent animate-pulse rounded-md", className)}
+      {...props}
     />
-  );
-};
+  )
+}
 
-export { Skeleton };
+export { Skeleton }

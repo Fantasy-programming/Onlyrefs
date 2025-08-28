@@ -1,20 +1,13 @@
-import { Accessor, onMount, createRoot, createSignal } from 'solid-js';
+import { useEffect, useState } from 'react';
 
-export type IGridSize = [
-  gridSize: Accessor<number>,
-  updateGridSize: (size: number) => void,
-];
+export const useGridSize = (initial = 4) => {
+  const [gridSize, setGridSize] = useState<number>(initial);
 
-export const gridSizeHook = createRoot(() => {
-  const [gridSize, setGridSize] = createSignal(4);
-
-  onMount(() => {
-    const gridSize = localStorage.getItem('gridSize');
-    if (!gridSize) {
-      return;
-    }
-    setGridSize(Number(gridSize));
-  });
+  useEffect(() => {
+    const g = localStorage.getItem('gridSize');
+    if (!g) return;
+    setGridSize(Number(g));
+  }, []);
 
   const updateGridSize = (size: number) => {
     console.debug(`Debug: Grid size updated to ${size}`);
@@ -22,5 +15,5 @@ export const gridSizeHook = createRoot(() => {
     localStorage.setItem('gridSize', size.toString());
   };
 
-  return [gridSize, updateGridSize] as IGridSize;
-});
+  return [gridSize, updateGridSize] as const;
+};

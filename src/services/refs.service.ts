@@ -1,6 +1,6 @@
-import { getUpdatedAtTimestamp } from '~/lib/helper';
-import { NoteRef, Ref } from '~/lib/types';
-import { invoke } from '@tauri-apps/api';
+import { getUpdatedAtTimestamp } from '@/lib/helper';
+import { Ref } from '@/lib/types';
+import { invoke } from '@tauri-apps/api/core';
 
 const getRefs = async (): Promise<Ref[]> => {
   try {

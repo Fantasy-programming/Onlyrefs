@@ -1,142 +1,107 @@
-import { writeText } from '@tauri-apps/api/clipboard';
-import {
-  Component,
-  For,
-  Match,
-  ParentProps,
-  Show,
-  Suspense,
-  Switch,
-  createSignal,
-} from 'solid-js';
+import React, { useRef, useState } from 'react';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { ImageRef, LinkRef, NoteRef, Ref, VideoRef } from '../../lib/types';
 import { DialogContent } from '../ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { ViewBoxInfo } from './ViewBoxInfo';
 import { NoteEditor } from '../BoardItem/BoardNoteItem';
-import { ViewBoxZoom } from './ViewBoxZoom';
+import ViewBoxZoom from './ViewBoxZoom';
 
-export const ViewBox: Component<ParentProps & { source: Ref }> = (props) => {
-  let videoRef: HTMLVideoElement | undefined;
+interface ViewBoxProps {
+  source: Ref;
+}
 
-  const [videoDimensions, setVideoDimensions] = createSignal({
-    width: 0,
-    height: 0,
-  });
+export const ViewBox: React.FC<ViewBoxProps> = ({ source }) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0 });
 
   const handleVideoLoadedMetadata = () => {
-    if (videoRef) {
+    if (videoRef.current) {
       setVideoDimensions({
-        width: videoRef.videoWidth,
-        height: videoRef.videoHeight,
+        width: videoRef.current.videoWidth,
+        height: videoRef.current.videoHeight,
       });
     }
   };
 
   return (
-    <DialogContent
-      class={
-        'flex h-full max-h-none  w-full max-w-none flex-col p-0 lg:h-[90%] lg:w-[90%] lg:flex-row'
-      }
-    >
+    <DialogContent className={'flex h-full max-h-none  w-full max-w-none flex-col p-0 lg:h-[90%] lg:w-[90%] lg:flex-row'}>
       <div
-        class="relative flex flex-grow flex-col items-center justify-center p-0 py-2 pl-2 lg:w-full lg:pr-[calc((0.5rem*2)+400px)]"
-        classList={{
-          'overflow-y-auto overscroll-none overflow-x-hidden':
-            props.source.metadata.ref_type === 'image',
-        }}
+        className={`relative flex flex-grow flex-col items-center justify-center p-0 py-2 pl-2 lg:w-full lg:pr-[calc((0.5rem*2)+400px)] ${source.metadata.ref_type === 'image' ? 'overflow-y-auto overscroll-none overflow-x-hidden' : ''
+          }`}
       >
-        <div class="flex h-full w-full items-center justify-center overflow-scroll  rounded-xl p-7">
-          <Switch>
-            <Match when={props.source.metadata.ref_type === 'video'}>
-              <video
-                ref={(el) => (videoRef = el)}
-                class="aspect-video h-auto w-auto rounded-xl"
-                src={(props.source as VideoRef).video_path}
-                preload="auto"
-                autoplay
-                controls
-                loop
-                onLoadedMetadata={handleVideoLoadedMetadata}
+        <div className="flex h-full w-full items-center justify-center overflow-scroll  rounded-xl p-7">
+          {source.metadata.ref_type === 'video' ? (
+            <video
+              ref={videoRef}
+              className="aspect-video h-auto w-auto rounded-xl"
+              src={(source as VideoRef).video_path}
+              preload="auto"
+              autoPlay
+              controls
+              loop
+              onLoadedMetadata={handleVideoLoadedMetadata}
+              style={{
+                maxWidth: `min(100%, ${videoDimensions.width}px)`,
+                maxHeight: `min(100%, ${videoDimensions.height}px)`,
+              } as React.CSSProperties}
+            />
+          ) : source.metadata.ref_type === 'image' ? (
+            <ViewBoxZoom>
+              <img
+                src={(source as ImageRef).image_path}
+                loading="lazy"
+                className="h-auto w-auto rounded-xl"
                 style={{
-                  'max-width': `min(100%, ${videoDimensions().width}px)`,
-                  'max-height': `min(100%, ${videoDimensions().height}px)`,
-                }}
-              ></video>
-            </Match>
-            <Match when={props.source.metadata.ref_type === 'image'}>
-              <ViewBoxZoom>
-                <img
-                  src={(props.source as ImageRef).image_path}
-                  loading="lazy"
-                  class="h-auto w-auto rounded-xl"
-                  style={{
-                    'max-width': `min(100%, ${(props.source as ImageRef).metadata.dimensions[0]}px )`,
-                    'max-height': `min(100%, ${(props.source as ImageRef).metadata.dimensions[1]}px )`,
-                  }}
-                />
-              </ViewBoxZoom>
-            </Match>
-            <Match when={props.source.metadata.ref_type === 'note'}>
-              <NoteEditor source={props.source as NoteRef} />
-            </Match>
-            <Match when={props.source.metadata.ref_type === 'link'}>
-              <div>
-                <img
-                  src={(props.source as LinkRef).snapshoot}
-                  loading="lazy"
-                  class="h-auto w-full rounded-xl object-contain"
-                />
-              </div>
-            </Match>
-          </Switch>
+                  maxWidth: `min(100%, ${(source as ImageRef).metadata.dimensions[0]}px )`,
+                  maxHeight: `min(100%, ${(source as ImageRef).metadata.dimensions[1]}px )`,
+                } as React.CSSProperties}
+              />
+            </ViewBoxZoom>
+          ) : source.metadata.ref_type === 'note' ? (
+            <NoteEditor source={source as NoteRef} />
+          ) : source.metadata.ref_type === 'link' ? (
+            <div>
+              <img src={(source as LinkRef).snapshoot} loading="lazy" className="h-auto w-full rounded-xl object-contain" />
+            </div>
+          ) : null}
         </div>
-        <div class="static bottom-4 left-4 flex flex-row-reverse -space-x-7 space-x-reverse focus-within:space-x-0  hover:space-x-0 lg:absolute">
-          <Show when={props.source.metadata.ref_type === 'image'}>
-            <For each={(props.source as ImageRef).metadata.colors}>
-              {(color, index) => {
-                const [copy, copied] = createSignal(false);
+
+        <div className="static bottom-4 left-4 flex flex-row-reverse -space-x-7 space-x-reverse focus-within:space-x-0  hover:space-x-0 lg:absolute">
+          {source.metadata.ref_type === 'image' && (
+            <>
+              {(source as ImageRef).metadata.colors.map((color, index) => {
+                const [, setCopied] = [false, (_: boolean) => { }];
+
                 return (
-                  <>
-                    <Tooltip
-                      placement="top"
-                      openDelay={150}
-                      open={copy() ? true : undefined}
+                  <Tooltip key={color} delayDuration={150} open={undefined}>
+                    <TooltipTrigger
+                      className="rounded-full transition-all delay-200"
+                      onClick={async () => {
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 800);
+                        await writeText(color);
+                      }}
+                      asChild
                     >
-                      <TooltipTrigger
-                        class="rounded-full transition-all delay-200"
-                        onClick={async () => {
-                          copied(true);
-                          setTimeout(() => copied(false), 800);
-                          await writeText(color);
-                        }}
-                        as="div"
-                      >
-                        <div
-                          class="h-10 w-10 rounded-full"
-                          classList={{
-                            'border-white border': index() === 0,
-                          }}
-                          style={{ background: color }}
-                        />
-                        <TooltipContent>
-                          {copy() ? 'Copied!' : color}
-                        </TooltipContent>
-                      </TooltipTrigger>
-                    </Tooltip>
-                  </>
+                      <div
+                        className={`h-10 w-10 rounded-full ${index === 0 ? 'border-white border' : ''}`}
+                        style={{ background: color } as React.CSSProperties}
+                      />
+                      <TooltipContent side='top'>{/* Could show copied state or color */ color}</TooltipContent>
+                    </TooltipTrigger>
+                  </Tooltip>
                 );
-              }}
-            </For>
-          </Show>
+              })}
+            </>
+          )}
         </div>
       </div>
-      <Suspense>
-        <ViewBoxInfo
-          metadata={props.source.metadata}
-          path={props.source.metapath}
-        />
-      </Suspense>
+      <React.Suspense fallback={null}>
+        <ViewBoxInfo metadata={source.metadata} path={source.metapath} />
+      </React.Suspense>
     </DialogContent>
   );
 };
+
+export default ViewBox;

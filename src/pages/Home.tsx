@@ -1,9 +1,8 @@
-import { Suspense } from 'solid-js';
-import { Component } from 'solid-js';
-import Board from '~/components/Board/Board';
-import { getRefs } from '~/resources/refs.resource';
+import { Suspense } from 'react';
+import Board from '@/components/Board/Board';
+import { getRefs } from '@/resources/refs.resource';
 
-const Home: Component = () => {
+const Home = () => {
   const refs = getRefs();
 
   return (

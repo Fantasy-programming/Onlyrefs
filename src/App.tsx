@@ -1,25 +1,23 @@
+import { PropsWithChildren, useEffect, useState } from 'react';
 import { WindowDecoration } from './components/WindowDecoration';
 import { SideNavigation } from './components/Navigation/Navigation';
-import { RouteSectionProps } from '@solidjs/router';
-import { Toaster } from 'solid-toast';
-
-import './App.css';
-
-// import { setupListeners } from './lib/utils';
-// import { useRefSelector } from './state/refstore';
-import { Show, createSignal, onCleanup } from 'solid-js';
-import { createShortcut } from '@solid-primitives/keyboard';
 import { emit } from '@tauri-apps/api/event';
 
-const App = (props: RouteSectionProps) => {
+const App = (props: PropsWithChildren) => {
   // const unlisteners = setupListeners(root);
 
-  const [sideNavOpen, setSideNavOpen] = createSignal(true);
+  const [sideNavOpen, setSideNavOpen] = useState(true);
 
-  createShortcut(['Control', '['], () => {
-    setSideNavOpen(!sideNavOpen());
-    emit('sidebar_toggled');
-  });
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === '[') {
+        setSideNavOpen((s) => !s);
+        emit('sidebar_toggled');
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // onCleanup(async () => {
   //   const unlistener = await unlisteners;
@@ -27,25 +25,15 @@ const App = (props: RouteSectionProps) => {
   // });
 
   return (
-    <>
-      <div class="h-screen">
-        <WindowDecoration />
-        <Show when={sideNavOpen()}>
-          <SideNavigation />
-        </Show>
-        <section
-          classList={{
-            'h-full pe-4 ps-4 pt-10 font-sans ': true,
-            'md:ps-20': sideNavOpen(),
-          }}
-        >
-          <div class="border-3 onlyrefNoise h-full overflow-x-hidden overflow-y-scroll rounded-t-[20px] border-gray-900/50 shadow-cardShadowLight dark:border-gray-100/50 dark:shadow-cardShadow">
-            {props.children}
-          </div>
-        </section>
-        <Toaster position="bottom-right" gutter={8} />
-      </div>
-    </>
+    <div className="h-screen">
+      <WindowDecoration />
+      {sideNavOpen && <SideNavigation />}
+      <section className={`h-full pe-4 ps-4 pt-10 font-sans ${sideNavOpen ? 'md:ps-20' : ''}`}>
+        <div className="border-3 onlyrefNoise h-full overflow-x-hidden overflow-y-scroll rounded-t-[20px] border-gray-900/50 shadow-cardShadowLight dark:border-gray-100/50 dark:shadow-cardShadow">
+          {props.children}
+        </div>
+      </section>
+    </div>
   );
 };
 

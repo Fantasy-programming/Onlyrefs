@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api';
+import { invoke } from '@tauri-apps/api/core';
 import { createRefDir, deleteRefDir, makepath, refExist } from './helper';
 import {
   Ref,
@@ -10,7 +10,7 @@ import {
   AudioRef,
   LinkRef,
 } from './types';
-import { copyFile } from '@tauri-apps/api/fs';
+import { copyFile } from '@tauri-apps/plugin-fs';
 import { emit } from '@tauri-apps/api/event';
 
 export const createImageRef = async (

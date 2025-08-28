@@ -1,24 +1,27 @@
-import { ParentProps } from 'solid-js';
-import { IoCloseOutline } from 'solid-icons/io';
-import { Motion } from 'solid-motionone';
+import React from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
+import { motion } from 'framer-motion';
 
 interface TagProps {
   name: string;
   removeTag: (name: string) => void;
+  children?: React.ReactNode;
 }
 
-export const ViewBoxTag = (props: ParentProps & TagProps) => {
+export const ViewBoxTag: React.FC<TagProps> = ({ name, removeTag, children }) => {
   return (
-    <Motion.span class="group relative mb-[7px] mr-[5px] inline-flex whitespace-nowrap">
-      <span class="cursor-zoom-in text-nowrap rounded-full bg-primary px-3 py-[6px] text-lg text-primary-foreground hover:bg-primary/20">
-        # {props.children}
+    <motion.span className="group relative mb-[7px] mr-[5px] inline-flex whitespace-nowrap">
+      <span className="cursor-zoom-in text-nowrap rounded-full bg-primary px-3 py-[6px] text-lg text-primary-foreground hover:bg-primary/20">
+        # {children}
       </span>
       <span
-        class="absolute -right-1 -top-1  cursor-pointer rounded-full bg-primary  p-[2px] opacity-0 transition-opacity group-hover:opacity-100"
-        onClick={() => props.removeTag(props.name)}
+        className="absolute -right-1 -top-1  cursor-pointer rounded-full bg-primary  p-[2px] opacity-0 transition-opacity group-hover:opacity-100"
+        onClick={() => removeTag(name)}
       >
         <IoCloseOutline />
       </span>
-    </Motion.span>
+    </motion.span>
   );
 };
+
+export default ViewBoxTag;
