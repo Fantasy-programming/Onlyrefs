@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { debounce as _debounce } from 'lodash-es';
 import { createNoteRef } from '@/lib/commands';
-import { useEditor, EditorContent, BubbleMenu as TipTapBubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 
 import StarterKit from '@tiptap/starter-kit';
 import { Extension } from '@tiptap/core';
@@ -41,7 +41,9 @@ const SaveNote = Extension.create({
 
 function Control(props: ControlProps & { format?: string; editor?: any }) {
   const { editor } = props as any;
-  const isActive = !!(editor && props.format ? editor.isActive(props.format) : editor && props.key ? editor.isActive((props as any).key) : false);
+  const isActive = !!(editor && props.format
+    ? editor.isActive(props.format)
+    : false);
 
   const onClick = () => {
     if (!editor) return;
@@ -53,7 +55,7 @@ function Control(props: ControlProps & { format?: string; editor?: any }) {
       aria-pressed={isActive}
       title={props.title}
       onClick={onClick}
-      className={`${props.class || ''} flex h-6 w-6 items-center justify-center rounded focus:outline-none focus-visible:ring focus-visible:ring-purple-400 focus-visible:ring-opacity-75 ${isActive ? 'text-color-600 bg-white bg-opacity-25' : ''}`}
+      className={`${props.className || ''} focus-visible:ring-opacity-75 flex h-6 w-6 items-center justify-center rounded focus:outline-none focus-visible:ring focus-visible:ring-purple-400 ${isActive ? 'text-color-600 bg-opacity-25 bg-white' : ''}`}
     >
       {props.children}
     </button>
@@ -76,7 +78,7 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
       <div className="flex space-x-1">
         <Control
           format="heading"
-          class="font-bold"
+          className="font-bold"
           editor={editor}
           onChange={() => editor.chain().focus().setHeading({ level: 1 }).run()}
           title="Heading 1"
@@ -88,7 +90,7 @@ function ToolbarContents(props: ToolbarProps): JSX.Element {
       <div className="flex space-x-1">
         <Control
           format="bold"
-          class="font-bold"
+          className="font-bold"
           editor={editor}
           onChange={() => editor.chain().focus().toggleBold().run()}
           title="Bold"
@@ -135,13 +137,17 @@ export const NoteContent: React.FC<{ data: NoteRef }> = ({ data }) => {
     editable: false,
     extensions: [
       StarterKit,
-      (Markdown as any).configure({ transformPastedText: true, transformCopiedText: true }),
+      (Markdown as any).configure({
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
       TaskList,
       TaskItem.configure({ nested: true }),
     ],
     editorProps: {
       attributes: {
-        class: 'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full',
+        class:
+          'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full',
       },
     },
     content: data.content,
@@ -150,7 +156,9 @@ export const NoteContent: React.FC<{ data: NoteRef }> = ({ data }) => {
   const isQuote = data.metadata.tags.includes('quote');
 
   return (
-    <div className={`${isQuote ? "before:content-['“'] font-serif after:content-['”'] after:text-3xl before:text-3xl before:leading-[0] after:leading-[0] after:pt-[10px] before:pb-[10px] before:mt-3 after:mt-3 after:block before:block text-2xl text-center" : ''} h-full overflow-y-hidden`}>
+    <div
+      className={`${isQuote ? "text-center font-serif text-2xl before:mt-3 before:block before:pb-[10px] before:text-3xl before:leading-[0] before:content-['“'] after:mt-3 after:block after:pt-[10px] after:text-3xl after:leading-[0] after:content-['”']" : ''} h-full overflow-y-hidden`}
+    >
       {editor ? <EditorContent editor={editor} /> : null}
     </div>
   );
@@ -166,13 +174,17 @@ export const NewNote: React.FC = () => {
       TaskList,
       TaskItem.configure({ nested: true }),
       Placeholder.configure({ placeholder: 'Start writing your note here...' }),
-      (Markdown as any).configure({ transformPastedText: true, transformCopiedText: true }),
+      (Markdown as any).configure({
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
       BubbleMenuExtension.configure({ element: menuRef.current as any }),
       SaveNote,
     ],
     editorProps: {
       attributes: {
-        class: 'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
+        class:
+          'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
       },
     },
     content: '',
@@ -185,15 +197,28 @@ export const NewNote: React.FC = () => {
   });
 
   return (
-    <div id="editor" className="h-[400px] overflow-hidden rounded-xl border border-transparent bg-foreground/10 p-6 shadow-md focus-within:border-secondary hover:border-secondary focus-visible:border-secondary">
-      <h4 className="mb-2 text-lg text-secondary">ADD NEW NOTE</h4>
-      <div ref={menuRef} className="dynamic-shadow rounded-lg bg-gradient-to-bl from-primary/80 to-tertiary text-white">
+    <div
+      id="editor"
+      className="bg-foreground/10 focus-within:border-secondary hover:border-secondary focus-visible:border-secondary h-[400px] overflow-hidden rounded-xl border border-transparent p-6 shadow-md"
+    >
+      <h4 className="text-secondary mb-2 text-lg">ADD NEW NOTE</h4>
+      <div
+        ref={menuRef}
+        className="dynamic-shadow from-primary/80 to-tertiary rounded-lg bg-gradient-to-bl text-white"
+      >
         {editor ? <ToolbarContents editor={editor} /> : null}
       </div>
-      <div className="h-full overflow-y-scroll">{editor ? <EditorContent editor={editor} /> : null}</div>
+      <div className="h-full overflow-y-scroll">
+        {editor ? <EditorContent editor={editor} /> : null}
+      </div>
       <AnimatePresence>
         {helper && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute bottom-0 left-0 w-full rounded-b-xl bg-secondary p-1 text-center text-secondary-foreground">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-secondary text-secondary-foreground absolute bottom-0 left-0 w-full rounded-b-xl p-1 text-center"
+          >
             <p>Press Ctrl + Enter to save note</p>
           </motion.div>
         )}
@@ -205,9 +230,13 @@ export const NewNote: React.FC = () => {
 export const NoteEditor: React.FC<{ source: NoteRef }> = ({ source }) => {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const debouncedSave = useMemo(() => _debounce(async (text: string, path: string, id: string) => {
-    await emit('note_changed', { id, path, content: text });
-  }, 1000), []);
+  const debouncedSave = useMemo(
+    () =>
+      _debounce(async (text: string, path: string, id: string) => {
+        await emit('note_changed', { id, path, content: text });
+      }, 1000),
+    [],
+  );
 
   const editor = useEditor({
     extensions: [
@@ -215,12 +244,16 @@ export const NoteEditor: React.FC<{ source: NoteRef }> = ({ source }) => {
       TaskList,
       TaskItem.configure({ nested: true }),
       Placeholder.configure({ placeholder: 'Start writing your note here...' }),
-      (Markdown as any).configure({ transformPastedText: true, transformCopiedText: true }),
+      (Markdown as any).configure({
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
       BubbleMenuExtension.configure({ element: menuRef.current as any }),
     ],
     editorProps: {
       attributes: {
-        class: 'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
+        class:
+          'focus:outline-none prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl max-w-full h-full ',
       },
     },
     content: source.content,
@@ -234,10 +267,15 @@ export const NoteEditor: React.FC<{ source: NoteRef }> = ({ source }) => {
 
   return (
     <div className="flex h-full w-full flex-col items-center overflow-x-hidden overscroll-y-contain p-12">
-      <div ref={menuRef} className="dynamic-shadow rounded-lg bg-gradient-to-bl from-primary to-primary/50 text-white">
+      <div
+        ref={menuRef}
+        className="dynamic-shadow from-primary to-primary/50 rounded-lg bg-gradient-to-bl text-white"
+      >
         {editor ? <ToolbarContents editor={editor} /> : null}
       </div>
-      <div className="m-auto w-full hyphens-auto break-words">{editor ? <EditorContent editor={editor} /> : null}</div>
+      <div className="m-auto w-full break-words hyphens-auto">
+        {editor ? <EditorContent editor={editor} /> : null}
+      </div>
     </div>
   );
 };

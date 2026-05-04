@@ -15,8 +15,7 @@ export function ViewBoxZoom({ className = '', children }: IProps) {
     createZoomImage(containerRef.current, {
       wheelZoomRatio: 0.3,
     });
-    return () => {
-    };
+    return () => {};
   }, [createZoomImage]);
 
   return (

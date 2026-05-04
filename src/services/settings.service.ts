@@ -10,4 +10,13 @@ const getSettings = async (): Promise<AppSettings> => {
   }
 };
 
-export default { getSettings };
+const saveSettings = async (settings: AppSettings): Promise<void> => {
+  try {
+    await invoke('save_settings', { settings });
+  } catch (error) {
+    console.error('Failed to save settings:', error);
+    throw new Error('Failed to save settings');
+  }
+};
+
+export default { getSettings, saveSettings };

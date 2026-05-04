@@ -14,7 +14,9 @@ const DEFAULT_SETTINGS: &str = r#"
 
 fn get_app_data_dir_path(handle: &AppHandle) -> PathBuf {
     let resolver = handle.path();
-    return resolver.data_dir().unwrap();
+    // Use app_data_dir() to get the app-specific directory (e.g., AppData/Roaming/com.onlyref)
+    // instead of data_dir() which returns just AppData/Roaming
+    return resolver.app_data_dir().unwrap();
 }
 
 pub fn get_settings_path(handle: &AppHandle) -> PathBuf {
@@ -25,6 +27,21 @@ pub fn get_settings_path(handle: &AppHandle) -> PathBuf {
 pub fn get_collection_path(handle: &AppHandle) -> PathBuf {
     let app_data_dir = get_app_data_dir_path(handle);
     app_data_dir.join("collections")
+}
+
+pub fn get_boards_path(handle: &AppHandle) -> PathBuf {
+    let app_data_dir = get_app_data_dir_path(handle);
+    app_data_dir.join("boards.json")
+}
+
+pub fn get_canvases_path(handle: &AppHandle) -> PathBuf {
+    let app_data_dir = get_app_data_dir_path(handle);
+    app_data_dir.join("canvases.json")
+}
+
+pub fn get_canvases_data_dir(handle: &AppHandle) -> PathBuf {
+    let app_data_dir = get_app_data_dir_path(handle);
+    app_data_dir.join("_canvases")
 }
 
 pub fn init(handle: &AppHandle) {

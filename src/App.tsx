@@ -1,39 +1,70 @@
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { PropsWithChildren } from 'react';
+import { useLocation } from 'react-router-dom';
 import { WindowDecoration } from './components/WindowDecoration';
-import { SideNavigation } from './components/Navigation/Navigation';
-import { emit } from '@tauri-apps/api/event';
+import { LeftSidebar } from './components/Layout/LeftSidebar';
+import {
+  LeftSidebarProvider,
+  useLeftSidebar,
+} from './components/Layout/LeftSidebarContext';
+import { DetailsPanel } from './components/Layout/DetailsPanel';
+import { useDetailsPanel } from './components/Layout/DetailsPanelContext';
+import { SelectionActionBar } from './components/SelectionActionBar/SelectionActionBar';
+import { cn } from './lib/utils';
 
-const App = (props: PropsWithChildren) => {
-  // const unlisteners = setupListeners(root);
+const AppContent = (props: PropsWithChildren) => {
+  const { isOpen } = useDetailsPanel();
+  const { isVisible: leftSidebarVisible } = useLeftSidebar();
+  const location = useLocation();
 
-  const [sideNavOpen, setSideNavOpen] = useState(true);
+  // Hide details panel on certain pages
+  const hideDetailsPanel =
+    location.pathname.startsWith('/boards/') ||
+    location.pathname === '/settings' ||
+    location.pathname === '/canvas' ||
+    location.pathname.startsWith('/canvas/') ||
+    location.pathname.startsWith('/viewer/');
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === '[') {
-        setSideNavOpen((s) => !s);
-        emit('sidebar_toggled');
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
+  // Hide left sidebar on certain pages
+  const hideLeftSidebar =
+    location.pathname.startsWith('/boards/') ||
+    location.pathname.startsWith('/canvas/') ||
+    location.pathname.startsWith('/viewer/');
 
-  // onCleanup(async () => {
-  //   const unlistener = await unlisteners;
-  //   unlistener.forEach((unlistener) => unlistener());
-  // });
+  const showDetailsPanel = isOpen && !hideDetailsPanel;
+  const showLeftSidebar = leftSidebarVisible && !hideLeftSidebar;
 
   return (
-    <div className="h-screen">
+    <div className="bg-background text-foreground h-screen selection:bg-blue-500/30">
       <WindowDecoration />
-      {sideNavOpen && <SideNavigation />}
-      <section className={`h-full pe-4 ps-4 pt-10 font-sans ${sideNavOpen ? 'md:ps-20' : ''}`}>
-        <div className="border-3 onlyrefNoise h-full overflow-x-hidden overflow-y-scroll rounded-t-[20px] border-gray-900/50 shadow-cardShadowLight dark:border-gray-100/50 dark:shadow-cardShadow">
-          {props.children}
-        </div>
-      </section>
+
+      {/* Left Sidebar */}
+      {showLeftSidebar && <LeftSidebar />}
+
+      {/* Main Content Area */}
+      <main
+        className={cn(
+          'h-full pt-0 font-sans transition-[margin] duration-200',
+          showLeftSidebar ? 'ml-[220px]' : 'ml-0',
+          showDetailsPanel ? 'mr-[240px]' : 'mr-0',
+        )}
+      >
+        <div className="h-full overflow-hidden">{props.children}</div>
+      </main>
+
+      {/* Right Details Panel */}
+      {!hideDetailsPanel && <DetailsPanel />}
+
+      {/* Selection Action Bar - floating at bottom */}
+      <SelectionActionBar />
     </div>
+  );
+};
+
+const App = (props: PropsWithChildren) => {
+  return (
+    <LeftSidebarProvider>
+      <AppContent {...props} />
+    </LeftSidebarProvider>
   );
 };
 

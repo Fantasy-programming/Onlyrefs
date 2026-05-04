@@ -38,7 +38,8 @@
         "title": "only-refs",
         "width": 800,
         "height": 600,
-        "useHttpsScheme": true
+        "dragDropEnabled": true,
+        "shadow": true
       }
     ],
     "security": {
@@ -48,7 +49,7 @@
         ],
         "enable": true
       },
-      "csp": "default-src: 'self'; media-src 'self' asset: https://asset.localhost; connect-src ipc: http://ipc.localhost"
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost data:; media-src 'self' asset: https://asset.localhost; style-src 'self' 'unsafe-inline'"
     }
   }
 }

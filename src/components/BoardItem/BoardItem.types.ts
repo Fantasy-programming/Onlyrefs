@@ -17,11 +17,11 @@ export interface RefContextMenuProps {
 }
 
 export interface ControlProps {
-  className: string;
+  className?: string;
   editor: Editor;
   title: string;
-  key: string;
-  onChange: () => void;
+  format?: string;
+  onChange: () => boolean | void;
   isActive?: (editor: Editor) => boolean;
   children: React.ReactNode;
 }

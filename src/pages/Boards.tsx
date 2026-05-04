@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { useParams } from '@solidjs/router';
-import { useRefSelector } from '@/state/refstore';
+import { useParams } from 'react-router-dom';
+import { useDisplayRefs } from '@/state/refstore';
+import { useBoardStore, useBoards } from '@/state/boardstore';
 
 import Board from '@/components/Board/Board';
 
@@ -19,88 +20,67 @@ import { Input } from '@/components/ui/input';
 
 import BoardList from '@/components/BoardList/BoardList';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useState, FormEvent } from 'react';
 
 const BoardsPage = () => {
-  const [boards, setBoards] = useState<string[]>([]);
-  const root = useRefSelector();
+  const boards = useBoards();
+  const displayRefs = useDisplayRefs();
+  const createBoard = useBoardStore((state) => state.createBoard);
 
   const { id } = useParams();
-  const boardID = decodeURIComponent(id);
+  const boardID = id ? decodeURIComponent(id) : '';
 
-  const getBoards = async () => {
-    const boards: string[] = [];
-
-    for (const refs of root.ref) {
-      if (refs.metadata?.collection) {
-        if (!boards.includes(refs.metadata.collection)) {
-          boards.push(refs.metadata.collection);
-        }
-      }
-    }
-    setBoards(boards);
-  };
-
-  useEffect(() => {
-    getBoards();
-  }, [])
-
+  // Get board names for display
+  const boardNames = boards.map((b) => b.name);
 
   return (
     <>
-      {
-        id ? (
-          <Board collection={boardID} home={true} refs={root.ref} />
-        ) : (
-
-          <motion.div animate={{ opacity: [0, 1] }} className="mt-20">
-            <header className="flex items-center justify-between">
-              <h1 className="text-3xl text-primary-foreground">Boards</h1>
-              <NewCollectionDialog setter={setBoards} />
-            </header>
-            <main className="mt-10">
-              <BoardList boards={boards} />
-            </main>
-          </motion.div>
-        )
-      }
+      {id ? (
+        <Board collection={boardID} home={true} refs={displayRefs} />
+      ) : (
+        <motion.div animate={{ opacity: [0, 1] }} className="px-4 pt-8 md:px-6">
+          <header className="flex items-center justify-between">
+            <h1 className="text-primary-foreground text-3xl">Boards</h1>
+            <NewBoardDialog onCreateBoard={createBoard} />
+          </header>
+          <main className="mt-10">
+            <BoardList boards={boardNames} />
+          </main>
+        </motion.div>
+      )}
     </>
   );
 };
 
-const NewCollectionDialog = (props: { setter: Setter<string[]> }) => {
+interface NewBoardDialogProps {
+  onCreateBoard: (name: string, parentId: string | null) => Promise<any>;
+}
+
+const NewBoardDialog: React.FC<NewBoardDialogProps> = ({ onCreateBoard }) => {
   const [showDialog, setShowDialog] = useState(false);
 
-  const handleCreation = async (
-    e,
-  ) => {
+  const handleCreation = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e?.currentTarget);
+    const formData = new FormData(e.currentTarget);
     const name = formData.get('name');
     if (name) {
-      // await createCollection(name.toString());
-
-      props.setter((prev) => {
-        return [...prev, name.toString()];
-      });
+      await onCreateBoard(name.toString(), null);
     }
     setShowDialog(false);
   };
 
   return (
-    <Dialog open={showDialog()} onOpenChange={setShowDialog}>
-      <DialogTrigger
-        asChild
-      >
-        <Button className=" h-11 rounded-md border border-input bg-transparent px-8 hover:bg-accent hover:text-accent-foreground ">
-          Create Collection
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <DialogTrigger asChild>
+        <Button className="border-input hover:bg-accent hover:text-accent-foreground h-11 rounded-md border bg-transparent px-8">
+          Create Board
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create collection</DialogTitle>
+          <DialogTitle>Create board</DialogTitle>
           <DialogDescription>
-            Create a new collection to organize your refs
+            Create a new board to organize your refs
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleCreation}>

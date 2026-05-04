@@ -38,7 +38,10 @@ export const ViewNoteEditor: React.FC<Props> = ({ id, path, content }) => {
       StarterKit,
       TaskList,
       TaskItem.configure({ nested: true }),
-      Markdown.configure({ transformPastedText: true, transformCopiedText: true }),
+      Markdown.configure({
+        transformPastedText: true,
+        transformCopiedText: true,
+      }),
     ],
     editorProps: {
       attributes: {
@@ -58,8 +61,8 @@ export const ViewNoteEditor: React.FC<Props> = ({ id, path, content }) => {
   });
 
   return (
-    <div className="onlyrefNoise flex h-full w-full flex-col items-center overflow-x-hidden overscroll-y-contain rounded-lg bg-foreground/5">
-      <div className="m-auto w-full hyphens-auto break-words p-2">
+    <div className="onlyrefNoise bg-foreground/5 flex h-full w-full flex-col items-center overflow-x-hidden overscroll-y-contain rounded-lg">
+      <div className="m-auto w-full p-2 break-words hyphens-auto">
         {editor ? <EditorContent editor={editor} /> : null}
       </div>
     </div>

@@ -1,0 +1,12 @@
+{
+  "id": "STACK_EXAMPLE",
+  "name": "",
+  "ref_type": "stack",
+  "collection": "all",
+  "item_ids": ["REF_ID_1", "REF_ID_2", "REF_ID_3"],
+  "cover_id": "REF_ID_3",
+  "created_at": "2024-04-08 19:33:05.857872355 +00:00",
+  "updated_at": "2024-04-08 19:33:05.857942555 +00:00",
+  "note_text": "",
+  "tags": []
+}

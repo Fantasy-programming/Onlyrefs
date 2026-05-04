@@ -1,16 +1,18 @@
 use log::info;
 use palette::{white_point::D65, IntoColor, Lab, Srgba};
+use rayon::prelude::*;
 use serde::{de::Error, Deserialize, Deserializer};
 use serde_json::Value;
 use std::collections::{HashMap, VecDeque};
 use std::fs::read_to_string;
-use std::panic::PanicInfo;
+
 use std::{fs, io, path::Path, path::PathBuf, sync::Mutex};
 
-use crate::parser::parse_refs;
-use crate::state::{AudioMetadata, AudioRef, LinkMetadata, LinkRef, Metadata, RefMeta};
-use crate::state::{DocMetadata, DocRef, NoteMetadata, NoteRef};
+use crate::parser::{parse_refs, resolve_stack_items};
+use crate::state::{AudioMetadata, AudioRef, Board, LinkMetadata, LinkRef, Metadata, RefMeta};
+use crate::state::{DocMetadata, DocRef, NoteMetadata, NoteRef, StackMetadata, StackRef};
 use crate::state::{ImageMetadata, ImageRef, Ref, Settings, VideoMetadata, VideoRef};
+use crate::state::{DesignMetadata, DesignRef, ModelMetadata, ModelRef};
 
 /// Return the size of a file in human readable format
 pub fn analyze_file_size<P>(file_path: P) -> String
@@ -35,100 +37,148 @@ fn get_all_refs(collections_dir: &Path) -> io::Result<Vec<Vec<PathBuf>>> {
                         .map(|entry| entry.path())
                         .collect::<Vec<_>>()
                 })
-                .unwrap_or_else(|_| Vec::new())
+                .unwrap_or_else(|e| {
+                    eprintln!("Failed to read directory {:?}: {}", dir, e);
+                    Vec::new()
+                })
         })
         .collect::<Vec<_>>();
 
     Ok(result)
 }
 
-/// Get all references in the collections directory
+// Get all references in the collections directory using parallel parsing
 pub fn fetch_refs(collections_dir: &Path) -> io::Result<Mutex<Vec<Ref>>> {
     let all_refs = get_all_refs(collections_dir)?;
 
-    let mut ref_vec = Vec::new();
-    let mut errors = Vec::new();
+    // Parse refs in parallel using rayon for faster loading
+    let results: Vec<Ref> = all_refs
+        .par_iter()
+        .filter_map(|ref_paths| match parse_refs(ref_paths) {
+            Ok(ref_data) => Some(ref_data),
+            Err(err) => {
+                eprintln!("Failed to parse reference: {}", err);
+                None
+            }
+        })
+        .collect();
 
-    for ref_paths in all_refs {
-        match parse_refs(&ref_paths) {
-            Ok(ref_data) => ref_vec.push(ref_data),
-            Err(err) => errors.push(err),
-        }
-    }
+    let mut ref_vec = results;
 
-    if !errors.is_empty() {
-        eprintln!("Errors encountered during reference parsing:");
-        for err in &errors {
-            eprintln!(" - {}", err);
-        }
-    }
+    // Resolve stack items after all refs are loaded
+    resolve_stack_items(&mut ref_vec);
 
     Ok(Mutex::new(ref_vec))
 }
 
+/// Fetch settings from file, returning default if file doesn't exist or is invalid
 pub fn fetch_settings(settings_path: &Path) -> Mutex<Settings> {
-    let settings = fs::read_to_string(settings_path).unwrap_or_default();
-    Mutex::new(serde_json::from_str(&settings).unwrap_or_else(|_| Settings::default()))
+    match fs::read_to_string(settings_path) {
+        Ok(settings_str) => match serde_json::from_str(&settings_str) {
+            Ok(settings) => Mutex::new(settings),
+            Err(e) => {
+                eprintln!("Failed to parse settings file: {}. Using defaults.", e);
+                Mutex::new(Settings::default())
+            }
+        },
+        Err(e) => {
+            if e.kind() != io::ErrorKind::NotFound {
+                eprintln!("Failed to read settings file: {}. Using defaults.", e);
+            }
+            Mutex::new(Settings::default())
+        }
+    }
+}
+
+/// Fetch boards from file, returning empty if file doesn't exist or is invalid
+pub fn fetch_boards(boards_path: &Path) -> io::Result<Mutex<Vec<Board>>> {
+    match fs::read_to_string(boards_path) {
+        Ok(boards_str) => match serde_json::from_str(&boards_str) {
+            Ok(boards) => Ok(Mutex::new(boards)),
+            Err(e) => {
+                eprintln!("Failed to parse boards file: {}. Using empty list.", e);
+                Ok(Mutex::new(Vec::new()))
+            }
+        },
+        Err(e) => {
+            if e.kind() != io::ErrorKind::NotFound {
+                eprintln!("Failed to read boards file: {}. Using empty list.", e);
+            }
+            Ok(Mutex::new(Vec::new()))
+        }
+    }
+}
+
+/// Save boards to file
+pub fn save_boards(boards_path: &Path, boards: &[Board]) -> io::Result<()> {
+    let json_data = serde_json::to_string_pretty(boards)?;
+    fs::write(boards_path, json_data)?;
+    Ok(())
 }
 
 /// Change name of a ref
-pub fn change_name(metadata_path: &Path, new_name: &str) -> Result<(), std::io::Error> {
+pub fn change_name(metadata_path: &Path, new_name: &str) -> Result<(), io::Error> {
     let metadata_json = fs::read_to_string(metadata_path)?;
     let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
 
     match ref_data {
-        RefMeta::Image(ref mut image_ref) => (*image_ref).set_name(new_name),
-        RefMeta::Video(ref mut video_ref) => (*video_ref).set_name(new_name),
-        RefMeta::Audio(ref mut audio_ref) => (*audio_ref).set_name(new_name),
-        RefMeta::Note(ref mut note_ref) => (*note_ref).set_name(new_name),
-        RefMeta::Doc(ref mut doc_ref) => (*doc_ref).set_name(new_name),
-        RefMeta::Link(ref mut link_ref) => (*link_ref).set_name(new_name),
+        RefMeta::Image(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Video(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Audio(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Note(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Doc(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Link(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Stack(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Design(ref mut metadata) => metadata.set_name(new_name),
+        RefMeta::Model(ref mut metadata) => metadata.set_name(new_name),
     }
 
-    // Convert the updated Ref back to JSON
     let updated_json = serde_json::to_string_pretty(&ref_data)?;
-    info!("Updated JSON: {}", updated_json);
-
     fs::write(metadata_path, updated_json)?;
 
     Ok(())
 }
 
 /// Add tags to a ref
-pub fn add_tag(metadata_path: &Path, tag: &str) -> Result<(), std::io::Error> {
+pub fn add_tag(metadata_path: &Path, tag: &str) -> Result<(), io::Error> {
     let metadata_json = fs::read_to_string(metadata_path)?;
     let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
 
     match ref_data {
-        RefMeta::Image(ref mut image_ref) => (*image_ref).add_tag(tag),
-        RefMeta::Video(ref mut video_ref) => (*video_ref).add_tag(tag),
-        RefMeta::Audio(ref mut audio_ref) => (*audio_ref).add_tag(tag),
-        RefMeta::Note(ref mut note_ref) => (*note_ref).add_tag(tag),
-        RefMeta::Doc(ref mut doc_ref) => (*doc_ref).add_tag(tag),
-        RefMeta::Link(ref mut link_ref) => (*link_ref).add_tag(tag),
+        RefMeta::Image(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Video(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Audio(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Note(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Doc(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Link(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Stack(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Design(ref mut metadata) => metadata.add_tag(tag),
+        RefMeta::Model(ref mut metadata) => metadata.add_tag(tag),
     }
 
-    // Convert the updated Ref back to JSON
     let updated_json = serde_json::to_string_pretty(&ref_data)?;
     fs::write(metadata_path, updated_json)?;
 
     Ok(())
 }
 
-pub fn remove_tag(metadata_path: &Path, tag: &str) -> Result<(), std::io::Error> {
+/// Remove tag from a ref
+pub fn remove_tag(metadata_path: &Path, tag: &str) -> Result<(), io::Error> {
     let metadata_json = fs::read_to_string(metadata_path)?;
     let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
 
     match ref_data {
-        RefMeta::Image(ref mut image_ref) => (*image_ref).remove_tag(tag),
-        RefMeta::Video(ref mut video_ref) => (*video_ref).remove_tag(tag),
-        RefMeta::Audio(ref mut audio_ref) => (*audio_ref).remove_tag(tag),
-        RefMeta::Note(ref mut note_ref) => (*note_ref).remove_tag(tag),
-        RefMeta::Doc(ref mut doc_ref) => (*doc_ref).remove_tag(tag),
-        RefMeta::Link(ref mut link_ref) => (*link_ref).remove_tag(tag),
+        RefMeta::Image(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Video(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Audio(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Note(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Doc(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Link(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Stack(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Design(ref mut metadata) => metadata.remove_tag(tag),
+        RefMeta::Model(ref mut metadata) => metadata.remove_tag(tag),
     }
 
-    // Convert the updated Ref back to JSON
     let updated_json = serde_json::to_string_pretty(&ref_data)?;
     fs::write(metadata_path, updated_json)?;
 
@@ -136,55 +186,143 @@ pub fn remove_tag(metadata_path: &Path, tag: &str) -> Result<(), std::io::Error>
 }
 
 /// Mutate note component from a ref
-pub fn mutate_note(metadata_path: &Path, text: &str) -> Result<(), std::io::Error> {
+pub fn mutate_note(metadata_path: &Path, text: &str) -> Result<(), io::Error> {
     let metadata_json = fs::read_to_string(metadata_path)?;
     let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
 
     match ref_data {
-        RefMeta::Image(ref mut image_ref) => (*image_ref).update_note(text),
-        RefMeta::Video(ref mut video_ref) => (*video_ref).update_note(text),
-        RefMeta::Audio(ref mut audio_ref) => (*audio_ref).update_note(text),
-        RefMeta::Note(ref mut note_ref) => (*note_ref).update_note(text),
-        RefMeta::Doc(ref mut doc_ref) => (*doc_ref).update_note(text),
-        RefMeta::Link(ref mut link_ref) => (*link_ref).update_note(text),
+        RefMeta::Image(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Video(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Audio(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Note(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Doc(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Link(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Stack(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Design(ref mut metadata) => metadata.update_note(text),
+        RefMeta::Model(ref mut metadata) => metadata.update_note(text),
     }
 
-    // Convert the updated Ref back to JSON
     let updated_json = serde_json::to_string_pretty(&ref_data)?;
     fs::write(metadata_path, updated_json)?;
 
     Ok(())
 }
 
+/// Change board_id for a ref
+pub fn change_board_id(metadata_path: &Path, board_id: Option<String>) -> Result<(), io::Error> {
+    let metadata_json = fs::read_to_string(metadata_path)?;
+    let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
+
+    match ref_data {
+        RefMeta::Image(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Video(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Audio(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Note(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Doc(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Link(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Stack(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Design(ref mut metadata) => metadata.set_board_id(board_id),
+        RefMeta::Model(ref mut metadata) => metadata.set_board_id(board_id),
+    }
+
+    let updated_json = serde_json::to_string_pretty(&ref_data)?;
+    fs::write(metadata_path, updated_json)?;
+
+    Ok(())
+}
+
+/// Change rating for a ref (0-5 stars)
+pub fn change_rating(metadata_path: &Path, rating: u8) -> Result<(), io::Error> {
+    let metadata_json = fs::read_to_string(metadata_path)?;
+    let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
+
+    match ref_data {
+        RefMeta::Image(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Video(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Audio(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Note(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Doc(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Link(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Stack(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Design(ref mut metadata) => metadata.set_rating(rating),
+        RefMeta::Model(ref mut metadata) => metadata.set_rating(rating),
+    }
+
+    let updated_json = serde_json::to_string_pretty(&ref_data)?;
+    fs::write(metadata_path, updated_json)?;
+
+    Ok(())
+}
+
+/// Change source_url for a ref
+pub fn change_source_url(metadata_path: &Path, url: Option<String>) -> Result<(), io::Error> {
+    let metadata_json = fs::read_to_string(metadata_path)?;
+    let mut ref_data: RefMeta = serde_json::from_str(&metadata_json)?;
+
+    match ref_data {
+        RefMeta::Image(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Video(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Audio(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Note(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Doc(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Link(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Stack(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Design(ref mut metadata) => metadata.set_source_url(url),
+        RefMeta::Model(ref mut metadata) => metadata.set_source_url(url),
+    }
+
+    let updated_json = serde_json::to_string_pretty(&ref_data)?;
+    fs::write(metadata_path, updated_json)?;
+
+    Ok(())
+}
+
+/// Convert a file path to a string representation
+/// Returns an error if the path contains invalid UTF-8
+pub fn convert_file_src(file_path: &Path) -> Result<String, io::Error> {
+    file_path.to_str().map(|s| s.to_string()).ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("Path contains invalid UTF-8: {:?}", file_path),
+        )
+    })
+}
+
+/// Convert size in bytes to human-readable format
 fn human_size(size: u64) -> String {
-    let multiplier = 1000f64;
-    let units = ["KB", "MB", "GB", "TB", "PB", "EB", "ZB"];
+    const UNITS: [&str; 7] = ["KB", "MB", "GB", "TB", "PB", "EB", "ZB"];
+    const MULTIPLIER: f64 = 1000.0;
+
     let mut size = size as f64;
-    if size < multiplier {
+
+    if size < MULTIPLIER {
         return format!("{:.0}B", size);
-    };
-    for unit in &units {
-        size /= multiplier;
-        let precision: usize;
-        if size < multiplier {
-            if size < 10f64 {
-                precision = 2;
-            } else if size < 100f64 {
-                precision = 1;
+    }
+
+    for unit in &UNITS {
+        size /= MULTIPLIER;
+        if size < MULTIPLIER {
+            let precision = if size < 10.0 {
+                2
+            } else if size < 100.0 {
+                1
             } else {
-                precision = 0;
-            }
+                0
+            };
             return format!("{:.*}{}", precision, round_up(size, precision), unit);
         }
     }
-    format!("{:.0}{}", size.ceil(), units[units.len() - 1])
+
+    format!("{:.0}{}", size.ceil(), UNITS[UNITS.len() - 1])
 }
 
+/// Round up to the specified precision
 fn round_up(value: f64, precision: usize) -> f64 {
     let multiplier = 10u64.pow(precision as u32) as f64;
     (value * multiplier).ceil() / multiplier
 }
 
+/// Cache SRGBA to Lab conversions for performance
 pub fn cached_srgba_to_lab<'a>(
     rgb: impl Iterator<Item = &'a Srgba<u8>>,
     map: &mut fxhash::FxHashMap<[u8; 3], Lab<D65, f32>>,
@@ -196,6 +334,7 @@ pub fn cached_srgba_to_lab<'a>(
     }))
 }
 
+/// Deserialize file size from either string or number
 pub fn deserialize_file_size<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: Deserializer<'de>,
@@ -204,37 +343,24 @@ where
 
     match value {
         Value::String(s) => Ok(s),
-        Value::Number(n) => Ok(human_size(n.as_u64().unwrap())),
-        _ => Err(D::Error::custom("Invalid file_size value")),
-    }
-}
-
-pub fn convert_file_src(file_path: &Path) -> String {
-    let protocol = "asset";
-    let encoded_path = urlencoding::encode(file_path.to_str().unwrap()).into_owned();
-    let os_name = get_os_name();
-    if os_name == "windows" || os_name == "android" {
-        format!("https://{}.localhost/{}", protocol, encoded_path)
-    } else {
-        format!("{}://localhost/{}", protocol, encoded_path)
-    }
-}
-
-fn get_os_name() -> String {
-    let os_name = std::env::consts::OS;
-    if os_name == "macos" {
-        "darwin".to_string()
-    } else {
-        os_name.to_string()
+        Value::Number(n) => {
+            let size = n
+                .as_u64()
+                .ok_or_else(|| D::Error::custom("File size number is not a valid u64"))?;
+            Ok(human_size(size))
+        }
+        _ => Err(D::Error::custom(
+            "Invalid file_size value: expected string or number",
+        )),
     }
 }
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
+    use crate::state::{ImageMetadata, NoteMetadata};
     use std::fs;
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
 
     const IMAGE_METADATA_PATH: &str = "resources/metadata.image.json";
     const NOTE_METADATA_PATH: &str = "resources/metadata.note.json";
@@ -249,14 +375,14 @@ mod tests {
         let file_dir = temp_dir.join(original_file_name);
         let content = "random stuff";
 
-        fs::create_dir(temp_dir).expect("Failed to copy media metadata file");
-        fs::copy(original_file_path, &file_dir).expect("Failed to copy media metadata file");
+        fs::create_dir(temp_dir).expect("Failed to create temp dir");
+        fs::copy(original_file_path, &file_dir).expect("Failed to copy metadata file");
 
         (file_dir, content.to_string(), temp_dir.to_path_buf())
     }
 
     fn teardown(temp_dir: PathBuf) {
-        fs::remove_dir_all(temp_dir).expect("Failed to delete test collections directory");
+        fs::remove_dir_all(temp_dir).expect("Failed to delete test directory");
     }
 
     #[test]
@@ -284,77 +410,63 @@ mod tests {
 
     #[test]
     fn test_change_name() {
-        let (meta_path, new_name, f) = setup("name_1", IMAGE_METADATA_PATH, "metadata.image.json");
+        let (meta_path, new_name, temp_dir) =
+            setup("name_1", IMAGE_METADATA_PATH, "metadata.image.json");
 
         // Test for image metadata
-        let _ = change_name(&meta_path, &new_name);
-        let result = fs::read_to_string(meta_path).unwrap();
+        change_name(&meta_path, &new_name).expect("Failed to change name");
+        let result = fs::read_to_string(&meta_path).unwrap();
         let updated_metadata: ImageMetadata = serde_json::from_str(&result).unwrap();
         assert_eq!(updated_metadata.name, new_name);
-        teardown(f);
+        teardown(temp_dir);
 
         // Test for note metadata
-        let (meta_path, new_name, f) = setup("name_2", NOTE_METADATA_PATH, "metadata.note.json");
+        let (meta_path, new_name, temp_dir) =
+            setup("name_2", NOTE_METADATA_PATH, "metadata.note.json");
 
-        let _ = change_name(&meta_path, &new_name);
-        let result = fs::read_to_string(meta_path).unwrap();
+        change_name(&meta_path, &new_name).expect("Failed to change name");
+        let result = fs::read_to_string(&meta_path).unwrap();
         let updated_metadata: NoteMetadata = serde_json::from_str(&result).unwrap();
         assert_eq!(updated_metadata.name, new_name);
-        teardown(f);
+        teardown(temp_dir);
     }
 
     #[test]
     fn test_add_remove_tags() {
-        let (meta_path, new_name, f) = setup("tag_1", IMAGE_METADATA_PATH, "metadata.image.json");
+        let (meta_path, tag, temp_dir) = setup("tag_1", IMAGE_METADATA_PATH, "metadata.image.json");
 
-        //Test adding a tag from a media reference
-        let _ = add_tag(&meta_path, &new_name);
+        // Test adding a tag
+        add_tag(&meta_path, &tag).expect("Failed to add tag");
         let result = fs::read_to_string(&meta_path).unwrap();
         let updated_metadata: ImageMetadata = serde_json::from_str(&result).unwrap();
-        assert!(updated_metadata.tags.contains(&new_name.to_string()));
+        assert!(updated_metadata.tags.contains(&tag.to_string()));
 
-        //Test removing a tag from a media reference
-        let _ = remove_tag(&meta_path, &new_name);
-        let result = fs::read_to_string(meta_path).unwrap();
-        let updated_metadata: ImageMetadata = serde_json::from_str(&result).unwrap();
-        assert!(!updated_metadata.tags.contains(&new_name.to_string()));
-
-        teardown(f);
-
-        let (meta_path, new_name, f) = setup("tag_2", NOTE_METADATA_PATH, "metadata.note.json");
-
-        //Test adding a tag from a media reference
-        let _ = add_tag(&meta_path, &new_name);
+        // Test removing a tag
+        remove_tag(&meta_path, &tag).expect("Failed to remove tag");
         let result = fs::read_to_string(&meta_path).unwrap();
-        let updated_metadata: NoteMetadata = serde_json::from_str(&result).unwrap();
-        assert!(updated_metadata.tags.contains(&new_name.to_string()));
+        let updated_metadata: ImageMetadata = serde_json::from_str(&result).unwrap();
+        assert!(!updated_metadata.tags.contains(&tag.to_string()));
 
-        //Test removing a tag from a media reference
-        let _ = remove_tag(&meta_path, &new_name);
-        let result = fs::read_to_string(meta_path).unwrap();
-        let updated_metadata: NoteMetadata = serde_json::from_str(&result).unwrap();
-        assert!(!updated_metadata.tags.contains(&new_name.to_string()));
-
-        teardown(f);
+        teardown(temp_dir);
     }
 
     #[test]
     fn test_mutate_note() {
-        let (meta_path, new_content, f) =
+        let (meta_path, new_content, temp_dir) =
             setup("note_1", IMAGE_METADATA_PATH, "metadata.image.json");
 
-        let _ = mutate_note(&meta_path, &new_content);
-        let result = fs::read_to_string(meta_path).unwrap();
+        mutate_note(&meta_path, &new_content).expect("Failed to mutate note");
+        let result = fs::read_to_string(&meta_path).unwrap();
         let updated_metadata: ImageMetadata = serde_json::from_str(&result).unwrap();
         assert_eq!(updated_metadata.note_text, new_content);
-        teardown(f);
+        teardown(temp_dir);
+    }
 
-        let (meta_path, new_content, f) = setup("note_2", NOTE_METADATA_PATH, "metadata.note.json");
-
-        let _ = mutate_note(&meta_path, &new_content);
-        let result = fs::read_to_string(meta_path).unwrap();
-        let updated_metadata: NoteMetadata = serde_json::from_str(&result).unwrap();
-        assert_eq!(updated_metadata.note_text, new_content);
-        teardown(f);
+    #[test]
+    fn test_human_size() {
+        assert_eq!(human_size(500), "500B");
+        assert_eq!(human_size(1500), "1.50KB");
+        assert_eq!(human_size(1_500_000), "1.50MB");
+        assert_eq!(human_size(1_500_000_000), "1.50GB");
     }
 }
