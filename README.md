@@ -1,3 +1,5 @@
+
+
 <div align="center">
 <br>
 <br>
@@ -9,3 +11,5 @@
 All your references in a single place
 </b>
 </div>
+
+MIT licensed
